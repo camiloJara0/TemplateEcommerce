@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Block admin/private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /cuenta/
+
+# Allow all resources needed for rendering
+Allow: /_nuxt/
+
+Sitemap: /sitemap.xml
