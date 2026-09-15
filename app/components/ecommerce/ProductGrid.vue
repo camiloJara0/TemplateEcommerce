@@ -29,7 +29,7 @@ const colClass: Record<number, string> = {
   />
 
   <FeedbackEmptyState
-    v-else-if="!products.length"
+    v-else-if="!products?.length"
     icon="i-lucide-package-search"
     title="Sin productos"
     description="No encontramos productos con estos filtros. Prueba ajustar la búsqueda."

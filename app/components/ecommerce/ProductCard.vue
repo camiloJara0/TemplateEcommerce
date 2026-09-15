@@ -47,7 +47,7 @@ function addToCart(product: Product) {
     <NuxtLink
       :to="`/producto/${product.slug}`"
       class="relative block overflow-hidden image-bg-themed"
-      :class="compact ? 'aspect-square' : 'aspect-[4/5]'"
+      :class="compact ? 'aspect-square' : 'aspect-4/5'"
     >
       <img
         v-if="image"

@@ -1,10 +1,10 @@
-import type { AppNotification, PushSubscriptionPayload } from '~/types/notifications'
+import type { AppNotification, PushSubscriptionPayload, AppNotificationResponse } from '~/types/notifications'
 
 export const useNotificationStore = defineStore('notification', () => {
   const offlineStore = useOfflineStore()
   const items = ref<AppNotification[]>([])
   const loading = ref(false)
-  const unreadCount = computed(() => items.value.filter(n => !n.read_at).length)
+  const unreadCount = computed(() => items.value?.filter(n => !n.read_at).length)
 
   async function load(force = false) {
     loading.value = true
@@ -15,7 +15,7 @@ export const useNotificationStore = defineStore('notification', () => {
         () => request<AppNotification[]>('/notificaciones'),
         { force }
       )
-      items.value = data
+      items.value = data.items
     } finally {
       loading.value = false
     }

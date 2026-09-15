@@ -83,7 +83,7 @@ useSeoMeta({ title: () => order.value ? `Pedido ${order.value.order_number ?? or
               {{ item.quantity }}× {{ item.name ?? item.product?.name }}
             </p>
             <p class="tabular-nums text-sm font-semibold">
-              {{ currency((item.unit_price ?? 0) * item.quantity, order.currency) }}
+              {{ currency((item.price ?? 0) * item.quantity, order.currency) }}
             </p>
           </li>
         </ul>

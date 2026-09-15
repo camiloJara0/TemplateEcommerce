@@ -1,11 +1,16 @@
 export function useThemeConfig() {
   const configStore = useStoreConfigStore()
 
+  const brandColor = computed(() => configStore.effectiveTiendaConfig?.estilos?.colores?.primario ?? '#3b82f6')
+  const accentColor = computed(() => configStore.effectiveTiendaConfig?.estilos?.colores?.accent ?? '#f59e0b')
+  const secondaryColor = computed(() => configStore.effectiveTiendaConfig?.estilos?.colores?.secundario ?? '#8b5cf6')
+  const bgColor = computed(() => configStore.effectiveTiendaConfig?.estilos?.colores?.fondo ?? '#ffffff')
+  const textColor = computed(() => configStore.effectiveTiendaConfig?.estilos?.paleta?.texto_principal_claro ?? '#1e293b')
+
   if (import.meta.client) {
     watchEffect(() => {
       const styles = configStore.effectiveTiendaConfig?.estilos
       if (!styles) return
-      console.log(styles.fondos)
       const root = document.documentElement
 
       // ── Colores base (misma marca en ambos modos) ──
@@ -81,4 +86,6 @@ export function useThemeConfig() {
       }
     })
   }
+
+  return { brandColor, accentColor, secondaryColor, bgColor, textColor }
 }

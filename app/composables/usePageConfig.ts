@@ -1,4 +1,4 @@
-import type { TiendaConfig, HeroSection, BenefitsSection, CategoriesSection, FeaturedSection, DealsSection, TestimonialsSection, CtaSection, HeaderSection, CategoriesHomeSection, ProductoSecciones } from '~/types/store'
+import type { TiendaConfig, HeroSection, BenefitsSection, CategoriesSection, FeaturedSection, DealsSection, TestimonialsSection, CtaSection, HeaderSection, CategoriesHomeSection, ProductoSecciones, NosotrosSecciones, NewsletterSection, BrandLogosSection, GalleryFeedSection, StatsSection, VideoSection, MapSection, RichTextSection } from '~/types/store'
 import { DEFAULT_TIENDA_CONFIG } from '~/types/store'
 
 export function usePageConfig() {
@@ -17,10 +17,18 @@ export function usePageConfig() {
   const deals = computed<DealsSection>(() => config.value.secciones.deals)
   const testimonials = computed<TestimonialsSection>(() => config.value.secciones.testimonials)
   const cta = computed<CtaSection>(() => config.value.secciones.cta)
+  const newsletter = computed<NewsletterSection>(() => config.value.secciones.newsletter)
+  const brandLogos = computed<BrandLogosSection>(() => config.value.secciones.brand_logos)
+  const galleryFeed = computed<GalleryFeedSection>(() => config.value.secciones.gallery_feed)
+  const stats = computed<StatsSection>(() => config.value.secciones.stats)
+  const video = computed<VideoSection>(() => config.value.secciones.video)
+  const map = computed<MapSection>(() => config.value.secciones.map)
+  const richtext = computed<RichTextSection>(() => config.value.secciones.richtext)
 
   const header = computed<HeaderSection>(() => config.value.header)
   const categoriesHome = computed<CategoriesHomeSection>(() => config.value.categories_home)
   const producto = computed<ProductoSecciones>(() => config.value.producto)
+  const nosotros = computed<NosotrosSecciones>(() => config.value.nosotros)
 
   const brand = computed(() => config.value.brand)
   const social = computed(() => config.value.social)
@@ -39,9 +47,17 @@ export function usePageConfig() {
     deals,
     testimonials,
     cta,
+    newsletter,
+    brandLogos,
+    galleryFeed,
+    stats,
+    video,
+    map,
+    richtext,
     header,
     categoriesHome,
     producto,
+    nosotros,
     brand,
     social,
     navbar,

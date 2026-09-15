@@ -21,7 +21,7 @@ defineProps<{ config: ProductComparisonSection }>()
                 v-for="(col, i) in config.columns"
                 :key="i"
                 class="py-4 px-4 text-center font-semibold"
-                :class="col.is_ours ? 'text-theme-brand bg-theme-imagenes rounded-t-xl' : 'text-theme-secondary'"
+                :class="col.is_ours ? 'text-theme-on-brand bg-theme-accent rounded-t-xl' : 'text-theme-secondary'"
               >
                 {{ col.label }}
               </th>

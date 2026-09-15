@@ -1,19 +1,30 @@
 <script setup lang="ts">
-import type { TiendaConfig, SectionKey } from '~/types/store'
-import { DEFAULT_TIENDA_CONFIG } from '~/types/store'
+import { DEFAULT_TIENDA_CONFIG, ABOUT_SECTION_META } from '~/types/store'
+import type { TiendaConfig, SectionKey, AboutSectionKey, PageSection } from '~/types/store'
 
-definePageMeta({ layout: 'admin', middleware: ['auth'] })
+const fullscreen = ref(false)
+
+definePageMeta({
+  layout: false,
+  middleware: ['auth'],
+})
+
+const layout = computed(() => fullscreen.value ? 'admin-editor' : 'admin')
 
 const configStore = useStoreConfigStore()
 const toast = useToast()
+const { getOrderedSections, updateSectionVariant } = usePageSections()
 
 useSeoMeta({ title: 'Editor de tienda — Admin' })
 
 const config = ref<TiendaConfig>(JSON.parse(JSON.stringify(DEFAULT_TIENDA_CONFIG)))
-const selectedSection = ref('hero')
-const activeTab = ref<'home' | 'header' | 'categories' | 'producto' | 'styles' | 'brand' | 'navbar' | 'footer'>('home')
+const selectedSection = ref<string>('hero-1')
+const selectedAboutSection = ref<AboutSectionKey>('hero')
+const activeTab = ref<'home' | 'producto' | 'about' | 'styles' | 'plantillas'>('home')
 const hasChanges = ref(false)
 const saving = ref(false)
+
+const router = useRouter()
 
 const history = ref<string[]>([])
 const historyIndex = ref(-1)
@@ -42,10 +53,19 @@ function redo() {
   hasChanges.value = true
 }
 
-function updateSection<K extends SectionKey>(key: K, value: TiendaConfig['secciones'][K]) {
+function updateSection(key: SectionKey, value: any) {
+  if (key === '_header' || key === '_categories_home') return
   config.value = {
     ...config.value,
     secciones: { ...config.value.secciones, [key]: value }
+  }
+  pushHistory()
+}
+
+function updateAboutSection<K extends AboutSectionKey>(key: K, value: TiendaConfig['nosotros'][K]) {
+  config.value = {
+    ...config.value,
+    nosotros: { ...config.value.nosotros, [key]: value }
   }
   pushHistory()
 }
@@ -57,6 +77,23 @@ function updateHeader(value: TiendaConfig['header']) {
 
 function updateCategoriesHome(value: TiendaConfig['categories_home']) {
   config.value = { ...config.value, categories_home: value }
+  pushHistory()
+}
+
+function updatePageSection(id: string, patch: Partial<PageSection>) {
+  if (patch.variant !== undefined) {
+    config.value = updateSectionVariant(config.value, id, patch.variant)
+  } else if (patch.config !== undefined) {
+    const sections = getOrderedSections(config.value).map(s =>
+      s.id === id ? { ...s, config: { ...s.config, ...patch.config } } : s
+    )
+    config.value = { ...config.value, page_sections: sections }
+  } else if (patch.visible !== undefined) {
+    const sections = getOrderedSections(config.value).map(s =>
+      s.id === id ? { ...s, visible: patch.visible! } : s
+    )
+    config.value = { ...config.value, page_sections: sections }
+  }
   pushHistory()
 }
 
@@ -83,6 +120,23 @@ function updateNavbar(value: TiendaConfig['navbar']) {
 function updateFooter(value: TiendaConfig['footer']) {
   config.value = { ...config.value, footer: value }
   pushHistory()
+}
+
+async function handleApplyTemplate(templateConfig: TiendaConfig) {
+  config.value = JSON.parse(JSON.stringify(templateConfig))
+  pushHistory()
+  activeTab.value = 'home'
+
+  saving.value = true
+  try {
+    await configStore.updateTienda(config.value)
+    hasChanges.value = false
+    toast.add({ title: 'Plantilla aplicada y guardada', description: 'La plantilla ha sido aplicada y guardada en la base de datos. Puedes personalizar cada sección.', color: 'success', icon: 'i-lucide-check-circle' })
+  } catch {
+    toast.add({ title: 'Plantilla aplicada', description: 'La plantilla se aplicó localmente. Presiona Guardar para persistir.', color: 'warning', icon: 'i-lucide-alert-circle' })
+  } finally {
+    saving.value = false
+  }
 }
 
 async function handleSave() {
@@ -119,32 +173,32 @@ onMounted(async () => {
 
 const tabs = [
   { key: 'home' as const, label: 'Inicio', icon: 'i-lucide-home' },
-  { key: 'header' as const, label: 'Header', icon: 'i-lucide-panel-top' },
-  { key: 'categories' as const, label: 'Categorías', icon: 'i-lucide-layout-grid' },
   { key: 'producto' as const, label: 'Producto', icon: 'i-lucide-package' },
-  { key: 'styles' as const, label: 'Estilos', icon: 'i-lucide-palette' },
-  { key: 'brand' as const, label: 'Brand', icon: 'i-lucide-hexagon' },
-  { key: 'navbar' as const, label: 'Nav', icon: 'i-lucide-menu' },
-  { key: 'footer' as const, label: 'Footer', icon: 'i-lucide-panel-bottom' },
+  { key: 'about' as const, label: 'Nosotros', icon: 'i-lucide-users' },
+  { key: 'styles' as const, label: 'Global', icon: 'i-lucide-palette' },
+  { key: 'plantillas' as const, label: 'Plantillas', icon: 'i-lucide-layout-template' },
 ]
 </script>
 
 <template>
-  <div class="h-[calc(100dvh-4rem)] flex flex-col -m-6">
-    <!-- Toolbar -->
-    <AdminEditorToolbar
-      :has-changes="hasChanges"
-      :saving="saving"
-      :can-undo="historyIndex > 0"
-      :can-redo="historyIndex < history.length - 1"
-      @save="handleSave"
-      @back="handleBack"
-      @preview="handlePreview"
-      @undo="undo"
-      @redo="redo"
-    />
+  <NuxtLayout :name="layout">
+    <div class="h-[calc(100dvh-4rem)] flex flex-col -m-6">
+      <!-- Toolbar -->
+      <AdminEditorToolbar
+        :has-changes="hasChanges"
+        :saving="saving"
+        :can-undo="historyIndex > 0"
+        :can-redo="historyIndex < history.length - 1"
+        :fullscreen="fullscreen"
+        @save="handleSave"
+        @back="handleBack"
+        @preview="handlePreview"
+        @undo="undo"
+        @redo="redo"
+        @toggle-fullscreen="fullscreen = !fullscreen"
+      />
 
-    <!-- Content -->
+    <!-- Normal Layout -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Left: Tabs + Section list / Editors -->
       <div class="w-80 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col shrink-0">
@@ -170,22 +224,28 @@ const tabs = [
             v-model:config="config"
             v-model:selected="selectedSection"
           />
+                      <AdminHomeSectionEditor
+              :config="config"
+              :selected="selectedSection"
+              @update:section="(key, value) => updateSection(key, value)"
+              @update:header="updateHeader"
+              @update:categories_home="updateCategoriesHome"
+              @update:pageSection="updatePageSection"
+            />
         </div>
 
-        <!-- Header editor -->
-        <div v-else-if="activeTab === 'header'" class="flex-1 overflow-y-auto p-4">
-          <AdminEditorsHeaderEditor
-            :value="config.header"
-            @update="updateHeader"
+        <!-- About sections -->
+        <div v-else-if="activeTab === 'about'" class="flex-1 overflow-y-auto">
+          <AdminAboutSectionList
+            v-model:selected="selectedAboutSection"
           />
-        </div>
-
-        <!-- Categories home editor -->
-        <div v-else-if="activeTab === 'categories'" class="flex-1 overflow-y-auto p-4">
-          <AdminEditorsCategoriesHomeEditor
-            :value="config.categories_home"
-            @update="updateCategoriesHome"
-          />
+          <div class="border-t border-slate-200 dark:border-slate-800">
+            <AdminAboutSectionEditor
+              :config="config.nosotros"
+              :selected="selectedAboutSection"
+              @update:section="(key, value) => updateAboutSection(key, value)"
+            />
+          </div>
         </div>
 
         <!-- Product sections editor -->
@@ -198,34 +258,47 @@ const tabs = [
 
         <!-- Style editors -->
         <div v-else-if="activeTab === 'styles'" class="flex-1 overflow-y-auto p-4">
-          <AdminEditorsGlobalStylesEditor
-            :value="config.estilos"
-            @update="updateStyles"
-          />
+          <UTabs color="neutral" :items="[
+              {label:'Estilos', slot: 'estilos'},
+              {label:'Navbar', slot: 'navbar'},
+              {label:'Footer', slot: 'footer'}]"
+            >
+            <template #estilos>
+              <AdminEditorsGlobalStylesEditor
+                :value="config.estilos"
+                @update="updateStyles"
+              />
+            </template>
+            <template #navbar>
+              <AdminEditorsNavbarEditor
+                :value="config.navbar"
+                @update="updateNavbar"
+              />
+            </template>
+            <template #footer>
+              <AdminEditorsFooterEditor
+                :value="config.footer"
+                @update="updateFooter"
+              />
+            </template>
+          </UTabs>
         </div>
 
-        <div v-else-if="activeTab === 'brand'" class="flex-1 overflow-y-auto p-4">
-          <AdminEditorsBrandEditor
-            :value="config.brand"
-            :social="config.social"
-            @update="updateBrand"
-            @update:social="(v) => { config = { ...config, social: v }; pushHistory() }"
-          />
+        <!-- Templates -->
+        <div v-else-if="activeTab === 'plantillas'" class="flex-1 overflow-y-auto">
+          <div class="p-4 space-y-4">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+              Explora todas las plantillas disponibles en la página dedicada.
+            </p>
+            <UButton
+              label="Abrir marketplace de plantillas"
+              icon="i-lucide-layout-template"
+              to="/admin/plantillas"
+              block
+            />
+          </div>
         </div>
 
-        <div v-else-if="activeTab === 'navbar'" class="flex-1 overflow-y-auto p-4">
-          <AdminEditorsNavbarEditor
-            :value="config.navbar"
-            @update="updateNavbar"
-          />
-        </div>
-
-        <div v-else-if="activeTab === 'footer'" class="flex-1 overflow-y-auto p-4">
-          <AdminEditorsFooterEditor
-            :value="config.footer"
-            @update="updateFooter"
-          />
-        </div>
       </div>
 
       <!-- Center: Live Preview -->
@@ -235,14 +308,20 @@ const tabs = [
             v-if="activeTab === 'producto'"
             :value="config.producto"
           />
+          <AdminAboutSectionPreview
+            v-else-if="activeTab === 'about'"
+            :config="config.nosotros"
+            :selected="selectedAboutSection"
+          />
           <AdminSectionEditor
             v-else
             :config="config"
             :selected="selectedSection"
-            @update:selected="selectedSection = $event"
+            @update:selected="(selectedSection = $event)"
           />
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </NuxtLayout>
 </template>

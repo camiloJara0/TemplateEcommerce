@@ -10,6 +10,7 @@ const slug = String(route.params.slug ?? '')
 const productStore = useProductStore()
 const favoriteStore = useFavoriteStore()
 const cartStore = useCartStore()
+const toast = useToast()
 const { current, reviewsByProduct } = storeToRefs(productStore)
 const { productIds } = storeToRefs(favoriteStore)
 
@@ -37,11 +38,19 @@ async function toggleFavorite() {
   await favoriteStore.toggle(current.value.id)
 }
 
-async function addToCart() {
+async function addToCart(name: string) {
+  if (!name) return
   if (!current.value) return
   await cartStore.addItem({
-    product_id: current.value.id,
+    id: current.value.id,
     quantity: quantity.value
+  })
+
+  toast.add({
+    title: 'Agregado al carrito',
+    description: name,
+    color: 'success',
+    icon: 'i-lucide-shopping-bag'
   })
 }
 
@@ -290,7 +299,7 @@ useHead({
               :label="outOfStock ? 'Agotado' : 'Agregar al carrito'"
               :disabled="outOfStock"
               class="flex-1 rounded-xl"
-              @click="addToCart"
+              @click="async () => {addToCart(current?.name || '')}"
             />
 
             <UButton

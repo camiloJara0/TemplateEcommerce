@@ -47,7 +47,7 @@ async function handleImageUpload(index: number, event: Event) {
 
 <template>
   <div class="space-y-4">
-    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Categorías (Apple/Nike Style)</p>
+    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Categorías</p>
 
     <UCheckbox :model-value="value.show" label="Mostrar sección" @update:model-value="update('show', $event)" />
 

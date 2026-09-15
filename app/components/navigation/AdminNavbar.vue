@@ -8,6 +8,7 @@ const emit = defineEmits<{
 }>()
 
 const searchOpen = ref(false)
+const authStore = useAuthStore()
 const { initials } = useFormat()
 
 const userMenu = [
@@ -17,7 +18,7 @@ const userMenu = [
   ],
   [
     { label: 'Ver tienda', icon: 'i-lucide-store', to: '/' },
-    { label: 'Cerrar sesión', icon: 'i-lucide-log-out', color: 'error' as const }
+    { label: 'Cerrar sesión', icon: 'i-lucide-log-out', color: 'error' as const, onSelect: authStore.logout }
   ]
 ]
 </script>

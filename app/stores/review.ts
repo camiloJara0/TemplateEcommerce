@@ -2,6 +2,12 @@ import type { Paginated } from '~/types/api'
 import type { CreateReviewPayload, ProductReview } from '~/types/catalog'
 import type { AdminReview, AdminReviewFilters } from '~/types/admin'
 
+export interface ReviewFilters {
+  estado?: string
+  page?: number
+  per_page?: number
+}
+
 export const useReviewStore = defineStore('review', () => {
   const offlineStore = useOfflineStore()
   const productReviews = ref<Record<number, ProductReview[]>>({})
@@ -23,7 +29,7 @@ export const useReviewStore = defineStore('review', () => {
         () => request<ProductReview[]>(`/productos/${productId}/resenas`),
         { force, key: `reviews:product:${productId}` }
       )
-      productReviews.value[productId] = data
+      productReviews.value[productId] = data.items
     } finally {
       loading.value = false
     }
@@ -52,12 +58,22 @@ export const useReviewStore = defineStore('review', () => {
     })
   }
 
-  async function loadAdminList(filtersArg?: AdminReviewFilters) {
-    const { request } = useApi()
-    const res = await request<Paginated<AdminReview>>('/admin/resenas', { query: filtersArg })
-    adminList.value = res.data.items
-    adminPagination.value = res.data.pagination
-    adminFilters.value = filtersArg ?? {}
+  async function loadAdminList(filtersArg?: ReviewFilters) {
+    loading.value = true
+    try {
+      const { request } = useApi()
+      const query: Record<string, unknown> = { ...filtersArg }
+      if (query.estado) {
+        query.status = query.estado
+        delete query.estado
+      }
+      const res = await request<Paginated<AdminReview>>('/admin/resenas', { query })
+      adminList.value = res.data.items
+      adminPagination.value = res.data.pagination
+      adminFilters.value = (filtersArg as AdminReviewFilters) ?? {}
+    } finally {
+      loading.value = false
+    }
   }
 
   async function adminApprove(id: number) {

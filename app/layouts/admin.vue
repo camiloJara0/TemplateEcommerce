@@ -15,6 +15,7 @@ const title = computed(() => {
     '/admin/envios': 'Envíos',
     '/admin/reportes': 'Reportes',
     '/admin/tienda': 'Editor de tienda',
+    '/admin/plantillas': 'Plantillas',
     '/admin/configuracion': 'Configuración'
   }
   return map[route.path] || 'Admin'

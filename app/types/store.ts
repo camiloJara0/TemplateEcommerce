@@ -60,9 +60,27 @@ export interface AdminStoreConfig {
   }
 }
 
+// ─── Section Variants ────────────────────────────────────────────────────────
+
+export type HeroVariant = 'classic' | 'centered' | 'split' | 'video' | 'slider' | 'countdown' | 'parallax'
+export type CategoriesHomeVariant = 'grid' | 'carousel' | 'pills'
+export type BenefitsVariant = 'icons' | 'steps' | 'cards'
+export type TestimonialsVariant = 'cards' | 'spotlight' | 'masonry'
+export type FeaturedVariant = 'grid' | 'carousel' | 'large-cards'
+export type CtaVariant = 'banner' | 'split' | 'gradient'
+export type HeaderVariant = 'animation' | 'video'
+
+export interface SectionVariantMeta {
+  key: string
+  label: string
+  description: string
+  thumbnail: string
+}
+
 // ─── Page Builder: Tienda Config ─────────────────────────────────────────────
 
 export interface HeroSection {
+  variant?: HeroVariant
   badge?: string | null
   headline: string
   subtext: string
@@ -80,18 +98,21 @@ export interface BenefitItem {
 }
 
 export interface BenefitsSection {
+  variant?: BenefitsVariant
   title: string
   subtitle: string
   items: BenefitItem[]
 }
 
 export interface CategoriesSection {
+  variant?: CategoriesHomeVariant
   title: string
   subtitle: string
   show_all_link: boolean
 }
 
 export interface FeaturedSection {
+  variant?: FeaturedVariant
   title: string
   subtitle: string
   show_all_link: boolean
@@ -114,12 +135,14 @@ export interface TestimonialItem {
 }
 
 export interface TestimonialsSection {
+  variant?: TestimonialsVariant
   title: string
   subtitle: string
   items: TestimonialItem[]
 }
 
 export interface CtaSection {
+  variant?: CtaVariant
   headline: string
   subtext: string
   cta_primary: { label: string, url: string }
@@ -133,6 +156,13 @@ export interface TiendaSecciones {
   featured: FeaturedSection
   deals: DealsSection
   testimonials: TestimonialsSection
+  newsletter: NewsletterSection
+  brand_logos: BrandLogosSection
+  gallery_feed: GalleryFeedSection
+  stats: StatsSection
+  video: VideoSection
+  map: MapSection
+  richtext: RichTextSection
   cta: CtaSection
 }
 
@@ -211,6 +241,7 @@ export interface FooterColumn {
 // ─── Header Animado (HomePage) ───────────────────────────────────────────────
 
 export interface HeaderSection {
+  variant?: HeaderVariant
   show: boolean
   background_image: string | null
   headline: string
@@ -236,6 +267,7 @@ export interface CategoryCardItem {
 }
 
 export interface CategoriesHomeSection {
+  variant?: CategoriesHomeVariant
   show: boolean
   title: string
   subtitle: string
@@ -289,8 +321,11 @@ export interface ProductTransformSection {
   show: boolean
   headline: string
   subtext: string
+  before_image: string | null
+  after_image: string | null
   before: Array<{ label: string, description: string }>
   after: Array<{ label: string, description: string }>
+  slider_style: 'side-by-side' | 'overlay' | 'cards'
 }
 
 export interface ProductFeatureItem {
@@ -433,6 +468,197 @@ export interface ProductoSecciones {
 
 export type ProductSectionKey = keyof ProductoSecciones
 
+// ─── Nuevas secciones Home ────────────────────────────────────────────────────
+
+export interface NewsletterSection {
+  show: boolean
+  headline: string
+  subtext: string
+  placeholder: string
+  button_label: string
+  bg_color: string
+  text_color: string
+  layout: 'centered' | 'split'
+  image: string | null
+}
+
+export interface BrandLogosSection {
+  show: boolean
+  title: string
+  items: Array<{ name: string, logo: string | null, url: string | null }>
+  style: 'grayscale' | 'color' | 'minimal'
+}
+
+export interface GalleryFeedSection {
+  show: boolean
+  title: string
+  subtitle: string
+  layout: 'grid-2' | 'grid-3' | 'grid-4' | 'masonry'
+  items: Array<{ image: string, url: string | null, caption: string | null }>
+}
+
+export interface StatsSection {
+  show: boolean
+  layout: 'grid-3' | 'grid-4' | 'horizontal'
+  bg_color: string
+  text_color: string
+  items: Array<{ value: string, label: string, icon: string }>
+}
+
+export interface VideoSection {
+  show: boolean
+  headline: string
+  subtext: string
+  video_url: string | null
+  thumbnail: string | null
+  aspect_ratio: '16:9' | '4:3' | '21:9'
+}
+
+export interface MapSection {
+  show: boolean
+  headline: string
+  subtext: string
+  address: string
+  latitude: number | null
+  longitude: number | null
+  phone: string | null
+  hours: string | null
+  map_style: 'standard' | 'satellite' | 'terrain'
+}
+
+export interface RichTextSection {
+  show: boolean
+  layout: 'full' | 'split-left' | 'split-right'
+  headline: string
+  content: string
+  image: string | null
+  cta_label: string | null
+  cta_url: string | null
+  bg_color: string | null
+  text_color: string | null
+}
+
+// ─── Secciones Sobre Nosotros ─────────────────────────────────────────────────
+
+export interface AboutHeroSection {
+  show: boolean
+  headline: string
+  subtext: string
+  background_image: string | null
+  overlay_opacity: number
+  text_align: 'left' | 'center' | 'right'
+}
+
+export interface MissionVisionSection {
+  show: boolean
+  mission_title: string
+  mission_text: string
+  mission_image: string | null
+  vision_title: string
+  vision_text: string
+  vision_image: string | null
+  layout: 'side-by-side' | 'stacked' | 'alternating'
+}
+
+export interface ValueItem {
+  icon: string
+  title: string
+  description: string
+  image: string | null
+}
+
+export interface ValuesSection {
+  show: boolean
+  title: string
+  subtitle: string
+  layout: 'grid-2' | 'grid-3' | 'grid-4' | 'list'
+  items: ValueItem[]
+}
+
+export interface TeamMember {
+  name: string
+  role: string
+  avatar: string | null
+  bio: string
+  social_links: { instagram?: string, linkedin?: string, twitter?: string }
+}
+
+export interface TeamSection {
+  show: boolean
+  title: string
+  subtitle: string
+  layout: 'grid-2' | 'grid-3' | 'grid-4'
+  members: TeamMember[]
+}
+
+export interface TimelineEvent {
+  year: string
+  title: string
+  description: string
+  icon: string
+  image: string | null
+}
+
+export interface TimelineSection {
+  show: boolean
+  title: string
+  subtitle: string
+  events: TimelineEvent[]
+}
+
+export interface AboutMapSection {
+  show: boolean
+  headline: string
+  address: string
+  latitude: number | null
+  longitude: number | null
+  phone: string | null
+  hours: string | null
+}
+
+export interface AboutCtaSection {
+  show: boolean
+  headline: string
+  subtext: string
+  cta_primary: { label: string, url: string }
+  cta_secondary: { label: string, url: string } | null
+  bg_color: string | null
+  text_color: string | null
+}
+
+export interface NosotrosSecciones {
+  hero: AboutHeroSection
+  mission_vision: MissionVisionSection
+  values: ValuesSection
+  team: TeamSection
+  timeline: TimelineSection
+  map: AboutMapSection
+  cta: AboutCtaSection
+}
+
+export type AboutSectionKey = keyof NosotrosSecciones
+
+// ─── Dynamic Page Sections ───────────────────────────────────────────────────
+
+export interface PageSection {
+  id: string
+  type: SectionKey
+  order: number
+  visible: boolean
+  variant: string
+  config: Record<string, any>
+}
+
+export interface SectionDefinition {
+  type: SectionKey
+  label: string
+  icon: string
+  category: 'hero' | 'content' | 'conversion' | 'social' | 'layout' | 'media'
+  variants: Array<{ key: string, label: string, description: string, icon: string }>
+  defaultConfig: Record<string, any>
+  isSpecial?: boolean
+}
+
 // ─── Config Unificada ────────────────────────────────────────────────────────
 
 export interface TiendaConfig {
@@ -440,23 +666,52 @@ export interface TiendaConfig {
   header: HeaderSection
   categories_home: CategoriesHomeSection
   producto: ProductoSecciones
+  nosotros: NosotrosSecciones
   estilos: GlobalStyles
   brand: BrandConfig
   social: SocialLinks
   navbar: { links: NavbarLink[], show_search: boolean, show_cart: boolean, show_favorites: boolean }
   footer: { columns: FooterColumn[], copyright_text: string }
+  page_sections: PageSection[]
 }
 
-export type SectionKey = keyof TiendaSecciones
+export type SectionKey = keyof TiendaSecciones | '_header' | '_categories_home' | 'urgency_banner' | 'countdown_offer' | 'stock_counter' | 'sticky_add_to_cart' | 'faq' | 'timeline' | 'blog_grid' | 'article_featured'
 
 export const SECTION_META: Record<SectionKey, { label: string, icon: string }> = {
+  _header: { label: 'Header', icon: 'i-lucide-panel-top' },
+  _categories_home: { label: 'Categorías Home', icon: 'i-lucide-layout-grid' },
   hero: { label: 'Hero', icon: 'i-lucide-layout-template' },
   benefits: { label: 'Beneficios', icon: 'i-lucide-badge-check' },
   categories: { label: 'Categorías', icon: 'i-lucide-layers' },
   featured: { label: 'Destacados', icon: 'i-lucide-star' },
   deals: { label: 'Ofertas', icon: 'i-lucide-tag' },
   testimonials: { label: 'Testimonios', icon: 'i-lucide-message-square-quote' },
+  newsletter: { label: 'Newsletter', icon: 'i-lucide-mail' },
+  brand_logos: { label: 'Marcas', icon: 'i-lucide-heart' },
+  gallery_feed: { label: 'Galería', icon: 'i-lucide-instagram' },
+  stats: { label: 'Estadísticas', icon: 'i-lucide-bar-chart-3' },
+  video: { label: 'Video', icon: 'i-lucide-play-circle' },
+  map: { label: 'Mapa', icon: 'i-lucide-map-pin' },
+  richtext: { label: 'Texto enriquecido', icon: 'i-lucide-file-text' },
   cta: { label: 'CTA Final', icon: 'i-lucide-megaphone' },
+  urgency_banner: { label: 'Banner Urgencia', icon: 'i-lucide-alert-triangle' },
+  countdown_offer: { label: 'Oferta Countdown', icon: 'i-lucide-timer' },
+  stock_counter: { label: 'Contador Stock', icon: 'i-lucide-package' },
+  sticky_add_to_cart: { label: 'Carrito Fijo', icon: 'i-lucide-shopping-cart' },
+  faq: { label: 'Preguntas Frecuentes', icon: 'i-lucide-help-circle' },
+  timeline: { label: 'Línea de Tiempo', icon: 'i-lucide-git-branch' },
+  blog_grid: { label: 'Blog Grid', icon: 'i-lucide-layout-grid' },
+  article_featured: { label: 'Artículos Destacados', icon: 'i-lucide-newspaper' },
+}
+
+export const ABOUT_SECTION_META: Record<AboutSectionKey, { label: string, icon: string }> = {
+  hero: { label: 'Hero', icon: 'i-lucide-layout-template' },
+  mission_vision: { label: 'Misión y Visión', icon: 'i-lucide-eye' },
+  values: { label: 'Valores', icon: 'i-lucide-heart' },
+  team: { label: 'Equipo', icon: 'i-lucide-users' },
+  timeline: { label: 'Historia', icon: 'i-lucide-clock' },
+  map: { label: 'Ubicación', icon: 'i-lucide-map-pin' },
+  cta: { label: 'CTA', icon: 'i-lucide-megaphone' },
 }
 
 export const PRODUCT_SECTION_META: Record<ProductSectionKey, { label: string, icon: string }> = {
@@ -479,6 +734,7 @@ export const PRODUCT_SECTION_META: Record<ProductSectionKey, { label: string, ic
 export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
   secciones: {
     hero: {
+      variant: 'classic',
       badge: 'Nueva colección 2026',
       headline: 'Compra con la claridad que mereces',
       subtext: 'Productos curados, checkout sin fricción y una experiencia tan limpia como el mejor software del mundo.',
@@ -489,9 +745,11 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
       stats: [
         { value: '4.9', label: 'Valoración media de clientes' },
         { value: '+12k', label: 'Pedidos este año' },
+        { value: 'Productos de Calidad', label: 'Pedidos este año' },
       ],
     },
     benefits: {
+      variant: 'icons',
       title: 'Beneficios',
       subtitle: 'Por qué elegirnos',
       items: [
@@ -501,8 +759,8 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
         { icon: 'i-lucide-headphones', title: 'Soporte real', description: 'Atención humana cuando la necesitas.' },
       ],
     },
-    categories: { title: 'Categorías', subtitle: 'Encuentra rápido lo que buscas', show_all_link: true },
-    featured: { title: 'Populares', subtitle: 'Lo que más eligen nuestros clientes', show_all_link: true },
+    categories: { variant: 'grid', title: 'Categorías', subtitle: 'Encuentra rápido lo que buscas', show_all_link: true },
+    featured: { variant: 'grid', title: 'Populares', subtitle: 'Lo que más eligen nuestros clientes', show_all_link: true },
     deals: {
       badge: 'Ofertas limitadas',
       headline: 'Hasta 30% en selección premium',
@@ -511,6 +769,7 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
       show_section: true,
     },
     testimonials: {
+      variant: 'cards',
       title: 'Lo que dicen nuestros clientes',
       subtitle: 'Confianza construida pedido a pedido',
       items: [
@@ -519,7 +778,79 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
         { name: 'Laura M.', role: 'Nueva clienta', avatar: null, rating: 5, text: 'Diseño increíble y atención al cliente de otro nivel.' },
       ],
     },
+    newsletter: {
+      show: false,
+      headline: 'Suscríbete a nuestro newsletter',
+      subtext: 'Ofertas exclusivas, lanzamientos y descuentos directo a tu correo.',
+      placeholder: 'Tu correo electrónico',
+      button_label: 'Suscribirme',
+      bg_color: '#6366f1',
+      text_color: '#ffffff',
+      layout: 'centered',
+      image: null,
+    },
+    brand_logos: {
+      show: false,
+      title: 'Marcas que confían en nosotros',
+      items: [
+        { name: 'Nike', logo: null, url: null },
+        { name: 'Apple', logo: null, url: null },
+        { name: 'Samsung', logo: null, url: null },
+        { name: 'Sony', logo: null, url: null },
+      ],
+      style: 'grayscale',
+    },
+    gallery_feed: {
+      show: false,
+      title: 'Síguenos en Instagram',
+      subtitle: 'Etiquétanos @tienda para aparecer aquí',
+      layout: 'grid-4',
+      items: [],
+    },
+    stats: {
+      show: false,
+      layout: 'grid-4',
+      bg_color: '#0f172a',
+      text_color: '#ffffff',
+      items: [
+        { value: '+12,000', label: 'Clientes satisfechos', icon: 'i-lucide-users' },
+        { value: '+5,000', label: 'Productos vendidos', icon: 'i-lucide-shopping-bag' },
+        { value: '4.9', label: 'Valoración media', icon: 'i-lucide-star' },
+        { value: '24h', label: 'Envío express', icon: 'i-lucide-truck' },
+      ],
+    },
+    video: {
+      show: false,
+      headline: 'Mira cómo funciona',
+      subtext: 'Un vistazo rápido a lo que nos hace diferentes.',
+      video_url: null,
+      thumbnail: null,
+      aspect_ratio: '16:9',
+    },
+    map: {
+      show: false,
+      headline: 'Visítanos',
+      subtext: 'Estamos en el corazón de la ciudad.',
+      address: 'Calle Principal #123, Bogotá',
+      latitude: 4.711,
+      longitude: -74.0721,
+      phone: '+57 300 000 0000',
+      hours: 'Lun - Vie: 9:00 - 18:00',
+      map_style: 'standard',
+    },
+    richtext: {
+      show: false,
+      layout: 'full',
+      headline: 'Nuestra historia',
+      content: 'Somos una tienda comprometida con la calidad y la satisfacción del cliente.',
+      image: null,
+      cta_label: null,
+      cta_url: null,
+      bg_color: null,
+      text_color: null,
+    },
     cta: {
+      variant: 'banner',
       headline: '¿Listo para tu próxima compra?',
       subtext: 'Descubre el catálogo completo y finaliza en minutos.',
       cta_primary: { label: 'Ir al catálogo', url: '/catalogo' },
@@ -527,6 +858,7 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
     },
   },
   header: {
+    variant: 'animation',
     show: true,
     background_image: null,
     headline: 'Bienvenido a nuestra tienda',
@@ -540,6 +872,7 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
     height: '80vh',
   },
   categories_home: {
+    variant: 'grid',
     show: true,
     title: 'Explora por categoría',
     subtitle: 'Encuentra exactamente lo que buscas',
@@ -582,8 +915,11 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
       show: false,
       headline: 'La transformación',
       subtext: 'Mira la diferencia',
+      before_image: null,
+      after_image: null,
       before: [{ label: 'Antes', description: 'Situación anterior' }],
       after: [{ label: 'Después', description: 'Situación mejorada' }],
+      slider_style: 'overlay',
     },
     features: {
       show: false,
@@ -670,6 +1006,73 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
       text_color: '#ffffff',
     },
   },
+  nosotros: {
+    hero: {
+      show: true,
+      headline: 'Sobre nosotros',
+      subtext: 'Conoce la historia detrás de nuestra tienda.',
+      background_image: null,
+      overlay_opacity: 0.4,
+      text_align: 'center',
+    },
+    mission_vision: {
+      show: true,
+      mission_title: 'Nuestra Misión',
+      mission_text: 'Ofrecer productos de la más alta calidad con una experiencia de compra excepcional, making each interaction memorable.',
+      mission_image: null,
+      vision_title: 'Nuestra Visión',
+      vision_text: 'Ser la tienda en línea de referencia en Latinoamérica, reconocida por la innovación, la calidad y la satisfacción del cliente.',
+      vision_image: null,
+      layout: 'side-by-side',
+    },
+    values: {
+      show: true,
+      title: 'Nuestros Valores',
+      subtitle: 'Los principios que guían cada decisión',
+      layout: 'grid-3',
+      items: [
+        { icon: 'i-lucide-shield-check', title: 'Confianza', description: 'Transparencia absoluta en cada transacción.', image: null },
+        { icon: 'i-lucide-sparkles', title: 'Calidad', description: 'Solo ofrecemos lo que compraríamos nosotros.', image: null },
+        { icon: 'i-lucide-heart', title: 'Pasión', description: 'Amamos lo que hacemos y se nota.', image: null },
+        { icon: 'i-lucide-headphones', title: 'Soporte', description: 'Atención real, humana y disponible.', image: null },
+      ],
+    },
+    team: {
+      show: false,
+      title: 'Nuestro Equipo',
+      subtitle: 'La gente que hace posible todo',
+      layout: 'grid-3',
+      members: [],
+    },
+    timeline: {
+      show: false,
+      title: 'Nuestra Historia',
+      subtitle: 'Un recorrido que apenas comienza',
+      events: [
+        { year: '2020', title: 'El comienzo', description: 'Nacimos con la idea de hacer las cosas diferentes.', icon: 'i-lucide-rocket', image: null },
+        { year: '2022', title: 'Crecimiento', description: 'Alcanzamos nuestros primeros 1,000 clientes.', icon: 'i-lucide-trending-up', image: null },
+        { year: '2024', title: 'Consolidación', description: 'Expandimos nuestro catálogo y mejoramos la experiencia.', icon: 'i-lucide-award', image: null },
+      ],
+    },
+    map: {
+      show: false,
+      headline: 'Encuéntranos',
+      address: 'Calle Principal #123, Bogotá, Colombia',
+      latitude: 4.711,
+      longitude: -74.0721,
+      phone: '+57 300 000 0000',
+      hours: 'Lun - Vie: 9:00 - 18:00',
+    },
+    cta: {
+      show: true,
+      headline: '¿Listo para conocernos?',
+      subtext: 'Explora nuestro catálogo y descubre por qué somos diferentes.',
+      cta_primary: { label: 'Ver catálogo', url: '/catalogo' },
+      cta_secondary: { label: 'Contactar', url: '/contacto' },
+      bg_color: null,
+      text_color: null,
+    },
+  },
   estilos: {
     tipografia: { font_family: 'Inter', heading_weight: 600, base_size: 16 },
     colores: { primario: '#6366f1', secundario: '#64748b', fondo: '#f8fafc', accent: '#d946ef' },
@@ -732,4 +1135,14 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
     ],
     copyright_text: 'Todos los derechos reservados.',
   },
+  page_sections: [
+    { id: 'header-1', type: '_header', order: 0, visible: true, variant: 'animation', config: {} },
+    { id: 'hero-1', type: 'hero', order: 1, visible: true, variant: 'classic', config: {} },
+    { id: 'benefits-1', type: 'benefits', order: 2, visible: true, variant: 'icons', config: {} },
+    { id: 'categories-home-1', type: '_categories_home', order: 3, visible: true, variant: 'grid', config: {} },
+    { id: 'featured-1', type: 'featured', order: 4, visible: true, variant: 'grid', config: {} },
+    { id: 'deals-1', type: 'deals', order: 5, visible: true, variant: 'default', config: {} },
+    { id: 'testimonials-1', type: 'testimonials', order: 6, visible: true, variant: 'cards', config: {} },
+    { id: 'cta-1', type: 'cta', order: 7, visible: true, variant: 'banner', config: {} },
+  ],
 }

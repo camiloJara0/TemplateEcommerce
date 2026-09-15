@@ -16,7 +16,7 @@ function prev() {
 </script>
 
 <template>
-  <section v-if="config.show && config.items.length" class="py-16 bg-theme-surface">
+  <section v-if="config.show && config.items.length" class="py-16 bg-theme-surface rounded-xl">
     <div class="max-w-6xl mx-auto px-6">
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold text-theme">{{ config.title }}</h2>
@@ -27,7 +27,7 @@ function prev() {
       <div v-if="config.layout === 'carousel'" class="relative">
         <div class="overflow-hidden">
           <div class="flex transition-transform duration-500" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-            <div v-for="(item, i) in config.items" :key="i" class="w-full flex-shrink-0 px-4">
+            <div v-for="(item, i) in config.items" :key="i" class="w-full shrink-0 px-4">
               <div class="bg-theme-surface rounded-2xl p-8 shadow-sm max-w-2xl mx-auto">
                 <div class="flex items-center gap-1 mb-4">
                   <UIcon v-for="s in 5" :key="s" :name="s <= item.rating ? 'i-lucide-star' : 'i-lucide-star'" class="size-5" :class="s <= item.rating ? 'text-yellow-400 fill-yellow-400' : 'text-theme-muted'" />
@@ -35,7 +35,7 @@ function prev() {
                 <p class="text-lg text-theme italic mb-6">"{{ item.text }}"</p>
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-full bg-theme-imagenes flex items-center justify-center">
-                    <span class="font-semibold text-theme-brand">{{ item.name[0] }}</span>
+                    <span class="font-semibold" :class="i % 2 === 0 ? 'text-theme-brand' : 'text-theme-accent'">{{ item.name[0] }}</span>
                   </div>
                   <div>
                     <p class="font-semibold text-theme">{{ item.name }}</p>
@@ -63,7 +63,7 @@ function prev() {
           <p class="text-theme italic mb-4">"{{ item.text }}"</p>
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-theme-imagenes flex items-center justify-center">
-              <span class="text-xs font-semibold text-theme-brand">{{ item.name[0] }}</span>
+              <span class="text-xs font-semibold" :class="i % 2 === 0 ? 'text-theme-brand' : 'text-theme-accent'">{{ item.name[0] }}</span>
             </div>
             <div>
               <p class="font-medium text-sm text-theme">{{ item.name }}</p>
@@ -82,7 +82,7 @@ function prev() {
           <p class="text-theme italic mb-4">"{{ item.text }}"</p>
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-theme-imagenes flex items-center justify-center">
-              <span class="text-xs font-semibold text-theme-brand">{{ item.name[0] }}</span>
+              <span class="text-xs font-semibold" :class="i % 2 === 0 ? 'text-theme-brand' : 'text-theme-accent'">{{ item.name[0] }}</span>
             </div>
             <div>
               <p class="font-medium text-sm text-theme">{{ item.name }}</p>

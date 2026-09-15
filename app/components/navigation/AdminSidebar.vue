@@ -23,6 +23,7 @@ const groups = [
     label: 'Tienda',
     items: [
       { label: 'Editor de tienda', icon: 'i-lucide-layout-template', to: '/admin/tienda' },
+      { label: 'Plantillas', icon: 'i-lucide-layout-grid', to: '/admin/plantillas' },
       { label: 'Configuración', icon: 'i-lucide-settings', to: '/admin/configuracion' }
     ]
   },
@@ -42,8 +43,10 @@ function isActive(to: string) {
 }
 
 function collapsedStore(url: string){
+  console.log(url)
   if(url === '/admin/tienda'){
-    collapsed.value = false
+    console.log('si')
+    collapsed.value = true
   }
 }
 </script>

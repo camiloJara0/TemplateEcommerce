@@ -57,15 +57,11 @@ const gradienteDirOptions = [
   { label: '← Izquierda', value: 'to-l' },
 ]
 
-function ColorPicker(field: string, label: string, group: 'colores' | 'fondos' = 'colores') {
-  return { field, label, group }
-}
-
 const colorFields = [
   { field: 'primario', label: 'Color primario', group: 'colores' as const },
   { field: 'secundario', label: 'Color secundario', group: 'colores' as const },
-  { field: 'fondo', label: 'Color de fondo', group: 'colores' as const },
   { field: 'accent', label: 'Color accent', group: 'colores' as const },
+  { field: 'fondo', label: 'Color de fondo', group: 'colores' as const },
 ]
 
 const fondosFields = [
@@ -95,39 +91,24 @@ const paletaPairs = [
   { label: 'Acento', light: 'acento_claro', dark: 'acento_oscuro' },
   { label: 'Texto sobre marca', light: 'texto_sobre_marca_claro', dark: 'texto_sobre_marca_oscuro' },
 ]
+
+const gradDirMap: Record<string, string> = {
+  'to-r': 'to right',
+  'to-br': 'to bottom right',
+  'to-b': 'to bottom',
+  'to-bl': 'to bottom left',
+  'to-l': 'to left',
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- Tipografía -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- 1. COLORES (brand + accent) — lo más usado primero -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <div class="space-y-3">
-      <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Tipografía</p>
-
-      <USelect
-        :model-value="value.tipografia.font_family"
-        :items="fontOptions"
-        label="Familia tipográfica"
-        @update:model-value="updateGroup('tipografia', 'font_family', String($event))"
-      />
-
-      <UiBaseInput
-        :model-value="value.tipografia.heading_weight"
-        label="Peso de headings"
-        type="number"
-        @update:model-value="updateGroup('tipografia', 'heading_weight', Number($event))"
-      />
-
-      <UiBaseInput
-        :model-value="value.tipografia.base_size"
-        label="Tamaño base (px)"
-        type="number"
-        @update:model-value="updateGroup('tipografia', 'base_size', Number($event))"
-      />
-    </div>
-
-    <!-- Colores -->
-    <div class="space-y-3">
-      <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Colores</p>
+      <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Colores de marca</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Primario: botones, links, Header. Accent: badges, highlights secundarios.</p>
 
       <div v-for="c in colorFields" :key="c.field" class="space-y-2">
         <label class="text-xs font-medium text-slate-600 dark:text-slate-400">{{ c.label }}</label>
@@ -147,7 +128,9 @@ const paletaPairs = [
       </div>
     </div>
 
-    <!-- Fondos y Tema -->
+    <!-- ═══════════════════════════════════════ -->
+    <!-- 2. FONDOS Y TEMA                       -->
+    <!-- ═══════════════════════════════════════ -->
     <div class="space-y-3">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Fondos y tema</p>
 
@@ -175,7 +158,6 @@ const paletaPairs = [
         </div>
       </div>
 
-      <!-- Gradient config (only when tipo_fondo === 'gradient') -->
       <template v-if="value.fondos.tipo_fondo === 'gradient'">
         <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-4">Configuración de degradado</p>
 
@@ -203,17 +185,18 @@ const paletaPairs = [
           @update:model-value="updateGroup('fondos', 'gradiente_direccion', String($event))"
         />
 
-        <!-- Preview -->
         <div
           class="h-16 rounded-xl border border-slate-200 dark:border-slate-700"
           :style="{
-            background: `linear-gradient(${value.fondos.gradiente_direccion === 'to-r' ? 'to right' : value.fondos.gradiente_direccion === 'to-br' ? 'to bottom right' : value.fondos.gradiente_direccion === 'to-b' ? 'to bottom' : value.fondos.gradiente_direccion === 'to-bl' ? 'to bottom left' : 'to left'}, ${value.fondos.gradiente_from}, ${value.fondos.gradiente_via}, ${value.fondos.gradiente_to})`
+            background: `linear-gradient(${gradDirMap[value.fondos.gradiente_direccion] ?? 'to bottom right'}, ${value.fondos.gradiente_from}, ${value.fondos.gradiente_via}, ${value.fondos.gradiente_to})`
           }"
         />
       </template>
     </div>
 
-    <!-- Paleta semántica -->
+    <!-- ═══════════════════════════════════════ -->
+    <!-- 3. PALETA SEMÁNTICA                     -->
+    <!-- ═══════════════════════════════════════ -->
     <div class="space-y-3">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Paleta semántica</p>
       <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -258,20 +241,39 @@ const paletaPairs = [
           </div>
         </div>
       </div>
-
-      <!-- Vista previa -->
-      <div
-        class="mt-2 p-4 rounded-xl border flex items-center justify-between gap-3"
-        style="background-color: var(--surface); border-color: var(--border-color); color: var(--text-primary)"
-      >
-        <span class="text-sm font-medium" style="color: var(--text-primary)">Vista previa de la paleta</span>
-        <span class="text-xs" style="color: var(--text-muted)">Texto muted</span>
-        <span class="size-6 rounded-full" style="background-color: var(--color-brand)" />
-        <span class="size-6 rounded-full" style="background-color: var(--color-accent)" />
-      </div>
     </div>
 
-    <!-- Bordes -->
+    <!-- ═══════════════════════════════════════ -->
+    <!-- 4. TIPOGRAFÍA                          -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="space-y-3">
+      <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Tipografía</p>
+
+      <USelect
+        :model-value="value.tipografia.font_family"
+        :items="fontOptions"
+        label="Familia tipográfica"
+        @update:model-value="updateGroup('tipografia', 'font_family', String($event))"
+      />
+
+      <UiBaseInput
+        :model-value="value.tipografia.heading_weight"
+        label="Peso de headings"
+        type="number"
+        @update:model-value="updateGroup('tipografia', 'heading_weight', Number($event))"
+      />
+
+      <UiBaseInput
+        :model-value="value.tipografia.base_size"
+        label="Tamaño base (px)"
+        type="number"
+        @update:model-value="updateGroup('tipografia', 'base_size', Number($event))"
+      />
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- 5. BORDES                              -->
+    <!-- ═══════════════════════════════════════ -->
     <div class="space-y-3">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Bordes</p>
 
@@ -297,7 +299,9 @@ const paletaPairs = [
       />
     </div>
 
-    <!-- Spacing -->
+    <!-- ═══════════════════════════════════════ -->
+    <!-- 6. ESPACIADO                           -->
+    <!-- ═══════════════════════════════════════ -->
     <div class="space-y-3">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Espaciado</p>
 
@@ -314,6 +318,133 @@ const paletaPairs = [
         label="Ancho máximo del contenedor"
         @update:model-value="updateGroup('spacing', 'container_max', String($event))"
       />
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- 7. VISTA PREVIA EN TIEMPO REAL                 -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="space-y-3">
+      <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Vista previa</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Así se verá tu tienda con los estilos actuales.</p>
+
+      <!-- Mini storefront preview -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <!-- Header bar -->
+        <div
+          class="px-4 py-3 flex items-center justify-between"
+          :style="{
+            backgroundColor: value.paleta.superficie_claro,
+            borderBottom: `1px solid ${value.paleta.borde_claro}`
+          }"
+        >
+          <span
+            class="text-sm font-bold"
+            :style="{ color: value.paleta.marca_claro, fontFamily: value.tipografia.font_family }"
+          >
+            Mi Tienda
+          </span>
+          <div class="flex items-center gap-3">
+            <span
+              class="text-xs"
+              :style="{ color: value.paleta.texto_muted_claro }"
+            >Catálogo</span>
+            <span
+              class="text-xs px-2 py-1 rounded-full font-medium"
+              :style="{
+                backgroundColor: value.paleta.marca_claro,
+                color: value.paleta.texto_sobre_marca_claro,
+                borderRadius: value.borders.radius_buttons
+              }"
+            >
+              Carrito (2)
+            </span>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div
+          class="p-4 space-y-3"
+          :style="{ backgroundColor: value.fondos.fondo_principal }"
+        >
+          <!-- Card -->
+          <div
+            class="p-4"
+            :style="{
+              backgroundColor: value.paleta.superficie_claro,
+              borderRadius: value.borders.radius_cards,
+              border: `1px solid ${value.paleta.borde_claro}`
+            }"
+          >
+            <h4
+              class="text-sm font-semibold mb-1"
+              :style="{ color: value.paleta.texto_principal_claro, fontFamily: value.tipografia.font_family }"
+            >
+              Nombre del producto
+            </h4>
+            <p
+              class="text-xs mb-3"
+              :style="{ color: value.paleta.texto_secundario_claro }"
+            >
+              Descripción breve del producto aquí.
+            </p>
+            <div class="flex items-center justify-between">
+              <span
+                class="text-sm font-bold"
+                :style="{ color: value.paleta.marca_claro }"
+              >
+                $49.900
+              </span>
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-xs px-2 py-0.5 font-medium"
+                  :style="{
+                    backgroundColor: value.paleta.acento_claro,
+                    color: '#ffffff',
+                    borderRadius: value.borders.radius_buttons
+                  }"
+                >
+                  -20%
+                </span>
+                <button
+                  class="text-xs px-3 py-1.5 font-medium"
+                  :style="{
+                    backgroundColor: value.paleta.marca_claro,
+                    color: value.paleta.texto_sobre_marca_claro,
+                    borderRadius: value.borders.radius_buttons
+                  }"
+                >
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Text samples -->
+          <div
+            class="p-3 rounded-lg"
+            :style="{ backgroundColor: value.fondos.fondo_imagenes }"
+          >
+            <p
+              class="text-xs mb-1"
+              :style="{ color: value.paleta.texto_principal_claro, fontFamily: value.tipografia.font_family }"
+            >
+              Texto principal
+            </p>
+            <p
+              class="text-xs mb-1"
+              :style="{ color: value.paleta.texto_secundario_claro }"
+            >
+              Texto secundario
+            </p>
+            <p
+              class="text-xs"
+              :style="{ color: value.paleta.texto_muted_claro }"
+            >
+              Texto muted
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

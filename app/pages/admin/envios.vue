@@ -9,12 +9,13 @@ const shipmentStore = useShipmentStore()
 const { adminList, adminPagination, loading } = storeToRefs(shipmentStore)
 const { date } = useFormat()
 
+const currentPage = ref(1)
+const statusFilter = ref('')
+const carrierFilter = ref('')
+
 const showCreate = ref(false)
 const newShipment = ref<{ order_id: number, carrier: Carrier, address_id: number, weight?: number }>({
-  order_id: 0,
-  carrier: 'servientrega',
-  address_id: 0,
-  weight: undefined
+  order_id: 0, carrier: 'servientrega', address_id: 0, weight: undefined
 })
 
 const showStatus = ref(false)
@@ -36,6 +37,15 @@ const statusOptions = [
   { label: 'Entregado', value: 'entregado' }
 ]
 
+async function loadPage(page = 1) {
+  currentPage.value = page
+  await shipmentStore.loadAdminList({
+    status: statusFilter.value || undefined,
+    carrier: carrierFilter.value || undefined,
+    page,
+  })
+}
+
 async function submitCreate() {
   if (!newShipment.value.order_id || !newShipment.value.address_id) return
   await shipmentStore.adminCreate(newShipment.value)
@@ -55,9 +65,7 @@ async function submitStatus() {
   showStatus.value = false
 }
 
-onMounted(() => {
-  void shipmentStore.loadAdminList()
-})
+onMounted(() => loadPage())
 
 useSeoMeta({ title: 'Envíos — Admin' })
 </script>
@@ -66,61 +74,45 @@ useSeoMeta({ title: 'Envíos — Admin' })
   <div class="space-y-6 animate-fade-up">
     <div class="page-header">
       <div>
-        <h1 class="page-title">
-          Envíos
-        </h1>
-        <p class="page-subtitle">
-          {{ adminPagination?.total ?? adminList.length }} envíos
-        </p>
+        <h1 class="page-title">Envíos</h1>
+        <p class="page-subtitle">{{ adminPagination?.total ?? adminList.length }} envíos</p>
       </div>
-      <UModal
-        v-model:open="showCreate"
-        :ui="{ content: 'glass-panel rounded-lg overflow-hidden' }"
-      >
-        <UButton
-          label="Nuevo envío"
-          icon="i-lucide-plus"
-          color="primary"
-          size="sm"
-          class="rounded-xl"
-        />
+      <UModal v-model:open="showCreate" :ui="{ content: 'glass-panel rounded-lg overflow-hidden' }">
+        <UButton label="Nuevo envío" icon="i-lucide-plus" color="primary" size="sm" class="rounded-xl" />
         <template #header>
-          <h3 class="font-semibold">
-            Crear envío
-          </h3>
+          <h3 class="font-semibold">Crear envío</h3>
         </template>
         <template #body>
           <div class="p-4 space-y-4">
-            <UiBaseInput
-              v-model.number="newShipment.order_id"
-              label="ID de pedido"
-              type="number"
-            />
-            <UiBaseInput
-              v-model.number="newShipment.address_id"
-              label="ID de dirección"
-              type="number"
-            />
-            <UiBaseSelect
-              v-model="newShipment.carrier"
-              label="Transportadora"
-              :items="carrierOptions"
-            />
-            <UiBaseInput
-              v-model.number="newShipment.weight"
-              label="Peso (kg)"
-              type="number"
-              step="0.1"
-            />
-            <UiBaseButton
-              block
-              color="primary"
-              label="Crear envío"
-              @click="submitCreate"
-            />
+            <UiBaseInput v-model.number="newShipment.order_id" label="ID de pedido" type="number" />
+            <UiBaseInput v-model.number="newShipment.address_id" label="ID de dirección" type="number" />
+            <UiBaseSelect v-model="newShipment.carrier" label="Transportadora" :items="carrierOptions" />
+            <UiBaseInput v-model.number="newShipment.weight" label="Peso (kg)" type="number" step="0.1" />
+            <UiBaseButton block color="primary" label="Crear envío" @click="submitCreate" />
           </div>
         </template>
       </UModal>
+    </div>
+
+    <div class="surface p-4 flex flex-wrap gap-3">
+      <USelect
+        v-model="statusFilter"
+        :items="[
+          { label: 'Todos los estados', value: '' },
+          ...statusOptions
+        ]"
+        class="w-48"
+        @update:model-value="loadPage(1)"
+      />
+      <USelect
+        v-model="carrierFilter"
+        :items="[
+          { label: 'Todas las transportadoras', value: '' },
+          ...carrierOptions
+        ]"
+        class="w-48"
+        @update:model-value="loadPage(1)"
+      />
     </div>
 
     <DashboardDataTable
@@ -144,60 +136,35 @@ useSeoMeta({ title: 'Envíos — Admin' })
         <span class="font-mono tabular-nums">#{{ (row as any).order_id }}</span>
       </template>
       <template #cell-tracking_number="{ row }">
-        <code
-          v-if="(row as any).tracking_number"
-          class="font-mono text-xs text-slate-500"
-        >{{ (row as any).tracking_number }}</code>
-        <span
-          v-else
-          class="text-slate-400"
-        >—</span>
+        <code v-if="(row as any).tracking_number" class="font-mono text-xs text-slate-500">{{ (row as any).tracking_number }}</code>
+        <span v-else class="text-slate-400">—</span>
       </template>
       <template #cell-status="{ row }">
-        <UBadge
-          :label="shippingStatusMeta((row as any).status).label"
-          :color="shippingStatusMeta((row as any).status).color"
-          variant="subtle"
-          size="sm"
-        />
+        <UBadge :label="shippingStatusMeta((row as any).status).label" :color="shippingStatusMeta((row as any).status).color" variant="subtle" size="sm" />
       </template>
       <template #cell-created_at="{ row }">
         <span class="text-sm text-slate-500">{{ date((row as any).created_at) }}</span>
       </template>
       <template #row-actions="{ row }">
-        <UButton
-          icon="i-lucide-arrow-right-left"
-          color="neutral"
-          variant="ghost"
-          size="xs"
-          aria-label="Cambiar estado"
-          @click="openStatus(row as any)"
-        />
+        <UButton icon="i-lucide-arrow-right-left" color="neutral" variant="ghost" size="xs" aria-label="Cambiar estado" @click="openStatus(row as any)" />
       </template>
     </DashboardDataTable>
 
-    <UModal
-      v-model:open="showStatus"
-      :ui="{ content: 'glass-panel rounded-lg overflow-hidden' }"
-    >
+    <UiPaginationBar
+      :current-page="currentPage"
+      :last-page="adminPagination?.last_page ?? 1"
+      :total="adminPagination?.total"
+      @update:current-page="loadPage"
+    />
+
+    <UModal v-model:open="showStatus" :ui="{ content: 'glass-panel rounded-lg overflow-hidden' }">
       <template #header>
-        <h3 class="font-semibold">
-          Cambiar estado del envío
-        </h3>
+        <h3 class="font-semibold">Cambiar estado del envío</h3>
       </template>
       <template #body>
         <div class="p-4 space-y-4">
-          <UiBaseSelect
-            v-model="newStatus"
-            label="Nuevo estado"
-            :items="statusOptions"
-          />
-          <UiBaseButton
-            block
-            color="primary"
-            label="Aplicar"
-            @click="submitStatus"
-          />
+          <UiBaseSelect v-model="newStatus" label="Nuevo estado" :items="statusOptions" />
+          <UiBaseButton block color="primary" label="Aplicar" @click="submitStatus" />
         </div>
       </template>
     </UModal>

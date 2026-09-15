@@ -14,32 +14,32 @@ function updateSection<K extends ProductSectionKey>(key: K, val: ProductoSeccion
 }
 
 function toggleSection(key: ProductSectionKey) {
-  const section = props.value[key] as Record<string, unknown>
-  updateSection(key, { ...section, show: !section.show } as ProductoSecciones[ProductSectionKey])
+  const section = props.value[key] as unknown as Record<string, unknown>
+  updateSection(key, { ...section, show: !section.show } as unknown as ProductoSecciones[ProductSectionKey])
 }
 
 function updateField(key: ProductSectionKey, field: string, val: unknown) {
-  const section = props.value[key] as Record<string, unknown>
-  updateSection(key, { ...section, [field]: val } as ProductoSecciones[ProductSectionKey])
+  const section = props.value[key] as unknown as Record<string, unknown>
+  updateSection(key, { ...section, [field]: val } as unknown as ProductoSecciones[ProductSectionKey])
 }
 
 function updateListItem(key: ProductSectionKey, listField: string, index: number, itemField: string, val: unknown) {
-  const section = props.value[key] as Record<string, unknown>
+  const section = props.value[key] as unknown as Record<string, unknown>
   const list = [...(section[listField] as Array<Record<string, unknown>>)]
   list[index] = { ...list[index], [itemField]: val }
-  updateSection(key, { ...section, [listField]: list } as ProductoSecciones[ProductSectionKey])
+  updateSection(key, { ...section, [listField]: list } as unknown as ProductoSecciones[ProductSectionKey])
 }
 
 function addListItem(key: ProductSectionKey, listField: string, template: Record<string, unknown>) {
-  const section = props.value[key] as Record<string, unknown>
+  const section = props.value[key] as unknown as Record<string, unknown>
   const list = [...(section[listField] as Array<Record<string, unknown>>), { ...template }]
-  updateSection(key, { ...section, [listField]: list } as ProductoSecciones[ProductSectionKey])
+  updateSection(key, { ...section, [listField]: list } as unknown as ProductoSecciones[ProductSectionKey])
 }
 
 function removeListItem(key: ProductSectionKey, listField: string, index: number) {
-  const section = props.value[key] as Record<string, unknown>
+  const section = props.value[key] as unknown as Record<string, unknown>
   const list = (section[listField] as Array<Record<string, unknown>>).filter((_, i) => i !== index)
-  updateSection(key, { ...section, [listField]: list } as ProductoSecciones[ProductSectionKey])
+  updateSection(key, { ...section, [listField]: list } as unknown as ProductoSecciones[ProductSectionKey])
 }
 </script>
 

@@ -5,7 +5,7 @@ defineProps<{ config: ProductWarrantySection }>()
 </script>
 
 <template>
-  <section v-if="config.show" class="py-16 bg-theme-surface">
+  <section v-if="config.show" class="py-16 bg-theme-surface rounded-xl">
     <div class="max-w-4xl mx-auto px-6 text-center">
       <h2 class="text-3xl font-bold text-theme mb-10">{{ config.headline }}</h2>
 

@@ -21,7 +21,7 @@ defineProps<{ config: ProductBenefitsSection }>()
         :class="config.layout === 'vertical' ? 'flex-row' : 'flex-col text-center'"
       >
         <div class="w-12 h-12 rounded-full bg-theme-imagenes flex items-center justify-center shrink-0">
-          <UIcon :name="item.icon" class="size-6 text-theme-brand" />
+          <UIcon :name="item.icon" class="size-6" :class="i % 2 === 0 ? 'text-theme-brand' : 'text-theme-accent'" />
         </div>
         <div>
           <h3 class="font-semibold text-theme">{{ item.title }}</h3>

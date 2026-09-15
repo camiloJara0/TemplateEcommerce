@@ -4,6 +4,7 @@ interface Props {
   saving: boolean
   canUndo: boolean
   canRedo: boolean
+  fullscreen?: boolean
 }
 
 defineProps<Props>()
@@ -13,6 +14,8 @@ const emit = defineEmits<{
   preview: []
   undo: []
   redo: []
+  expand: []
+  'toggle-fullscreen': []
 }>()
 </script>
 
@@ -26,6 +29,16 @@ const emit = defineEmits<{
       size="sm"
       class="rounded-xl"
       @click="emit('back')"
+    />
+
+    <!-- Fullscreen toggle -->
+    <UButton
+      :icon="fullscreen ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'"
+      color="neutral"
+      variant="ghost"
+      size="sm"
+      class="rounded-xl"
+      @click="emit('toggle-fullscreen')"
     />
 
     <div class="w-px h-5 bg-slate-200 dark:bg-slate-800" />
@@ -73,17 +86,6 @@ const emit = defineEmits<{
       color="success"
       variant="subtle"
       size="sm"
-    />
-
-    <!-- Preview -->
-    <UButton
-      icon="i-lucide-eye"
-      color="neutral"
-      variant="outline"
-      size="sm"
-      label="Vista previa"
-      class="rounded-xl"
-      @click="emit('preview')"
     />
 
     <!-- Save -->

@@ -24,6 +24,7 @@ export interface Pagination {
 
 export interface Paginated<T> {
   data: T[]
+  items: T[]
   pagination: Pagination
 }
 
@@ -91,10 +92,10 @@ export interface UpdateProfilePayload {
 
 export type ProductStatus = 'activo' | 'inactivo'
 export type OrderStatus = 'nuevo' | 'pagado' | 'preparando' | 'enviado' | 'entregado' | 'cancelado' | 'devuelto'
-export type PaymentStatus = 'pendiente' | 'pagado' | 'fallido' | 'reembolsado'
+export type PaymentStatus = 'pendiente' | 'aprobado' | 'pagado' | 'fallido' | 'rechazado' | 'reembolsado'
 export type ShippingStatus = 'pendiente' | 'en_preparacion' | 'despachado' | 'en_transito' | 'entregado'
 export type CouponType = 'percent' | 'fixed' | 'free_shipping'
-export type PaymentProvider = 'stripe' | 'mercadopago' | 'paypal' | 'wompi'
+export type PaymentProvider = 'rapyd' | 'stripe' | 'mercadopago' | 'paypal' | 'wompi' | 'payu'
 export type Carrier = 'servientrega' | 'coordinadora' | 'dhl' | 'fedex' | 'interrapidisimo'
 export type StockMovementType = 'entrada' | 'salida' | 'ajuste'
 export type ReportFormat = 'csv' | 'pdf' | 'excel'

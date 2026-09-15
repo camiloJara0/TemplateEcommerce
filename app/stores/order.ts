@@ -29,9 +29,7 @@ export const useOrderStore = defineStore('order', () => {
       const data = await request<Paginated<Order>>('/pedidos', {
         query: { per_page: perPage, page }
       })
-      console.log(data)
       items.value = data.data.items
-      console.log(items.value)
       pagination.value = data.data.pagination
     } finally {
       loadingList.value = false

@@ -4,6 +4,14 @@ defineProps<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+const authStore = useAuthStore()
+
+const accountLinks = [
+  { label: 'Mi perfil', to: '/cuenta/perfil' },
+  { label: 'Mis pedidos', to: '/cuenta/pedidos' },
+  { label: 'Favoritos', to: '/cuenta/favoritos' },
+  { label: 'Notificaciones', to: '/cuenta/notificaciones' },
+]
 </script>
 
 <template>
@@ -42,7 +50,22 @@ const open = defineModel<boolean>('open', { default: false })
 
       <div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 space-y-2">
         <EcommerceSearchBar />
+
+        <template v-if="authStore.isAuthenticated">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-4 mb-2">Mi cuenta</p>
+          <NuxtLink
+            v-for="link in accountLinks"
+            :key="link.to"
+            :to="link.to"
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            @click="open = false"
+          >
+            {{ link.label }}
+          </NuxtLink>
+        </template>
+
         <UButton
+          v-else
           to="/auth/login"
           block
           color="primary"

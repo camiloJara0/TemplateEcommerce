@@ -18,8 +18,10 @@ const orderMap: Record<OrderStatus, StatusMeta> = {
 
 const paymentMap: Record<PaymentStatus, StatusMeta> = {
   pendiente: { label: 'Pendiente', color: 'warning', icon: 'i-lucide-clock' },
+  aprobado: { label: 'Aprobado', color: 'success', icon: 'i-lucide-circle-check' },
   pagado: { label: 'Pagado', color: 'success', icon: 'i-lucide-circle-check' },
   fallido: { label: 'Fallido', color: 'error', icon: 'i-lucide-circle-alert' },
+  rechazado: { label: 'Rechazado', color: 'error', icon: 'i-lucide-circle-x' },
   reembolsado: { label: 'Reembolsado', color: 'neutral', icon: 'i-lucide-banknote' }
 }
 

@@ -36,7 +36,7 @@ const { brand, footer, social } = usePageConfig()
                   v-else
                   :src="brand.logo"
                   :alt="brand.name"
-                  class="size-4 object-contain"
+                  class="rounded-full object-contain"
                 >
               </div>
               <span class="font-semibold">{{ brand.name }}</span>

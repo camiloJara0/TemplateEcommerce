@@ -39,7 +39,7 @@ function prevImage() {
 
 function addToCart() {
   if (!props.product) return
-  carrito.addItem(props.product as unknown as { product_id: number, quantity: number })
+  carrito.addItem({ id: props.product.id, quantity: 1 })
   toast.add({
     title: 'Agregado al carrito',
     description: props.product.name,

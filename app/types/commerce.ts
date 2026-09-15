@@ -59,7 +59,7 @@ export interface Cart {
 
 export interface AddCartItemPayload {
   session_id?: string
-  product_id: number
+  id: number
   product_variant_id?: number
   quantity?: number
 }
@@ -96,7 +96,7 @@ export interface OrderItem {
   name?: string
   sku?: string
   quantity: number
-  unit_price: number
+  price: number
   price_discount?: number | null
   subtotal?: number
   total?: number
@@ -117,15 +117,32 @@ export interface Payment {
   id: number
   order_id: number
   provider: PaymentProvider
+  transaction_id?: string | null
   reference?: string | null
   amount: number
+  currency?: string
   status: PaymentStatus
+  payload?: Record<string, any> | null
   paid_at?: string | null
+  created_at?: string
+  updated_at?: string
+  order?: Order
+  refunds?: Refund[]
+}
+
+export interface Refund {
+  id: number
+  payment_id: number
+  amount: number
+  reason?: string | null
+  status: string
+  transaction_id?: string | null
   created_at?: string
 }
 
 export interface Order {
   id: number
+  numero?: string
   order_number?: string
   user_id?: number
   status: OrderStatus
@@ -134,6 +151,7 @@ export interface Order {
   subtotal: number
   discount: number
   shipping: number
+  shipping_cost?: number
   tax: number
   total: number
   currency: string
@@ -144,6 +162,7 @@ export interface Order {
   items?: OrderItem[]
   history?: OrderHistory[]
   payments?: Payment[]
+  user?: { id: number; nombre?: string; name?: string; email?: string }
   created_at?: string
   updated_at?: string
 }

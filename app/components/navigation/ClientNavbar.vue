@@ -8,6 +8,16 @@ const mobileOpen = ref(false)
 const cartStore = useCartStore()
 const { itemCount } = storeToRefs(cartStore)
 
+const profileStore = useProfileStore()
+
+const userMenuItems = [
+  { label: 'Mi perfil', to: '/cuenta/perfil', icon: 'i-lucide-user' },
+  { label: 'Mis pedidos', to: '/cuenta/pedidos', icon: 'i-lucide-package' },
+  { label: 'Favoritos', to: '/cuenta/favoritos', icon: 'i-lucide-heart' },
+  { label: 'Notificaciones', to: '/cuenta/notificaciones', icon: 'i-lucide-bell' },
+  { label: 'Cerrar Sesion', to: '/auth/login', icon: 'i-lucide-log-out', color: 'error' as const },
+]
+
 watch(() => route.fullPath, () => {
   mobileOpen.value = false
 })
@@ -33,7 +43,7 @@ watch(() => route.fullPath, () => {
                 v-else
                 :src="brand.logo"
                 :alt="brand.name"
-                class="size-4 object-contain"
+                class="w-full object-contain rounded-full"
               >
             </div>
             <span class="font-semibold text-theme tracking-tight hidden sm:block">
@@ -99,7 +109,9 @@ watch(() => route.fullPath, () => {
             </span>
           </UButton>
 
+          <!-- User: logged out -->
           <UButton
+            v-if="!authStore.isAuthenticated"
             to="/auth/login"
             icon="i-lucide-user"
             color="neutral"
@@ -108,6 +120,25 @@ watch(() => route.fullPath, () => {
             class="rounded-xl hidden sm:inline-flex"
             aria-label="Cuenta"
           />
+
+          <!-- User: logged in -->
+          <UDropdownMenu
+            v-else
+            :items="userMenuItems"
+            class="hidden sm:inline-flex"
+          >
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              class="rounded-xl"
+              aria-label="Cuenta"
+            >
+              <div class="w-7 h-7 rounded-full bg-theme-brand flex items-center justify-center">
+                <span class="text-xs font-bold text-theme-on-brand">{{ profileStore.initials }}</span>
+              </div>
+            </UButton>
+          </UDropdownMenu>
 
           <UButton
             icon="i-lucide-menu"

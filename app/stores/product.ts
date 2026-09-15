@@ -98,7 +98,7 @@ export const useProductStore = defineStore('product', () => {
       () => request<ProductReview[]>(`/productos/${id}/resenas`),
       { force, key: `reviews:product:${id}` }
     )
-    reviewsByProduct.value[id] = res
+    reviewsByProduct.value[id] = res.items
   }
 
   async function loadAdminList(filtersArg?: AdminProductFilters) {
@@ -126,7 +126,6 @@ export const useProductStore = defineStore('product', () => {
     const body = hasFileImages(payload.images)
       ? buildProductFormData(payload as ProductPayload, true)
       : payload
-      console.log(body)
     return runMutation<Product>({
       request: () => request<Product>(`/admin/productos/${id}`, { method: 'PUT', body }),
       successMessage: 'Producto actualizado correctamente',

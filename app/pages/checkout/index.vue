@@ -8,7 +8,7 @@ const addressStore = useAddressStore()
 const shippingStore = useShippingMethodStore()
 const orderStore = useOrderStore()
 
-const { cart } = storeToRefs(cartStore)
+const { cart, sessionId } = storeToRefs(cartStore)
 const { items: addresses, principal: principalAddress } = storeToRefs(addressStore)
 const { items: shippingMethods } = storeToRefs(shippingStore)
 const { preview, appliedCoupon } = storeToRefs(orderStore)
@@ -22,8 +22,6 @@ const couponCode = ref('')
 const notes = ref('')
 const showAddressModal = ref(false)
 const submitting = ref(false)
-
-const sessionId = computed(() => cartStore.sessionId)
 
 const addressOptions = computed(() => addresses.value.map(a => ({
   label: `${a.label ? a.label + ' · ' : ''}${a.ciudad} · ${a.direccion}`,
@@ -79,7 +77,7 @@ async function placeOrder() {
       coupon_code: appliedCoupon.value?.code || couponCode.value || undefined,
       notes: notes.value || undefined
     })
-    await cartStore.clear()
+    // await cartStore.clear()
     if (result.data?.id) {
       await navigateTo(`/checkout/pago/${result.data.id}`)
     }
@@ -169,6 +167,7 @@ useSeoMeta({
                       const created = data as { id: number }
                       if (created?.id) selectedAddressId = created.id
                     }"
+                    :action="addressStore.create"
                   />
                 </div>
               </template>
@@ -298,6 +297,9 @@ useSeoMeta({
           class="rounded-xl cta-glow"
           @click="placeOrder"
         />
+        <p class="text-xs text-theme-muted text-center">
+          Serás redirigido a la página de pago seguro.
+        </p>
       </aside>
     </div>
   </div>

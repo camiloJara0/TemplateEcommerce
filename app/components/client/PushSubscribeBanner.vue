@@ -34,7 +34,7 @@ onMounted(() => {
 <template>
   <Transition name="slide-up">
     <div
-
+      v-if="showBanner"
       class="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6"
     >
       <div class="max-w-lg mx-auto surface border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-5 shadow-xl flex items-start gap-4">

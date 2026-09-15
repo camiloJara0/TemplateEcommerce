@@ -70,6 +70,7 @@ onMounted(() => {
                 variant="outline"
                 class="rounded-lg"
                 aria-label="Reducir cantidad"
+                @click="item.quantity > 1 ? cartStore.updateItem(item.id, {...item, quantity: item.quantity - 1}) : cartStore.removeItem(item.id)"
               />
               <span class="text-sm w-6 text-center tabular-nums">{{ item.quantity }}</span>
               <UButton
@@ -79,6 +80,7 @@ onMounted(() => {
                 variant="outline"
                 class="rounded-lg"
                 aria-label="Aumentar cantidad"
+                @click="cartStore.updateItem(item.id, {...item, quantity: item.quantity + 1})"
               />
             </div>
           </div>
@@ -89,6 +91,7 @@ onMounted(() => {
             variant="ghost"
             class="shrink-0 self-start"
             aria-label="Eliminar"
+            @click="cartStore.removeItem(item.id)"
           />
         </div>
       </div>

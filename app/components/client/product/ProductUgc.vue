@@ -20,7 +20,7 @@ const currentIndex = ref(0)
               <img v-if="item.image" :src="item.image" class="w-full h-64 object-cover" />
               <div class="p-4">
                 <div class="flex items-center gap-2 mb-2">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-pink-400 flex items-center justify-center">
+                  <div class="w-8 h-8 rounded-full bg-linear-to-br from-primary-400 to-pink-400 flex items-center justify-center">
                     <span class="text-xs font-bold text-theme-on-brand">{{ item.author[0] }}</span>
                   </div>
                   <div>

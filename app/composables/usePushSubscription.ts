@@ -13,7 +13,7 @@ export function usePushSubscription() {
   const notificationStore = useNotificationStore()
   const permission = ref<NotificationPermission>('default')
   const isSubscribed = ref(false)
-  const vapidPublicKey = ref<string | null>(null)
+  const vapidPublicKey = ref<string | null>('BMsJRT_-A2jWFaBPobImbiIPy_r7lgmIp0x3LCaiVpkkjgsxYJWgGIh0oy3Y-DITwsF00RRws_PSWcUl2w8GG1c')
   const loading = ref(false)
 
   const isSupported = computed(() =>
@@ -55,6 +55,7 @@ export function usePushSubscription() {
     try {
       const notifPerm = await Notification.requestPermission()
       permission.value = notifPerm
+
       if (notifPerm !== 'granted') return false
 
       const key = await loadVapidKey()
@@ -62,6 +63,7 @@ export function usePushSubscription() {
 
       const registration = await registerServiceWorker()
       const existingSub = await registration.pushManager.getSubscription()
+
       if (existingSub) {
         isSubscribed.value = true
         return true
@@ -75,10 +77,8 @@ export function usePushSubscription() {
       const subJson = subscription.toJSON()
       await notificationStore.subscribePush({
         endpoint: subscription.endpoint,
-        keys: {
-          p256dh: (subJson.keys?.p256dh as string) || '',
-          auth: (subJson.keys?.auth as string) || '',
-        },
+        auth: subJson.keys?.auth || '',
+        p256dh: subJson.keys?.p256dh || '',
       })
 
       isSubscribed.value = true

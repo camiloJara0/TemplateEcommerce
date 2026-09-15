@@ -8,10 +8,12 @@ export interface AppNotification {
   created_at?: string
 }
 
+export interface AppNotificationResponse {
+  items: AppNotification[]
+}
+
 export interface PushSubscriptionPayload {
   endpoint: string
-  keys: {
-    p256dh: string
-    auth: string
-  }
+  auth: string,
+  p256dh: string
 }

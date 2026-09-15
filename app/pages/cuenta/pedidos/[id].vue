@@ -99,7 +99,7 @@ useSeoMeta({ title: () => current.value ? `Pedido ${current.value.order_number ?
             <div class="size-16 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
               <img
                 v-if="item.product?.images?.[0]"
-                :src="item.product.images[0].url"
+                :src="item.product.images[0]"
                 :alt="item.product.name"
                 class="size-full object-cover"
               >
@@ -109,11 +109,11 @@ useSeoMeta({ title: () => current.value ? `Pedido ${current.value.order_number ?
                 {{ item.name ?? item.product?.name ?? 'Producto' }}
               </p>
               <p class="text-xs text-slate-400">
-                {{ item.quantity }} × {{ currency(item.unit_price, current.currency) }}
+                {{ item.quantity }} × {{ currency(item.price, current.currency) }}
               </p>
             </div>
             <p class="font-semibold tabular-nums text-sm shrink-0">
-              {{ currency((item.unit_price ?? 0) * item.quantity, current.currency) }}
+              {{ currency((item.price ?? 0) * item.quantity, current.currency) }}
             </p>
           </li>
         </ul>

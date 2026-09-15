@@ -4,12 +4,17 @@ export const useCartStore = defineStore('cart', () => {
   const offlineStore = useOfflineStore()
   const cart = ref<Cart | null>(null)
   const loading = ref(false)
-  const sessionId = ref<string | null>(null)
+  const sessionId = ref<string | null>(initSessionId())
 
   const items = computed(() => cart.value?.items ?? [])
   const itemCount = computed(() => items.value.reduce((sum, i) => sum + i.quantity, 0))
   const isEmpty = computed(() => items.value.length === 0)
   const subtotal = computed(() => items.value.reduce((sum, i) => sum + (i.price ?? 0) * i.quantity, 0))
+
+  function initSessionId(): string | null {
+    if (typeof window === 'undefined') return null
+    return sessionStorage.getItem('cart_session_id')
+  }
 
   function getSessionId() {
     if (sessionId.value) return sessionId.value
@@ -63,8 +68,13 @@ export const useCartStore = defineStore('cart', () => {
 
   async function updateItem(itemId: number, payload: UpdateCartItemPayload) {
     const { request } = useApi()
+    const sid = getSessionId()
     return runMutation<Cart>({
-      request: () => request<Cart>(`/carrito/items/${itemId}`, { method: 'PUT', body: payload }),
+      request: () => request<Cart>(`/carrito/items/${itemId}`, {
+        method: 'PUT',
+        body: payload,
+        query: sid ? { session_id: sid } : undefined
+      }),
       offline: {
         type: 'update',
         resource: 'cart',
@@ -81,8 +91,12 @@ export const useCartStore = defineStore('cart', () => {
 
   async function removeItem(itemId: number) {
     const { request } = useApi()
+    const sid = getSessionId()
     return runMutation<Cart>({
-      request: () => request<Cart>(`/carrito/items/${itemId}`, { method: 'DELETE' }),
+      request: () => request<Cart>(`/carrito/items/${itemId}`, {
+        method: 'DELETE',
+        query: sid ? { session_id: sid } : undefined
+      }),
       offline: {
         type: 'delete',
         resource: 'cart',

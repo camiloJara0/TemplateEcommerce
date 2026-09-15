@@ -2,6 +2,13 @@ import type { Paginated } from '~/types/api'
 import type { AdminShipment, CreateShipmentPayload, ShipmentQuote, ShipmentQuoteQuery, ShipmentStatusPayload } from '~/types/admin'
 import type { TrackingInfo } from '~/types/commerce'
 
+export interface ShipmentFilters {
+  status?: string
+  carrier?: string
+  page?: number
+  per_page?: number
+}
+
 export const useShipmentStore = defineStore('shipment', () => {
   const offlineStore = useOfflineStore()
   const adminList = ref<AdminShipment[]>([])
@@ -11,11 +18,11 @@ export const useShipmentStore = defineStore('shipment', () => {
   const loading = ref(false)
   const loadingTrack = ref(false)
 
-  async function loadAdminList() {
+  async function loadAdminList(filters?: ShipmentFilters) {
     loading.value = true
     try {
       const { request } = useApi()
-      const res = await request<Paginated<AdminShipment>>('/admin/envios')
+      const res = await request<Paginated<AdminShipment>>('/admin/envios', { query: filters })
       adminList.value = res.data.items
       adminPagination.value = res.data.pagination
     } finally {

@@ -5,7 +5,7 @@ defineProps<{ config: ProductFeaturesSection }>()
 </script>
 
 <template>
-  <section v-if="config.show && config.items.length" class="py-16 bg-theme-surface">
+  <section v-if="config.show && config.items.length" class="py-16 bg-theme-surface rounded-xl">
     <div class="max-w-6xl mx-auto px-6">
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold text-theme">{{ config.title }}</h2>
@@ -16,7 +16,7 @@ defineProps<{ config: ProductFeaturesSection }>()
       <div v-if="config.layout === 'list'" class="space-y-6">
         <div v-for="(item, i) in config.items" :key="i" class="flex items-start gap-6 p-6 bg-theme-surface rounded-2xl shadow-sm">
           <div class="w-12 h-12 rounded-xl bg-theme-imagenes flex items-center justify-center shrink-0">
-            <UIcon :name="item.icon" class="size-6 text-theme-brand" />
+            <UIcon :name="item.icon" class="size-6" :class="i % 2 === 0 ? 'text-theme-brand' : 'text-theme-accent'" />
           </div>
           <div class="flex-1">
             <h3 class="font-semibold text-lg text-theme">{{ item.title }}</h3>
@@ -30,7 +30,7 @@ defineProps<{ config: ProductFeaturesSection }>()
       <div v-else-if="config.layout === 'grid'" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="(item, i) in config.items" :key="i" class="p-6 bg-theme-surface rounded-2xl shadow-sm text-center">
           <div class="w-14 h-14 rounded-xl bg-theme-imagenes flex items-center justify-center mx-auto mb-4">
-            <UIcon :name="item.icon" class="size-7 text-theme-brand" />
+            <UIcon :name="item.icon" class="size-7" :class="i % 2 === 0 ? 'text-theme-brand' : 'text-theme-accent'" />
           </div>
           <h3 class="font-semibold text-theme">{{ item.title }}</h3>
           <p class="text-sm text-theme-muted mt-2">{{ item.description }}</p>
@@ -44,7 +44,7 @@ defineProps<{ config: ProductFeaturesSection }>()
           <div class="flex-1 p-6">
             <div class="flex items-center gap-3 mb-3">
               <div class="w-10 h-10 rounded-lg bg-theme-imagenes flex items-center justify-center">
-                <UIcon :name="item.icon" class="size-5 text-theme-brand" />
+                <UIcon :name="item.icon" class="size-5" :class="i % 2 === 0 ? 'text-theme-brand' : 'text-theme-accent'" />
               </div>
               <h3 class="font-semibold text-lg text-theme">{{ item.title }}</h3>
             </div>

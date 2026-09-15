@@ -39,8 +39,8 @@ const savings = computed(() => originalTotal.value - bundleTotal.value)
           <p class="text-theme-on-brand font-bold text-3xl">${{ bundleTotal.toLocaleString() }}</p>
         </div>
         <div class="text-center">
-          <p class="text-green-300 text-sm">Ahorras</p>
-          <p class="text-green-300 font-bold text-xl">${{ savings.toLocaleString() }}</p>
+          <p class="text-theme-accent text-sm font-medium">Ahorras</p>
+          <p class="text-theme-accent font-bold text-xl">${{ savings.toLocaleString() }}</p>
         </div>
       </div>
 
