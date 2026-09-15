@@ -45,6 +45,27 @@ Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
     // VAPID public key for Web Push
     Route::get('/configuracion/vapid-public-key', [SettingsController::class, 'vapidPublicKey']);
 
+    // Rapyd payment methods by country (public for checkout)
+    Route::get('/pagos/rapyd/metodos/{country}', function (string $country) {
+        $currency = request()->query('currency', 'COP');
+        $provider = app(\App\Services\PaymentService::class)->proveedor('rapyd');
+        $methods = $provider->listPaymentMethodsByCountry($country, $currency);
+        return \App\Support\ApiResponse::success(['methods' => $methods]);
+    });
+
+    // Rapyd required fields for a payment method type (public for checkout)
+    Route::get('/pagos/rapyd/campos-requeridos/{type}', function (string $type) {
+        $provider = app(\App\Services\PaymentService::class)->proveedor('rapyd');
+        $fields = $provider->getRequiredFields($type);
+        return \App\Support\ApiResponse::success(['fields' => $fields]);
+    });
+
+    // PayU PSE banks list (public for checkout)
+    Route::get('/pagos/payu/bancos-pse', function () {
+        $provider = app(\App\Services\PaymentService::class)->proveedor('payu');
+        return \App\Support\ApiResponse::success(['banks' => $provider->bancosPse()]);
+    });
+
     // Carrito (logueado o invitado con session_id)
     Route::get('/carrito', [CartController::class, 'mostrar']);
     Route::post('/carrito/items', [CartController::class, 'agregar']);
@@ -64,6 +85,15 @@ Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
 
 // ===== Webhook de pagos (sin autenticación) =====
 Route::post('/webhooks/pagos/{provider}', [WebhookController::class, 'handle']);
+
+// ===== Proveedor de pago activo (público, para checkout) =====
+Route::get('/v1/pagos/provider', function () {
+    $default = config('payments.default');
+    return \App\Support\ApiResponse::success([
+        'provider' => $default,
+        'available' => array_keys(config('payments.class_map', [])),
+    ]);
+});
 
 // ===== Cliente autenticado =====
 Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1')->group(function () {
@@ -137,7 +167,10 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
     Route::post('/pedidos/{order}/estado', [OrderController::class, 'cambiarEstado'])->middleware('permission:pedidos.gestionar');
 
     // Pagos
+    Route::get('/pagos', [PaymentController::class, 'adminIndex'])->middleware('permission:pagos.ver');
+    Route::get('/pagos/{pago}', [PaymentController::class, 'show'])->middleware('permission:pagos.ver');
     Route::post('/pagos/{pago}/reembolsar', [PaymentController::class, 'reembolsar'])->middleware('permission:pagos.gestionar');
+    Route::post('/pagos/{pago}/cancelar', [PaymentController::class, 'cancelar'])->middleware('permission:pagos.gestionar');
 
     // Envíos
     Route::get('/envios', [ShipmentController::class, 'index'])->middleware('permission:envios.ver');
@@ -176,6 +209,10 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
     Route::put('/configuracion', [SettingsController::class, 'actualizar'])->middleware('permission:configuracion.editar');
     Route::get('/configuracion/tienda', [SettingsController::class, 'obtenerTienda'])->middleware('permission:configuracion.ver');
     Route::put('/configuracion/tienda', [SettingsController::class, 'actualizarTienda'])->middleware('permission:configuracion.editar');
+
+    // Configuración de pagos
+    Route::get('/configuracion/pagos', [SettingsController::class, 'obtenerPagos'])->middleware('permission:configuracion.ver');
+    Route::put('/configuracion/pagos', [SettingsController::class, 'actualizarPagos'])->middleware('permission:configuracion.editar');
 
     // Upload de imágenes para page builder
     Route::post('/upload', [UploadController::class, 'store']);

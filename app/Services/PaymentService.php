@@ -122,12 +122,42 @@ class PaymentService
         return $reembolso;
     }
 
-    protected function sincronizarEstadoPedido(Order $order, string $estadoPago): void
+    public function sincronizarEstadoPedido(Order $order, string $estadoPago): void
     {
         $order->update(['payment_status' => $estadoPago]);
 
         if ($estadoPago === PaymentStatusEnum::APROBADO->value && $order->status === OrderStatusEnum::NUEVO->value) {
             app(OrderService::class)->transicionar($order, OrderStatusEnum::PAGADO, 'Pago aprobado');
+
+            $this->crearEnvioAutomatico($order);
         }
+    }
+
+    protected function crearEnvioAutomatico(Order $order): void
+    {
+        if ($order->shipments()->exists()) {
+            return;
+        }
+
+        if (!$order->shipping_method_id) {
+            return;
+        }
+
+        $address = $order->address;
+        $shippingMethod = $order->shippingMethod;
+
+        \App\Models\Shipment::create([
+            'order_id' => $order->id,
+            'shipping_method_id' => $order->shipping_method_id,
+            'carrier' => $shippingMethod?->name ?? 'default',
+            'status' => 'pendiente',
+            'destinatario' => $order->user->nombre ?? $order->user->name ?? '',
+            'direccion' => $address?->direccion ?? $address?->address ?? '',
+            'ciudad' => $address?->ciudad ?? $address?->city ?? '',
+            'departamento' => $address?->departamento ?? $address?->state ?? '',
+            'codigo_postal' => $address?->codigo_postal ?? $address?->zip ?? '',
+        ]);
+
+        $order->update(['shipping_status' => \App\Enums\ShippingStatusEnum::EN_PREPARACION->value]);
     }
 }

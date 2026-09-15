@@ -94,6 +94,38 @@ class StripeProvider extends AbstractPaymentProvider
         return ['transaction_id' => $transactionId, 'status' => null, 'payload' => $payload];
     }
 
+    // ── Test Connection ────────────────────────────────────────
+
+    public function testConnection(): array
+    {
+        if (!$this->configValida()) {
+            return ['success' => false, 'message' => 'Credenciales no configuradas (secret_key)'];
+        }
+
+        try {
+            $respuesta = Http::withBasicAuth($this->configurar()['secret_key'], '')
+                ->get('https://api.stripe.com/v1/balance');
+
+            if ($respuesta->failed()) {
+                $body = $respuesta->json();
+                $msg = $body['error']['message'] ?? 'Error desconocido';
+                return ['success' => false, 'message' => "Error Stripe: {$msg}"];
+            }
+
+            $body = $respuesta->json();
+            $available = $body['available'][0]['amount'] ?? 0;
+            $currency = $body['available'][0]['currency'] ?? 'usd';
+            $formatted = number_format($available / 100, 2);
+
+            return [
+                'success' => true,
+                'message' => "Conexión exitosa. Saldo disponible: {$formatted} " . strtoupper($currency),
+            ];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'message' => 'Error de conexión: ' . $e->getMessage()];
+        }
+    }
+
     private function mapearEstado(string $estadoStripe): string
     {
         return match ($estadoStripe) {

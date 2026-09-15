@@ -40,12 +40,12 @@ class OrderController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        $cart = app(CartService::class)->obtener($validated['session_id'] ?? null);
-
-        if (auth()->check() && $cart->user_id === null) {
-            app(CartService::class)->aCarritoAutenticado($validated['session_id'] ?? null);
-            $cart = app(CartService::class)->obtener($validated['session_id'] ?? null);
+        // Merge guest cart into auth cart BEFORE resolving the cart
+        if (auth()->check() && !empty($validated['session_id'])) {
+            app(CartService::class)->aCarritoAutenticado($validated['session_id']);
         }
+
+        $cart = app(CartService::class)->obtener($validated['session_id'] ?? null);
 
         try {
             $order = app(OrderService::class)->crearDesdeCarrito($cart, $validated);
@@ -76,7 +76,7 @@ class OrderController extends Controller
 
     public function adminIndex(Request $request)
     {
-        $pedidos = Order::with(['items', 'address', 'user:id,nombre,email'])
+        $pedidos = Order::with(['items', 'address', 'payments', 'user:id,nombre,email'])
             ->when($request->status, fn ($q, $v) => $q->where('status', $v))
             ->when($request->payment_status, fn ($q, $v) => $q->where('payment_status', $v))
             ->when($request->busqueda, fn ($q, $v) => $q->where('numero', 'like', "%{$v}%"))

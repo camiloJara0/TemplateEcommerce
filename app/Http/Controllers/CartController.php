@@ -91,11 +91,13 @@ class CartController extends Controller
 
     private function obtenerCarrito(Request $request): Cart
     {
-        if (auth()->check() && $request->get('session_id')) {
-            app(CartService::class)->aCarritoAutenticado($request->get('session_id'));
+        $sessionId = $request->get('session_id') ?? $request->query('session_id');
+
+        if (auth()->check() && $sessionId) {
+            app(CartService::class)->aCarritoAutenticado($sessionId);
         }
 
-        return app(CartService::class)->obtener($request->get('session_id'));
+        return app(CartService::class)->obtener($sessionId);
     }
 
     private function perteneceAlCarrito(Request $request, CartItem $item): bool

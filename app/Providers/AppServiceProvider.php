@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\PaymentCredentialService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(PaymentCredentialService::class);
     }
 
     /**
@@ -24,6 +26,21 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->asegurarConfigOpenSsl();
+        $this->cargarCredencialesPagos();
+    }
+
+    private function cargarCredencialesPagos(): void
+    {
+        if (!$this->app->runningInConsole() && !$this->app->runningUnitTests()) {
+            // Solo cargar si la tabla settings existe
+            try {
+                if (DB::getSchemaBuilder()->hasTable('settings')) {
+                    app(PaymentCredentialService::class)->cargarEnConfig();
+                }
+            } catch (\Throwable $e) {
+                // Silenciar errores durante migraciones o DB no disponible
+            }
+        }
     }
 
     private function asegurarConfigOpenSsl(): void

@@ -26,8 +26,29 @@ abstract class AbstractPaymentProvider implements PaymentProvider
     {
         if (!$this->configValida()) {
             throw new PaymentException(
-                "El proveedor de pago '{$this->name()}' no está configurado. Revisa PAYMENT_PROVIDER y sus credenciales en el .env"
+                "El proveedor de pago '{$this->name()}' no está configurado. Revisa las credenciales en Admin → Pagos → Proveedores."
             );
         }
+    }
+
+    /**
+     * Probar conexión con la API del proveedor.
+     * Cada proveedor debe implementar esta método.
+     *
+     * @return array{success: bool, message: string}
+     */
+    public function testConnection(): array
+    {
+        if (!$this->configValida()) {
+            return [
+                'success' => false,
+                'message' => 'Credenciales no configuradas',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Credenciales configuradas',
+        ];
     }
 }

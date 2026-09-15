@@ -35,6 +35,22 @@ return [
             'private_key' => env('WOMPI_PRIVATE_KEY'),
             'events_key' => env('WOMPI_EVENTS_KEY'),
         ],
+        'payu' => [
+            'api_login' => env('PAYU_API_LOGIN'),
+            'api_key' => env('PAYU_API_KEY'),
+            'merchant_id' => env('PAYU_MERCHANT_ID'),
+            'account_id' => env('PAYU_ACCOUNT_ID', '512321'),
+            'test_mode' => env('PAYU_TEST_MODE', true),
+            'api_url' => env('PAYU_API_URL'),
+            'notify_url' => env('PAYU_NOTIFY_URL'),
+            'response_url' => env('PAYU_RESPONSE_URL'),
+        ],
+        'rapyd' => [
+            'access_key' => env('RAPYD_ACCESS_KEY'),
+            'secret_key' => env('RAPYD_SECRET_KEY'),
+            'api_url' => env('RAPYD_API_URL', 'https://sandboxapi.rapyd.net'),
+            'ewallet' => env('RAPYD_EWALLET'),
+        ],
     ],
 
     'class_map' => [
@@ -42,5 +58,7 @@ return [
         'mercadopago' => \App\Services\Payment\MercadoPagoProvider::class,
         'paypal' => \App\Services\Payment\PayPalProvider::class,
         'wompi' => \App\Services\Payment\WompiProvider::class,
+        'payu' => \App\Services\Payment\PayuProvider::class,
+        'rapyd' => \App\Services\Payment\RapydProvider::class,
     ],
 ];

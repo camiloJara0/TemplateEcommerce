@@ -101,11 +101,13 @@ class SettingsController extends Controller
             'header' => $this->cargarLlave('tienda_header', 'header', $this->defaultsHeader()),
             'categories_home' => $this->cargarLlave('tienda_categories_home', 'categories_home', $this->defaultsCategoriesHome()),
             'producto' => $this->cargarLlave('tienda_producto', 'producto', $this->defaultsProducto()),
+            'nosotros' => $this->cargarLlave('tienda_nosotros', 'nosotros', $this->defaultsNosotros()),
             'estilos' => $this->cargarLlave('tienda_estilos', 'estilos', $this->defaultsEstilos()),
             'brand' => $this->cargarLlave('tienda_brand', 'brand', $this->defaultsBrand()),
             'social' => $this->cargarLlave('tienda_social', 'social', $this->defaultsSocial()),
             'navbar' => $this->cargarLlave('tienda_navbar', 'navbar', $this->defaultsNavbar()),
             'footer' => $this->cargarLlave('tienda_footer', 'footer', $this->defaultsFooter()),
+            'page_sections' => $this->cargarLlave('tienda_page_sections', 'page_sections', $this->defaultsPageSections()),
         ]);
     }
 
@@ -116,11 +118,13 @@ class SettingsController extends Controller
             'header' => 'nullable|array',
             'categories_home' => 'nullable|array',
             'producto' => 'nullable|array',
+            'nosotros' => 'nullable|array',
             'estilos' => 'nullable|array',
             'brand' => 'nullable|array',
             'social' => 'nullable|array',
             'navbar' => 'nullable|array',
             'footer' => 'nullable|array',
+            'page_sections' => 'nullable|array',
         ]);
 
         $mapGrupo = [
@@ -128,11 +132,13 @@ class SettingsController extends Controller
             'header' => 'tienda_header',
             'categories_home' => 'tienda_categories_home',
             'producto' => 'tienda_producto',
+            'nosotros' => 'tienda_nosotros',
             'estilos' => 'tienda_estilos',
             'brand' => 'tienda_brand',
             'social' => 'tienda_social',
             'navbar' => 'tienda_navbar',
             'footer' => 'tienda_footer',
+            'page_sections' => 'tienda_page_sections',
         ];
 
         foreach ($validated as $seccion => $valor) {
@@ -151,11 +157,13 @@ class SettingsController extends Controller
             'header' => $this->cargarLlave('tienda_header', 'header', $this->defaultsHeader()),
             'categories_home' => $this->cargarLlave('tienda_categories_home', 'categories_home', $this->defaultsCategoriesHome()),
             'producto' => $this->cargarLlave('tienda_producto', 'producto', $this->defaultsProducto()),
+            'nosotros' => $this->cargarLlave('tienda_nosotros', 'nosotros', $this->defaultsNosotros()),
             'estilos' => $this->cargarLlave('tienda_estilos', 'estilos', $this->defaultsEstilos()),
             'brand' => $this->cargarLlave('tienda_brand', 'brand', $this->defaultsBrand()),
             'social' => $this->cargarLlave('tienda_social', 'social', $this->defaultsSocial()),
             'navbar' => $this->cargarLlave('tienda_navbar', 'navbar', $this->defaultsNavbar()),
             'footer' => $this->cargarLlave('tienda_footer', 'footer', $this->defaultsFooter()),
+            'page_sections' => $this->cargarLlave('tienda_page_sections', 'page_sections', $this->defaultsPageSections()),
         ]);
     }
 
@@ -220,6 +228,77 @@ class SettingsController extends Controller
                     ['name' => 'Carlos R.', 'role' => 'Compra recurrente', 'avatar' => null, 'rating' => 5, 'text' => 'Lo mejor es la transparencia. Todo claro desde el primer momento.'],
                     ['name' => 'Laura M.', 'role' => 'Nueva clienta', 'avatar' => null, 'rating' => 5, 'text' => 'Diseño increíble y atención al cliente de otro nivel.'],
                 ],
+            ],
+            'newsletter' => [
+                'show' => false,
+                'headline' => 'Suscríbete a nuestro newsletter',
+                'subtext' => 'Ofertas exclusivas, lanzamientos y descuentos directo a tu correo.',
+                'placeholder' => 'Tu correo electrónico',
+                'button_label' => 'Suscribirme',
+                'bg_color' => '#6366f1',
+                'text_color' => '#ffffff',
+                'layout' => 'centered',
+                'image' => null,
+            ],
+            'brand_logos' => [
+                'show' => false,
+                'title' => 'Marcas que confían en nosotros',
+                'items' => [
+                    ['name' => 'Nike', 'logo' => null, 'url' => null],
+                    ['name' => 'Apple', 'logo' => null, 'url' => null],
+                    ['name' => 'Samsung', 'logo' => null, 'url' => null],
+                    ['name' => 'Sony', 'logo' => null, 'url' => null],
+                ],
+                'style' => 'grayscale',
+            ],
+            'gallery_feed' => [
+                'show' => false,
+                'title' => 'Síguenos en Instagram',
+                'subtitle' => 'Etiquétanos @tienda para aparecer aquí',
+                'layout' => 'grid-4',
+                'items' => [],
+            ],
+            'stats' => [
+                'show' => false,
+                'layout' => 'grid-4',
+                'bg_color' => '#0f172a',
+                'text_color' => '#ffffff',
+                'items' => [
+                    ['value' => '+12,000', 'label' => 'Clientes satisfechos', 'icon' => 'i-lucide-users'],
+                    ['value' => '+5,000', 'label' => 'Productos vendidos', 'icon' => 'i-lucide-shopping-bag'],
+                    ['value' => '4.9', 'label' => 'Valoración media', 'icon' => 'i-lucide-star'],
+                    ['value' => '24h', 'label' => 'Envío express', 'icon' => 'i-lucide-truck'],
+                ],
+            ],
+            'video' => [
+                'show' => false,
+                'headline' => 'Mira cómo funciona',
+                'subtext' => 'Un vistazo rápido a lo que nos hace diferentes.',
+                'video_url' => null,
+                'thumbnail' => null,
+                'aspect_ratio' => '16:9',
+            ],
+            'map' => [
+                'show' => false,
+                'headline' => 'Visítanos',
+                'subtext' => 'Estamos en el corazón de la ciudad.',
+                'address' => 'Calle Principal #123, Bogotá',
+                'latitude' => 4.711,
+                'longitude' => -74.0721,
+                'phone' => '+57 300 000 0000',
+                'hours' => 'Lun - Vie: 9:00 - 18:00',
+                'map_style' => 'standard',
+            ],
+            'richtext' => [
+                'show' => false,
+                'layout' => 'full',
+                'headline' => 'Nuestra historia',
+                'content' => 'Somos una tienda comprometida con la calidad y la satisfacción del cliente.',
+                'image' => null,
+                'cta_label' => null,
+                'cta_url' => null,
+                'bg_color' => null,
+                'text_color' => null,
             ],
             'cta' => [
                 'headline' => '¿Listo para tu próxima compra?',
@@ -312,6 +391,19 @@ class SettingsController extends Controller
         ];
     }
 
+    private function defaultsPageSections(): array
+    {
+        return [
+            ['id' => 'hero-1', 'type' => 'hero', 'order' => 0, 'visible' => true, 'variant' => 'classic', 'config' => []],
+            ['id' => 'benefits-1', 'type' => 'benefits', 'order' => 1, 'visible' => true, 'variant' => 'icons', 'config' => []],
+            ['id' => 'categories_home-1', 'type' => '_categories_home', 'order' => 2, 'visible' => true, 'variant' => 'grid', 'config' => []],
+            ['id' => 'featured-1', 'type' => 'featured', 'order' => 3, 'visible' => true, 'variant' => 'grid', 'config' => []],
+            ['id' => 'deals-1', 'type' => 'deals', 'order' => 4, 'visible' => true, 'variant' => 'default', 'config' => []],
+            ['id' => 'testimonials-1', 'type' => 'testimonials', 'order' => 5, 'visible' => true, 'variant' => 'cards', 'config' => []],
+            ['id' => 'cta-1', 'type' => 'cta', 'order' => 6, 'visible' => true, 'variant' => 'banner', 'config' => []],
+        ];
+    }
+
     private function defaultsHeader(): array
     {
         return [
@@ -378,8 +470,11 @@ class SettingsController extends Controller
                 'show' => false,
                 'headline' => 'La transformación',
                 'subtext' => 'Mira la diferencia',
+                'before_image' => null,
+                'after_image' => null,
                 'before' => [['label' => 'Antes', 'description' => 'Situación anterior']],
                 'after' => [['label' => 'Después', 'description' => 'Situación mejorada']],
+                'slider_style' => 'overlay',
             ],
             'features' => [
                 'show' => false,
@@ -438,6 +533,77 @@ class SettingsController extends Controller
         ];
     }
 
+    private function defaultsNosotros(): array
+    {
+        return [
+            'hero' => [
+                'show' => true,
+                'headline' => 'Sobre nosotros',
+                'subtext' => 'Conoce la historia detrás de nuestra tienda.',
+                'background_image' => null,
+                'overlay_opacity' => 0.4,
+                'text_align' => 'center',
+            ],
+            'mission_vision' => [
+                'show' => true,
+                'mission_title' => 'Nuestra Misión',
+                'mission_text' => 'Ofrecer productos de la más alta calidad con una experiencia de compra excepcional, making each interaction memorable.',
+                'mission_image' => null,
+                'vision_title' => 'Nuestra Visión',
+                'vision_text' => 'Ser la tienda en línea de referencia en Latinoamérica, reconocida por la innovación, la calidad y la satisfacción del cliente.',
+                'vision_image' => null,
+                'layout' => 'side-by-side',
+            ],
+            'values' => [
+                'show' => true,
+                'title' => 'Nuestros Valores',
+                'subtitle' => 'Los principios que guían cada decisión',
+                'layout' => 'grid-3',
+                'items' => [
+                    ['icon' => 'i-lucide-shield-check', 'title' => 'Confianza', 'description' => 'Transparencia absoluta en cada transacción.', 'image' => null],
+                    ['icon' => 'i-lucide-sparkles', 'title' => 'Calidad', 'description' => 'Solo ofrecemos lo que compraríamos nosotros.', 'image' => null],
+                    ['icon' => 'i-lucide-heart', 'title' => 'Pasión', 'description' => 'Amamos lo que hacemos y se nota.', 'image' => null],
+                    ['icon' => 'i-lucide-headphones', 'title' => 'Soporte', 'description' => 'Atención real, humana y disponible.', 'image' => null],
+                ],
+            ],
+            'team' => [
+                'show' => false,
+                'title' => 'Nuestro Equipo',
+                'subtitle' => 'La gente que hace posible todo',
+                'layout' => 'grid-3',
+                'members' => [],
+            ],
+            'timeline' => [
+                'show' => false,
+                'title' => 'Nuestra Historia',
+                'subtitle' => 'Un recorrido que apenas comienza',
+                'events' => [
+                    ['year' => '2020', 'title' => 'El comienzo', 'description' => 'Nacimos con la idea de hacer las cosas diferentes.', 'icon' => 'i-lucide-rocket', 'image' => null],
+                    ['year' => '2022', 'title' => 'Crecimiento', 'description' => 'Alcanzamos nuestros primeros 1,000 clientes.', 'icon' => 'i-lucide-trending-up', 'image' => null],
+                    ['year' => '2024', 'title' => 'Consolidación', 'description' => 'Expandimos nuestro catálogo y mejoramos la experiencia.', 'icon' => 'i-lucide-award', 'image' => null],
+                ],
+            ],
+            'map' => [
+                'show' => false,
+                'headline' => 'Encuéntranos',
+                'address' => 'Calle Principal #123, Bogotá, Colombia',
+                'latitude' => 4.711,
+                'longitude' => -74.0721,
+                'phone' => '+57 300 000 0000',
+                'hours' => 'Lun - Vie: 9:00 - 18:00',
+            ],
+            'cta' => [
+                'show' => true,
+                'headline' => '¿Listo para conocernos?',
+                'subtext' => 'Explora nuestro catálogo y descubre por qué somos diferentes.',
+                'cta_primary' => ['label' => 'Ver catálogo', 'url' => '/catalogo'],
+                'cta_secondary' => ['label' => 'Contactar', 'url' => '/contacto'],
+                'bg_color' => null,
+                'text_color' => null,
+            ],
+        ];
+    }
+
     private function reglaPara(string $clave): string
     {
         return match ($clave) {
@@ -466,5 +632,93 @@ class SettingsController extends Controller
         return ApiResponse::success([
             'key' => config('webpush.vapid_public_key'),
         ]);
+    }
+
+    // ── Configuración de pagos ───────────────────────────────────────────────
+
+    public function obtenerPagos()
+    {
+        $credentialService = app(\App\Services\PaymentCredentialService::class);
+        $default = config('payments.default');
+        $classMap = config('payments.class_map', []);
+
+        $data = [
+            'default_provider' => $default,
+            'providers' => [],
+        ];
+
+        foreach ($classMap as $key => $class) {
+            $configured = $credentialService->estaConfigurado($key);
+            $requiredFields = [];
+
+            if (class_exists($class)) {
+                $ref = new \ReflectionClass($class);
+                if ($ref->isSubclassOf(\App\Services\Payment\AbstractPaymentProvider::class)) {
+                    $tmp = new $class();
+                    $requiredFields = $tmp->credencialesRequeridas();
+                }
+            }
+
+            $credentialsStatus = [];
+            foreach ($requiredFields as $field) {
+                $creds = $credentialService->obtener($key);
+                $credentialsStatus[$field] = !empty($creds[$field]);
+            }
+
+            $data['providers'][$key] = [
+                'name' => $key,
+                'configured' => $configured,
+                'is_default' => $key === $default,
+                'credentials_status' => $credentialsStatus,
+            ];
+        }
+
+        return ApiResponse::success($data);
+    }
+
+    public function actualizarPagos(Request $request)
+    {
+        $validated = $request->validate([
+            'default_provider' => 'nullable|string|in:stripe,mercadopago,paypal,wompi,rapyd',
+            'credentials' => 'nullable|array',
+            'credentials.stripe' => 'nullable|array',
+            'credentials.mercadopago' => 'nullable|array',
+            'credentials.paypal' => 'nullable|array',
+            'credentials.wompi' => 'nullable|array',
+            'credentials.rapyd' => 'nullable|array',
+        ]);
+
+        $credentialService = app(\App\Services\PaymentCredentialService::class);
+
+        if (isset($validated['default_provider'])) {
+            Setting::establecer('payment_default_provider', $validated['default_provider'], 'pagos');
+            config(['payments.default' => $validated['default_provider']]);
+        }
+
+        if (isset($validated['credentials'])) {
+            foreach ($validated['credentials'] as $provider => $creds) {
+                if (is_array($creds)) {
+                    $credentialService->guardar($provider, $creds);
+                }
+            }
+        }
+
+        return ApiResponse::success('Configuración de pagos actualizada');
+    }
+
+    public function probarProveedor(Request $request)
+    {
+        $validated = $request->validate([
+            'provider' => 'required|string|in:stripe,mercadopago,paypal,wompi,rapyd',
+        ]);
+
+        $credentialService = app(\App\Services\PaymentCredentialService::class);
+        $resultado = $credentialService->probarConexion($validated['provider']);
+
+        if ($resultado['success']) {
+            return ApiResponse::success($resultado, $resultado['message']);
+        }
+
+        return ApiResponse::error($resultado['message'], 422, 'CONNECTION_FAILED');
     }
 }

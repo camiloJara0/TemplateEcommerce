@@ -114,4 +114,34 @@ class MercadoPagoProvider extends AbstractPaymentProvider
             'payload' => $pago,
         ];
     }
+
+    // ── Test Connection ────────────────────────────────────────
+
+    public function testConnection(): array
+    {
+        if (!$this->configValida()) {
+            return ['success' => false, 'message' => 'Credenciales no configuradas (access_token)'];
+        }
+
+        try {
+            $respuesta = Http::withToken($this->configurar()['access_token'])
+                ->get('https://api.mercadopago.com/v1/payment_methods');
+
+            if ($respuesta->failed()) {
+                $body = $respuesta->json();
+                $msg = $body['message'] ?? 'Error desconocido';
+                return ['success' => false, 'message' => "Error MercadoPago: {$msg}"];
+            }
+
+            $body = $respuesta->json();
+            $count = is_array($body) ? count($body) : 0;
+
+            return [
+                'success' => true,
+                'message' => "Conexión exitosa. {$count} métodos de pago disponibles.",
+            ];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'message' => 'Error de conexión: ' . $e->getMessage()];
+        }
+    }
 }

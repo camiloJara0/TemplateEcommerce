@@ -31,6 +31,7 @@ class ShipmentController extends Controller
     {
         $envios = Shipment::with(['order:id,numero', 'shippingMethod'])
             ->when($request->status, fn ($q, $v) => $q->where('status', $v))
+            ->when($request->carrier, fn ($q, $v) => $q->where('carrier', $v))
             ->latest()
             ->paginate($request->get('per_page', 15));
 
