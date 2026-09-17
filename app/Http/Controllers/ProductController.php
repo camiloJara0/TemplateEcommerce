@@ -57,6 +57,40 @@ class ProductController extends Controller
         return ApiResponse::success(ProductResource::collection($relacionados));
     }
 
+    public function detalle(string $slug)
+    {
+        $producto = Product::activos()
+            ->with(['category', 'brand', 'images', 'tags', 'variants.attributeValues.attribute'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $relacionados = Product::activos()
+            ->with(['category', 'brand', 'images', 'tags', 'variants.attributeValues.attribute'])
+            ->where('category_id', $producto->category_id)
+            ->where('id', '!=', $producto->id)
+            ->limit(config('ecommerce.related_limit', 8))
+            ->get();
+
+        $resenas = $producto->reviewsAprobadas()
+            ->with('user:id,nombre')
+            ->latest()
+            ->paginate(10);
+
+        return ApiResponse::success([
+            'product' => new ProductResource($producto),
+            'related' => ProductResource::collection($relacionados),
+            'reviews' => [
+                'items' => $resenas->items(),
+                'pagination' => [
+                    'total' => $resenas->total(),
+                    'per_page' => $resenas->perPage(),
+                    'current_page' => $resenas->currentPage(),
+                    'last_page' => $resenas->lastPage(),
+                ],
+            ],
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $this->validar($request, true);
@@ -139,7 +173,6 @@ class ProductController extends Controller
             'price' => $creando ? 'required|numeric|min:0' : 'sometimes|numeric|min:0',
             'price_discount' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric|min:0',
-            'is_featured' => 'nullable|string',
             'estado' => 'nullable|in:activo,inactivo',
             'stock' => 'nullable|integer|min:0',
             'images' => 'nullable|array',

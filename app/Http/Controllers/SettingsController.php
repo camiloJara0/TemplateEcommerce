@@ -167,6 +167,47 @@ class SettingsController extends Controller
         ]);
     }
 
+    public function completa()
+    {
+        $publica = [
+            'store_name' => Setting::obtener('store_name', config('app.name')),
+            'store_tagline' => Setting::obtener('store_tagline'),
+            'logo' => Setting::obtener('logo'),
+            'currency' => Setting::obtener('currency', config('ecommerce.currency', 'COP')),
+            'tax_rate' => (float) Setting::obtener('tax_rate', config('ecommerce.tax_rate', 0.19)),
+            'default_language' => Setting::obtener('default_language', 'es'),
+            'support_email' => Setting::obtener('support_email'),
+            'support_phone' => Setting::obtener('support_phone'),
+            'color_primario' => Setting::obtener('color_primario', '#2563EB'),
+            'color_secundario' => Setting::obtener('color_secundario', '#3B82F6'),
+            'color_fondo' => Setting::obtener('color_fondo', '#FFFFFF'),
+            'meta_title' => Setting::obtener('meta_title'),
+            'meta_description' => Setting::obtener('meta_description'),
+            'meta_keywords' => Setting::obtener('meta_keywords'),
+            'og_image' => Setting::obtener('og_image'),
+            'font_family' => Setting::obtener('font_family'),
+        ];
+
+        $tienda = [
+            'secciones' => $this->cargarLlave('tienda_secciones', 'secciones', $this->defaultsSecciones()),
+            'header' => $this->cargarLlave('tienda_header', 'header', $this->defaultsHeader()),
+            'categories_home' => $this->cargarLlave('tienda_categories_home', 'categories_home', $this->defaultsCategoriesHome()),
+            'producto' => $this->cargarLlave('tienda_producto', 'producto', $this->defaultsProducto()),
+            'nosotros' => $this->cargarLlave('tienda_nosotros', 'nosotros', $this->defaultsNosotros()),
+            'estilos' => $this->cargarLlave('tienda_estilos', 'estilos', $this->defaultsEstilos()),
+            'brand' => $this->cargarLlave('tienda_brand', 'brand', $this->defaultsBrand()),
+            'social' => $this->cargarLlave('tienda_social', 'social', $this->defaultsSocial()),
+            'navbar' => $this->cargarLlave('tienda_navbar', 'navbar', $this->defaultsNavbar()),
+            'footer' => $this->cargarLlave('tienda_footer', 'footer', $this->defaultsFooter()),
+            'page_sections' => $this->cargarLlave('tienda_page_sections', 'page_sections', $this->defaultsPageSections()),
+        ];
+
+        return ApiResponse::success([
+            'publica' => $publica,
+            'tienda' => $tienda,
+        ]);
+    }
+
     // ── Helpers: cargar una llave desde settings ──────────────────────────────
 
     private function cargarLlave(string $group, string $key, array $defaults): array

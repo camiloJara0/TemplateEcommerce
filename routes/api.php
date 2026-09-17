@@ -33,6 +33,7 @@ Route::post('/v1/verificar-codigo-cambio', [UserController::class, 'verificarCod
 Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
     Route::get('/productos', [ProductController::class, 'index']);
     Route::get('/productos/{producto:slug}', [ProductController::class, 'show']);
+    Route::get('/productos/{producto:slug}/detalle', [ProductController::class, 'detalle']);
     Route::get('/productos/{producto}/relacionados', [ProductController::class, 'relacionados']);
     Route::get('/categorias', [CategoryController::class, 'index']);
     Route::get('/marcas', [BrandController::class, 'index']);
@@ -42,6 +43,7 @@ Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
     // Configuración pública de la tienda (nombre, colores, SEO) para la landing
     Route::get('/configuracion/publica', [SettingsController::class, 'publico']);
     Route::get('/configuracion/tienda', [SettingsController::class, 'tienda']);
+    Route::get('/configuracion/completa', [SettingsController::class, 'completa']);
     // VAPID public key for Web Push
     Route::get('/configuracion/vapid-public-key', [SettingsController::class, 'vapidPublicKey']);
 
