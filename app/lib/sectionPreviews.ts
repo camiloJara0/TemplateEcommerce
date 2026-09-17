@@ -710,6 +710,505 @@ const PREVIEW_SVGS: Record<string, Record<string, SectionPreview>> = {
       </svg>`,
     },
   },
+
+  // ─── Product Section Previews ─────────────────────────────────────────────
+  product_gallery: {
+    grid: {
+      label: 'Cuadrícula',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="160" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="20" y="20" width="68" height="68" rx="6" fill="#e2e8f0"/>
+        <rect x="98" y="20" width="68" height="68" rx="6" fill="#cbd5e1"/>
+        <rect x="176" y="20" width="68" height="68" rx="6" fill="#e2e8f0"/>
+        <rect x="254" y="20" width="46" height="68" rx="6" fill="#f1f5f9" opacity="0.6"/>
+        <rect x="20" y="98" width="68" height="62" rx="6" fill="#f1f5f9" opacity="0.6"/>
+        <rect x="98" y="98" width="68" height="62" rx="6" fill="#e2e8f0"/>
+        <rect x="176" y="98" width="68" height="62" rx="6" fill="#f1f5f9" opacity="0.6"/>
+        <rect x="254" y="98" width="46" height="62" rx="6" fill="#e2e8f0"/>
+        <rect x="20" y="20" width="68" height="68" rx="6" fill="#6366f1" opacity="0.08" stroke="#6366f1" stroke-width="2"/>
+      </svg>`,
+    },
+    masonry: {
+      label: 'Masonry',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="160" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="20" y="20" width="92" height="60" rx="6" fill="#e2e8f0"/>
+        <rect x="122" y="20" width="92" height="90" rx="6" fill="#cbd5e1"/>
+        <rect x="224" y="20" width="76" height="50" rx="6" fill="#e2e8f0"/>
+        <rect x="20" y="90" width="92" height="70" rx="6" fill="#f1f5f9"/>
+        <rect x="122" y="120" width="92" height="40" rx="6" fill="#e2e8f0" opacity="0.6"/>
+        <rect x="224" y="80" width="76" height="80" rx="6" fill="#cbd5e1" opacity="0.6"/>
+      </svg>`,
+    },
+    carousel: {
+      label: 'Carrusel',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="130" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="20" y="20" width="280" height="110" rx="6" fill="#e2e8f0"/>
+        <rect x="280" y="65" width="24" height="24" rx="12" fill="white" stroke="#cbd5e1"/>
+        <circle cx="80" cy="160" r="4" fill="#6366f1"/>
+        <circle cx="95" cy="160" r="4" fill="#cbd5e1"/>
+        <circle cx="110" cy="160" r="4" fill="#cbd5e1"/>
+      </svg>`,
+    },
+    spotlight: {
+      label: 'Spotlight',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="130" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="20" y="20" width="280" height="110" rx="6" fill="#f1f5f9"/>
+        <circle cx="290" cy="40" r="10" fill="#6366f1" opacity="0.1"/>
+        <rect x="40" y="155" width="50" height="18" rx="4" fill="#6366f1" opacity="0.12" stroke="#6366f1" stroke-width="1"/>
+        <rect x="100" y="155" width="50" height="18" rx="4" fill="#6366f1" opacity="0.12" stroke="#6366f1" stroke-width="1"/>
+        <rect x="160" y="155" width="50" height="18" rx="4" fill="white" stroke="#6366f1" stroke-width="1.5"/>
+        <rect x="220" y="155" width="50" height="18" rx="4" fill="#e2e8f0"/>
+      </svg>`,
+    },
+  },
+  product_comparison: {
+    table: {
+      label: 'Tabla',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="160" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="20" y="20" width="280" height="24" rx="4" fill="#f1f5f9"/>
+        <rect x="30" y="26" width="80" height="8" rx="1" fill="#94a3b8"/>
+        <rect x="160" y="26" width="60" height="8" rx="1" fill="#6366f1" opacity="0.6"/>
+        <rect x="240" y="26" width="60" height="8" rx="1" fill="#94a3b8" opacity="0.6"/>
+        <rect x="30" y="56" width="260" height="1" fill="#e2e8f0"/>
+        <rect x="30" y="64" width="100" height="8" rx="1" fill="#1e293b" opacity="0.5"/>
+        <circle cx="170" cy="68" r="5" fill="#22c55e"/>
+        <circle cx="260" cy="68" r="5" fill="#ef4444"/>
+        <rect x="30" y="84" width="260" height="1" fill="#f1f5f9"/>
+        <rect x="30" y="92" width="80" height="8" rx="1" fill="#1e293b" opacity="0.5"/>
+        <circle cx="170" cy="96" r="5" fill="#22c55e"/>
+        <circle cx="260" cy="96" r="5" fill="#22c55e"/>
+        <rect x="30" y="112" width="260" height="1" fill="#f1f5f9"/>
+        <rect x="30" y="120" width="120" height="8" rx="1" fill="#1e293b" opacity="0.5"/>
+        <rect x="155" y="118" width="30" height="12" rx="3" fill="#6366f1" opacity="0.15"/>
+        <rect x="245" y="118" width="30" height="12" rx="3" fill="#f1f5f9"/>
+        <rect x="30" y="140" width="260" height="1" fill="#f1f5f9"/>
+        <rect x="30" y="148" width="90" height="8" rx="1" fill="#1e293b" opacity="0.5"/>
+        <circle cx="170" cy="152" r="5" fill="#22c55e"/>
+        <circle cx="260" cy="152" r="5" fill="#ef4444"/>
+      </svg>`,
+    },
+    cards: {
+      label: 'Tarjetas',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="140" height="160" rx="10" fill="white" stroke="#6366f1" stroke-width="1.5"/>
+        <rect x="10" y="10" width="140" height="30" rx="10" fill="#6366f1"/>
+        <rect x="20" y="18" width="80" height="8" rx="1" fill="white" opacity="0.8"/>
+        <rect x="20" y="50" width="120" height="6" rx="1" fill="#1e293b" opacity="0.5"/>
+        <rect x="20" y="64" width="100" height="6" rx="1" fill="#1e293b" opacity="0.4"/>
+        <rect x="20" y="78" width="110" height="6" rx="1" fill="#1e293b" opacity="0.3"/>
+        <rect x="170" y="10" width="140" height="160" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="170" y="10" width="140" height="30" rx="10" fill="#f1f5f9"/>
+        <rect x="180" y="18" width="80" height="8" rx="1" fill="#94a3b8" opacity="0.6"/>
+        <rect x="180" y="50" width="120" height="6" rx="1" fill="#1e293b" opacity="0.3"/>
+        <rect x="180" y="64" width="100" height="6" rx="1" fill="#94a3b8" opacity="0.3"/>
+        <rect x="180" y="78" width="110" height="6" rx="1" fill="#94a3b8" opacity="0.2"/>
+      </svg>`,
+    },
+    visual: {
+      label: 'Visual',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="140" height="160" rx="10" fill="url(#vc-grad)"/>
+        <rect x="150" y="80" width="20" height="20" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="160" y="94" text-anchor="middle" fill="#94a3b8" font-size="10">vs</text>
+        <rect x="170" y="10" width="140" height="160" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="25" y="30" width="110" height="8" rx="2" fill="white" opacity="0.9"/>
+        <rect x="25" y="48" width="90" height="6" rx="1" fill="white" opacity="0.6"/>
+        <rect x="25" y="70" width="110" height="6" rx="1" fill="white" opacity="0.5"/>
+        <rect x="25" y="90" width="80" height="6" rx="1" fill="white" opacity="0.4"/>
+        <rect x="185" y="30" width="110" height="8" rx="2" fill="#94a3b8" opacity="0.6"/>
+        <rect x="185" y="48" width="90" height="6" rx="1" fill="#94a3b8" opacity="0.3"/>
+        <rect x="185" y="70" width="110" height="6" rx="1" fill="#94a3b8" opacity="0.2"/>
+        <defs><linearGradient id="vc-grad" x1="0" y1="0" x2="140" y2="170"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+      </svg>`,
+    },
+  },
+  product_bundle: {
+    grid: {
+      label: 'Cuadrícula',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="160" rx="10" fill="url(#pb-grad)"/>
+        <rect x="100" y="18" width="120" height="8" rx="2" fill="white" opacity="0.8"/>
+        <rect x="80" y="32" width="160" height="6" rx="1" fill="white" opacity="0.5"/>
+        <rect x="20" y="50" width="88" height="60" rx="6" fill="white" opacity="0.15" stroke="white" stroke-width="0.5"/>
+        <rect x="28" y="56" width="72" height="30" rx="4" fill="white" opacity="0.1"/>
+        <rect x="28" y="92" width="50" height="5" rx="1" fill="white" opacity="0.5"/>
+        <rect x="116" y="50" width="88" height="60" rx="6" fill="white" opacity="0.15" stroke="white" stroke-width="0.5"/>
+        <rect x="124" y="56" width="72" height="30" rx="4" fill="white" opacity="0.1"/>
+        <rect x="124" y="92" width="50" height="5" rx="1" fill="white" opacity="0.5"/>
+        <rect x="212" y="50" width="88" height="60" rx="6" fill="white" opacity="0.15" stroke="white" stroke-width="0.5"/>
+        <rect x="220" y="56" width="72" height="30" rx="4" fill="white" opacity="0.1"/>
+        <rect x="220" y="92" width="50" height="5" rx="1" fill="white" opacity="0.5"/>
+        <rect x="100" y="120" width="120" height="32" rx="8" fill="white"/>
+        <defs><linearGradient id="pb-grad" x1="0" y1="0" x2="320" y2="180"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
+      </svg>`,
+    },
+    split: {
+      label: 'Dividido',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="10" y="10" width="140" height="160" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="20" y="20" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="20" y="36" width="100" height="6" rx="1" fill="#94a3b8"/>
+        <rect x="20" y="54" width="120" height="30" rx="4" fill="#f1f5f9"/>
+        <rect x="20" y="92" width="120" height="30" rx="4" fill="#f1f5f9"/>
+        <rect x="20" y="130" width="120" height="30" rx="4" fill="#f1f5f9"/>
+        <rect x="170" y="10" width="140" height="160" rx="10" fill="url(#pbs-grad)"/>
+        <rect x="180" y="24" width="120" height="8" rx="2" fill="white" opacity="0.8"/>
+        <rect x="190" y="50" width="100" height="12" rx="2" fill="white" opacity="0.6"/>
+        <circle cx="240" cy="80" r="15" fill="white" opacity="0.1"/>
+        <defs><linearGradient id="pbs-grad" x1="170" y1="10" x2="310" y2="170"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+      </svg>`,
+    },
+    carousel: {
+      label: 'Carrusel',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="10" y="30" width="100" height="80" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="16" y="36" width="88" height="40" rx="4" fill="#e2e8f0"/>
+        <rect x="16" y="82" width="60" height="5" rx="1" fill="#1e293b" opacity="0.5"/>
+        <rect x="120" y="30" width="100" height="80" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="126" y="36" width="88" height="40" rx="4" fill="#e2e8f0"/>
+        <rect x="126" y="82" width="60" height="5" rx="1" fill="#1e293b" opacity="0.5"/>
+        <rect x="230" y="30" width="80" height="80" rx="8" fill="white" stroke="#e2e8f0" opacity="0.4"/>
+        <circle cx="145" y="130" r="4" fill="#6366f1"/>
+        <circle cx="160" y="130" r="4" fill="#cbd5e1"/>
+        <circle cx="175" y="130" r="4" fill="#cbd5e1"/>
+        <rect x="60" y="150" width="200" height="20" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="70" y="156" width="80" height="8" rx="1.5" fill="#94a3b8"/>
+        <rect x="200" y="154" width="50" height="12" rx="6" fill="#6366f1"/>
+      </svg>`,
+    },
+  },
+  product_countdown: {
+    minimal: {
+      label: 'Minimal',
+      svg: `<svg viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="120" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="100" rx="10" fill="white" stroke="#e2e8f0"/>
+        <rect x="80" y="20" width="160" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="90" y="36" width="140" height="6" rx="1" fill="#94a3b8"/>
+        <rect x="50" y="54" width="46" height="36" rx="6" fill="#f1f5f9"/>
+        <rect x="62" y="62" width="22" height="12" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="106" y="54" width="46" height="36" rx="6" fill="#f1f5f9"/>
+        <rect x="162" y="54" width="46" height="36" rx="6" fill="#f1f5f9"/>
+        <rect x="218" y="54" width="46" height="36" rx="6" fill="#f1f5f9"/>
+      </svg>`,
+    },
+    urgent: {
+      label: 'Urgente',
+      svg: `<svg viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="120" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="100" rx="10" fill="#fef2f2"/>
+        <rect x="30" y="20" width="60" height="16" rx="8" fill="#dc2626" opacity="0.2"/>
+        <rect x="40" y="24" width="40" height="8" rx="2" fill="#dc2626" opacity="0.7"/>
+        <rect x="40" y="48" width="240" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="40" y="64" width="200" height="6" rx="1" fill="#94a3b8"/>
+        <rect x="40" y="82" width="56" height="20" rx="6" fill="#dc2626" opacity="0.15"/>
+        <rect x="106" y="82" width="56" height="20" rx="6" fill="#dc2626" opacity="0.15"/>
+        <rect x="172" y="82" width="56" height="20" rx="6" fill="#dc2626" opacity="0.15"/>
+        <rect x="238" y="82" width="56" height="20" rx="6" fill="#dc2626" opacity="0.15"/>
+      </svg>`,
+    },
+    elegant: {
+      label: 'Elegante',
+      svg: `<svg viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="120" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="100" rx="10" fill="#0f172a"/>
+        <rect x="80" y="20" width="160" height="8" rx="2" fill="white" opacity="0.8"/>
+        <rect x="60" y="38" width="200" height="6" rx="1" fill="white" opacity="0.4"/>
+        <rect x="40" y="56" width="56" height="36" rx="6" fill="white" opacity="0.1" stroke="white" stroke-width="0.5"/>
+        <rect x="52" y="64" width="32" height="12" rx="2" fill="white" opacity="0.7"/>
+        <rect x="106" y="56" width="56" height="36" rx="6" fill="white" opacity="0.1" stroke="white" stroke-width="0.5"/>
+        <rect x="118" y="64" width="32" height="12" rx="2" fill="white" opacity="0.7"/>
+        <rect x="172" y="56" width="56" height="36" rx="6" fill="white" opacity="0.1" stroke="white" stroke-width="0.5"/>
+        <rect x="184" y="64" width="32" height="12" rx="2" fill="white" opacity="0.7"/>
+        <rect x="238" y="56" width="56" height="36" rx="6" fill="white" opacity="0.1" stroke="white" stroke-width="0.5"/>
+        <rect x="250" y="64" width="32" height="12" rx="2" fill="white" opacity="0.7"/>
+      </svg>`,
+    },
+  },
+  product_testimonials: {
+    carousel: {
+      label: 'Carrusel',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="60" y="30" width="200" height="100" rx="10" fill="white" stroke="#e2e8f0"/>
+        <text x="160" y="55" text-anchor="middle" fill="#cbd5e1" font-size="24">"</text>
+        <rect x="80" y="65" width="160" height="6" rx="1" fill="#94a3b8"/>
+        <rect x="90" y="78" width="140" height="6" rx="1" fill="#94a3b8" opacity="0.5"/>
+        <rect x="100" y="91" width="120" height="6" rx="1" fill="#94a3b8" opacity="0.3"/>
+        <circle cx="120" cy="112" r="8" fill="#e2e8f0"/>
+        <rect x="134" y="108" width="40" height="5" rx="1" fill="#1e293b" opacity="0.5"/>
+        <rect x="134" y="118" width="30" height="4" rx="1" fill="#94a3b8"/>
+        <circle cx="120" cy="155" r="4" fill="#6366f1"/>
+        <circle cx="135" cy="155" r="4" fill="#cbd5e1"/>
+        <circle cx="150" cy="155" r="4" fill="#cbd5e1"/>
+      </svg>`,
+    },
+    grid: {
+      label: 'Cuadrícula',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="10" y="30" width="92" height="70" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="18" y="40" width="60" height="4" rx="1" fill="#fbbf24" opacity="0.6"/>
+        <rect x="18" y="50" width="76" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="18" y="60" width="60" height="4" rx="1" fill="#94a3b8" opacity="0.5"/>
+        <rect x="114" y="30" width="92" height="70" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="122" y="40" width="60" height="4" rx="1" fill="#fbbf24" opacity="0.6"/>
+        <rect x="122" y="50" width="76" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="218" y="30" width="92" height="70" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="226" y="40" width="60" height="4" rx="1" fill="#fbbf24" opacity="0.6"/>
+        <rect x="226" y="50" width="76" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="10" y="110" width="92" height="60" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="114" y="110" width="92" height="60" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="218" y="110" width="92" height="60" rx="8" fill="white" stroke="#e2e8f0"/>
+      </svg>`,
+    },
+    masonry: {
+      label: 'Masonry',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="10" y="30" width="95" height="60" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="10" y="100" width="95" height="70" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="115" y="30" width="95" height="90" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="115" y="130" width="95" height="40" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="220" y="30" width="90" height="50" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="220" y="90" width="90" height="80" rx="8" fill="white" stroke="#e2e8f0"/>
+      </svg>`,
+    },
+    spotlight: {
+      label: 'Destacado',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="40" y="30" width="240" height="100" rx="12" fill="white" stroke="#e2e8f0"/>
+        <text x="160" y="55" text-anchor="middle" fill="#cbd5e1" font-size="28">"</text>
+        <rect x="80" y="65" width="160" height="6" rx="1" fill="#94a3b8"/>
+        <rect x="90" y="78" width="140" height="6" rx="1" fill="#94a3b8" opacity="0.5"/>
+        <rect x="100" y="91" width="120" height="6" rx="1" fill="#94a3b8" opacity="0.3"/>
+        <circle cx="120" cy="112" r="8" fill="#e2e8f0"/>
+        <rect x="134" y="108" width="50" height="5" rx="1" fill="#1e293b" opacity="0.5"/>
+        <circle cx="140" cy="150" r="4" fill="#6366f1"/>
+        <circle cx="155" cy="150" r="4" fill="#cbd5e1"/>
+        <circle cx="170" cy="150" r="4" fill="#cbd5e1"/>
+      </svg>`,
+    },
+  },
+  product_ugc: {
+    carousel: {
+      label: 'Carrusel',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="10" y="30" width="100" height="120" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="16" y="36" width="88" height="70" rx="4" fill="#e2e8f0"/>
+        <rect x="16" y="114" width="60" height="5" rx="1" fill="#1e293b" opacity="0.5"/>
+        <rect x="120" y="30" width="100" height="120" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="126" y="36" width="88" height="70" rx="4" fill="#e2e8f0"/>
+        <rect x="126" y="114" width="60" height="5" rx="1" fill="#1e293b" opacity="0.5"/>
+        <rect x="230" y="30" width="80" height="120" rx="8" fill="white" stroke="#e2e8f0" opacity="0.4"/>
+        <circle cx="140" cy="170" r="3" fill="#6366f1"/>
+        <circle cx="152" cy="170" r="3" fill="#cbd5e1"/>
+        <circle cx="164" cy="170" r="3" fill="#cbd5e1"/>
+      </svg>`,
+    },
+    grid: {
+      label: 'Cuadrícula',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="10" y="30" width="68" height="68" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="14" y="34" width="60" height="40" rx="4" fill="#e2e8f0"/>
+        <rect x="14" y="80" width="40" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="88" y="30" width="68" height="68" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="92" y="34" width="60" height="40" rx="4" fill="#e2e8f0"/>
+        <rect x="166" y="30" width="68" height="68" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="170" y="34" width="60" height="40" rx="4" fill="#e2e8f0"/>
+        <rect x="244" y="30" width="68" height="68" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="248" y="34" width="60" height="40" rx="4" fill="#e2e8f0"/>
+        <rect x="10" y="108" width="68" height="62" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="88" y="108" width="68" height="62" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="166" y="108" width="68" height="62" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="244" y="108" width="68" height="62" rx="6" fill="white" stroke="#e2e8f0"/>
+      </svg>`,
+    },
+    masonry: {
+      label: 'Masonry',
+      svg: `<svg viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="180" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="10" y="30" width="95" height="55" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="10" y="95" width="95" height="75" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="115" y="30" width="95" height="85" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="115" y="125" width="95" height="45" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="220" y="30" width="90" height="50" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="220" y="90" width="90" height="80" rx="6" fill="white" stroke="#e2e8f0"/>
+      </svg>`,
+    },
+  },
+  product_warranty: {
+    cards: {
+      label: 'Tarjetas',
+      svg: `<svg viewBox="0 0 320 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="140" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="10" y="30" width="92" height="60" rx="8" fill="white" stroke="#e2e8f0"/>
+        <circle cx="56" cy="50" r="12" fill="#dcfce7"/>
+        <rect x="30" y="68" width="52" height="5" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="30" y="78" width="40" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="114" y="30" width="92" height="60" rx="8" fill="white" stroke="#e2e8f0"/>
+        <circle cx="160" cy="50" r="12" fill="#dbeafe"/>
+        <rect x="134" y="68" width="52" height="5" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="134" y="78" width="40" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="218" y="30" width="92" height="60" rx="8" fill="white" stroke="#e2e8f0"/>
+        <circle cx="264" cy="50" r="12" fill="#fef3c7"/>
+        <rect x="238" y="68" width="52" height="5" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="238" y="78" width="40" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="110" y="102" width="100" height="24" rx="6" fill="#e2e8f0"/>
+      </svg>`,
+    },
+    icons: {
+      label: 'Iconos',
+      svg: `<svg viewBox="0 0 320 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="140" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="10" y="30" width="92" height="50" rx="8" fill="#f1f5f9"/>
+        <circle cx="30" cy="55" r="10" fill="#dcfce7"/>
+        <rect x="48" y="48" width="40" height="5" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="48" y="58" width="30" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="114" y="30" width="92" height="50" rx="8" fill="#f1f5f9"/>
+        <circle cx="134" cy="55" r="10" fill="#dbeafe"/>
+        <rect x="152" y="48" width="40" height="5" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="152" y="58" width="30" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="218" y="30" width="92" height="50" rx="8" fill="#f1f5f9"/>
+        <circle cx="238" cy="55" r="10" fill="#fef3c7"/>
+        <rect x="256" y="48" width="40" height="5" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="256" y="58" width="30" height="4" rx="1" fill="#94a3b8"/>
+        <rect x="110" y="92" width="100" height="24" rx="6" fill="#e2e8f0"/>
+      </svg>`,
+    },
+    minimal: {
+      label: 'Mínimo',
+      svg: `<svg viewBox="0 0 320 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="140" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <circle cx="50" cy="50" r="10" fill="#dcfce7"/>
+        <rect x="68" y="46" width="50" height="5" rx="1" fill="#1e293b" opacity="0.6"/>
+        <circle cx="160" cy="50" r="10" fill="#dbeafe"/>
+        <rect x="178" y="46" width="50" height="5" rx="1" fill="#1e293b" opacity="0.6"/>
+        <circle cx="270" cy="50" r="10" fill="#fef3c7"/>
+        <rect x="60" y="70" width="200" height="1" fill="#e2e8f0"/>
+        <rect x="110" y="80" width="100" height="24" rx="6" fill="#e2e8f0"/>
+      </svg>`,
+    },
+  },
+  product_faq: {
+    accordion: {
+      label: 'Accordion',
+      svg: `<svg viewBox="0 0 320 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="140" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="30" y="30" width="260" height="28" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="40" y="40" width="140" height="6" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="270" y="42" width="12" height="6" rx="1" fill="#6366f1"/>
+        <rect x="30" y="66" width="260" height="28" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="40" y="76" width="120" height="6" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="270" y="78" width="12" height="6" rx="1" fill="#94a3b8"/>
+        <rect x="30" y="102" width="260" height="28" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="40" y="112" width="100" height="6" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="270" y="114" width="12" height="6" rx="1" fill="#94a3b8"/>
+      </svg>`,
+    },
+    tabs: {
+      label: 'Tabs',
+      svg: `<svg viewBox="0 0 320 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="140" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="30" y="30" width="260" height="24" rx="6" fill="white" stroke="#e2e8f0"/>
+        <rect x="30" y="30" width="60" height="24" rx="6" fill="#6366f1" opacity="0.12"/>
+        <rect x="40" y="38" width="40" height="6" rx="1" fill="#6366f1" opacity="0.6"/>
+        <rect x="100" y="38" width="40" height="6" rx="1" fill="#94a3b8" opacity="0.4"/>
+        <rect x="160" y="38" width="40" height="6" rx="1" fill="#94a3b8" opacity="0.4"/>
+        <rect x="30" y="64" width="260" height="50" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="40" y="74" width="240" height="6" rx="1" fill="#94a3b8"/>
+        <rect x="40" y="88" width="200" height="6" rx="1" fill="#94a3b8" opacity="0.5"/>
+        <rect x="40" y="102" width="160" height="6" rx="1" fill="#94a3b8" opacity="0.3"/>
+      </svg>`,
+    },
+    simple: {
+      label: 'Simple',
+      svg: `<svg viewBox="0 0 320 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="140" fill="#f8fafc"/>
+        <rect x="100" y="10" width="120" height="8" rx="2" fill="#1e293b" opacity="0.7"/>
+        <rect x="30" y="30" width="130" height="50" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="40" y="40" width="80" height="6" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="40" y="54" width="110" height="4" rx="1" fill="#94a3b8" opacity="0.5"/>
+        <rect x="40" y="64" width="90" height="4" rx="1" fill="#94a3b8" opacity="0.3"/>
+        <rect x="170" y="30" width="130" height="50" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="180" y="40" width="80" height="6" rx="1" fill="#1e293b" opacity="0.6"/>
+        <rect x="180" y="54" width="110" height="4" rx="1" fill="#94a3b8" opacity="0.5"/>
+        <rect x="180" y="64" width="90" height="4" rx="1" fill="#94a3b8" opacity="0.3"/>
+        <rect x="30" y="90" width="130" height="40" rx="8" fill="white" stroke="#e2e8f0"/>
+        <rect x="170" y="90" width="130" height="40" rx="8" fill="white" stroke="#e2e8f0"/>
+      </svg>`,
+    },
+  },
+  product_cta: {
+    banner: {
+      label: 'Banner',
+      svg: `<svg viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="120" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="100" rx="10" fill="url(#pcta-grad)"/>
+        <rect x="80" y="28" width="160" height="10" rx="2" fill="white" opacity="0.9"/>
+        <rect x="60" y="46" width="200" height="6" rx="1" fill="white" opacity="0.5"/>
+        <rect x="110" y="62" width="100" height="28" rx="8" fill="white"/>
+        <rect x="125" y="72" width="70" height="6" rx="1.5" fill="#6366f1" opacity="0.3"/>
+        <defs><linearGradient id="pcta-grad" x1="0" y1="0" x2="320" y2="120"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+      </svg>`,
+    },
+    split: {
+      label: 'Dividido',
+      svg: `<svg viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="120" fill="#f8fafc"/>
+        <rect x="10" y="10" width="140" height="100" rx="10" fill="#1e293b"/>
+        <rect x="25" y="30" width="110" height="8" rx="2" fill="white" opacity="0.9"/>
+        <rect x="25" y="46" width="100" height="6" rx="1" fill="white" opacity="0.5"/>
+        <rect x="25" y="62" width="80" height="6" rx="1" fill="white" opacity="0.4"/>
+        <rect x="25" y="80" width="80" height="20" rx="6" fill="white"/>
+        <rect x="160" y="10" width="150" height="100" rx="10" fill="#e2e8f0"/>
+        <rect x="175" y="30" width="120" height="70" rx="8" fill="#cbd5e1"/>
+      </svg>`,
+    },
+    gradient: {
+      label: 'Gradiente',
+      svg: `<svg viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="120" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="100" rx="10" fill="url(#pcta-g-grad)"/>
+        <circle cx="80" cy="40" r="30" fill="white" opacity="0.08"/>
+        <circle cx="250" cy="90" r="20" fill="white" opacity="0.06"/>
+        <rect x="80" y="28" width="160" height="10" rx="2" fill="white" opacity="0.9"/>
+        <rect x="60" y="46" width="200" height="6" rx="1" fill="white" opacity="0.5"/>
+        <rect x="110" y="62" width="100" height="28" rx="8" fill="white"/>
+        <defs><linearGradient id="pcta-g-grad" x1="0" y1="0" x2="320" y2="120"><stop stop-color="#ec4899"/><stop offset="0.5" stop-color="#a855f7"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+      </svg>`,
+    },
+  },
 }
 
 /**

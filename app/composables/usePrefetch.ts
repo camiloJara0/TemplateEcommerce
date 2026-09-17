@@ -16,8 +16,7 @@ export function usePrefetch() {
         categoryStore.loadList(),
         brandStore.loadList(),
         tagStore.loadList(),
-        storeConfigStore.loadPublic(),
-        storeConfigStore.loadTienda(),
+        storeConfigStore.loadCombined(),
         shippingMethodStore.loadList(),
       ])
       prefetched.value = true

@@ -92,9 +92,10 @@ useSeoMeta({ title: 'Mis pedidos', robots: 'noindex, nofollow' })
         class="flex justify-center mt-6"
       >
         <UPagination
-          :model-value="pagination.current_page"
-          :page-count="pagination.last_page"
-          @update:model-value="loadPage"
+          :v-model:page="pagination.current_page"
+          :total="pagination.total"
+          @update:page="loadPage"
+          :items-per-page="pagination.per_page"
         />
       </div>
     </div>

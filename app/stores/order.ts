@@ -11,6 +11,7 @@ import type {
 import type { AdminOrderFilters, ChangeOrderStatusPayload, RefundPayload } from '~/types/admin'
 
 export const useOrderStore = defineStore('order', () => {
+  const { canCall } = useRateLimit()
   const items = ref<Order[]>([])
   const pagination = ref<Paginated<Order>['pagination'] | null>(null)
   const current = ref<Order | null>(null)
@@ -60,6 +61,7 @@ export const useOrderStore = defineStore('order', () => {
   }
 
   async function create(payload: CreateOrderPayload) {
+    if (!canCall('order:create', 2000)) return null
     const { request } = useApi()
     return runMutation<Order>({
       request: () => request<Order>('/pedidos', { method: 'POST', body: payload }),
@@ -80,6 +82,7 @@ export const useOrderStore = defineStore('order', () => {
   }
 
   async function pay(id: number, payload: PayOrderPayload) {
+    if (!canCall(`order:pay:${id}`, 2000)) return null
     const { request } = useApi()
     return runMutation<Order>({
       request: () => request<Order>(`/pedidos/${id}/pagar`, { method: 'POST', body: payload }),

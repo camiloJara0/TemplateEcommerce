@@ -9,7 +9,7 @@ const productStore = useProductStore()
 const categoryStore = useCategoryStore()
 const brandStore = useBrandStore()
 
-const { adminList, adminPagination, adminFilters, loadingList, items } = storeToRefs(productStore)
+const { adminList, adminPagination, adminFilters, loadingList } = storeToRefs(productStore)
 const { items: categories } = storeToRefs(categoryStore)
 const { items: brands } = storeToRefs(brandStore)
 
@@ -26,6 +26,7 @@ const estadoFilter = ref<'all' | 'activo' | 'inactivo'>('all')
 const showFormModal = ref(false)
 const editingId = ref<number | null>(null)
 const editingProduct = ref<Partial<ProductPayload> | null>(null)
+const showPreview = ref(false)
 
 const categoryOptions = computed(() => categories.value.map(c => ({ label: c.name, value: c.id })))
 const brandOptions = computed(() => brands.value.map(b => ({ label: b.name, value: b.id })))
@@ -81,6 +82,11 @@ async function remove(product: NonNullable<typeof adminList.value>[number]) {
   await productStore.adminDelete(product.id)
 }
 
+function changeModal(valor: Boolean) {
+  console.log(valor)
+  showPreview.value = valor 
+}
+
 useSeoMeta({ title: 'Productos — Admin' })
 </script>
 
@@ -95,7 +101,7 @@ useSeoMeta({ title: 'Productos — Admin' })
           {{ adminPagination?.total ?? 0 }} productos en total
         </p>
       </div>
-      <UModal v-model:open="showFormModal" :ui="{ content: 'glass-panel rounded-lg overflow-hidden max-w-2xl' }">
+      <UModal v-model:open="showFormModal" :ui="showPreview ? { content: 'glass-panel rounded-lg overflow-hidden max-w-7xl' } : { content: 'glass-panel rounded-lg overflow-hidden max-w-2xl' }">
         <UButton label="Nuevo producto" icon="i-lucide-plus" color="primary" size="sm" class="rounded-xl"
           @click="openCreate" />
         <template #header>
@@ -106,7 +112,7 @@ useSeoMeta({ title: 'Productos — Admin' })
         <template #body>
           <div class="p-4">
             <FormsProductForm :initial="editingProduct ?? undefined" :product-id="editingId ?? undefined" :category-options="categoryOptions"
-              :brand-options="brandOptions" @success="handleSubmit" />
+              :brand-options="brandOptions" @success="handleSubmit" @preview="changeModal" />
           </div>
         </template>
       </UModal>
@@ -128,7 +134,7 @@ useSeoMeta({ title: 'Productos — Admin' })
       { key: 'price', label: 'Precio' },
       { key: 'stock', label: 'Stock' },
       { key: 'estado', label: 'Estado' }
-    ]" :rows="items" :loading="loadingList" empty-title="Sin productos"
+    ]" :rows="adminList" :loading="loadingList" empty-title="Sin productos"
       empty-description="Aún no has creado productos.">
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
@@ -175,8 +181,8 @@ useSeoMeta({ title: 'Productos — Admin' })
     </DashboardDataTable>
 
     <div v-if="adminPagination && adminPagination.last_page > 1" class="flex justify-center">
-      <UPagination :model-value="adminPagination.current_page" :page-count="adminPagination.last_page"
-        @update:model-value="(p: number) => productStore.loadAdminList({ ...adminFilters, page: p })" />
+      <UPagination :v-model:page="adminPagination.current_page" :total="adminPagination.total" :items-per-page="adminPagination.per_page"
+        @update:page="(p: number) => productStore.loadAdminList({ ...adminFilters, page: p })" />
     </div>
   </div>
 </template>

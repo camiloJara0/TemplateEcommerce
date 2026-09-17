@@ -225,7 +225,6 @@ const COMPONENT_MAP: Record<string, Record<string, Component>> = {
 
 export function useSectionVariants() {
   function getComponent(sectionType: string, variant: string): Component | null {
-    console.log(sectionType, variant)
     const map = COMPONENT_MAP[sectionType]
     if (!map) return null
     return map[variant] ?? Object.values(map)[0] ?? null

@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 const route = useRoute()
 const collapsed = defineModel<boolean>('collapsed', { default: false })
+const storePedidos = useOrderStore()
 
+const {count} = storeToRefs(storePedidos)
 const groups = [
   {
     label: 'Principal',
     items: [
       { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/admin' },
-      { label: 'Pedidos', icon: 'i-lucide-shopping-bag', to: '/admin/pedidos', badge: '5' },
+      { label: 'Pedidos', icon: 'i-lucide-shopping-bag', to: '/admin/pedidos', badge: count.value },
       { label: 'Usuarios', icon: 'i-lucide-users', to: '/admin/usuarios' }
     ]
   },
@@ -40,14 +43,6 @@ const groups = [
 function isActive(to: string) {
   if (to === '/admin') return route.path === '/admin'
   return route.path.startsWith(to)
-}
-
-function collapsedStore(url: string){
-  console.log(url)
-  if(url === '/admin/tienda'){
-    console.log('si')
-    collapsed.value = true
-  }
 }
 </script>
 
@@ -114,7 +109,6 @@ function collapsedStore(url: string){
                     ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-100'
                 ]"
-                @click="collapsedStore(item.to)"
               >
                 <UIcon
                   :name="item.icon"

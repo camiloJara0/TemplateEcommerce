@@ -45,6 +45,7 @@ function buildProductFormData(payload: ProductPayload, editar: Boolean): FormDat
 
 export const useProductStore = defineStore('product', () => {
   const offlineStore = useOfflineStore()
+  const { canCall } = useRateLimit()
 
   const items = ref<Product[]>([])
   const related = ref<Product[]>([])
@@ -66,9 +67,14 @@ export const useProductStore = defineStore('product', () => {
     filters.value = filtersArg ?? {}
     try {
       const { request } = useApi()
-      const res = await request<Paginated<Product>>('/productos', { query: filtersArg })
-      items.value = res.data.data
-      pagination.value = res.data.pagination
+      const key = `products:${JSON.stringify(filtersArg ?? {})}`
+      const data = await offlineStore.loadCollection<Paginated<Product>>(
+        'products',
+        () => request<Paginated<Product>>('/productos', { query: filtersArg }),
+        { key }
+      )
+      items.value = data.data
+      pagination.value = data.pagination
     } finally {
       loadingList.value = false
     }
@@ -91,6 +97,23 @@ export const useProductStore = defineStore('product', () => {
     related.value = res.data
   }
 
+  async function loadProductDetail(slug: string) {
+    loadingOne.value = true
+    try {
+      const { request } = useApi()
+      const res = await request<{
+        product: Product
+        related: Product[]
+        reviews: { items: ProductReview[]; pagination: Paginated<ProductReview>['pagination'] }
+      }>(`/productos/${slug}/detalle`)
+      current.value = res.data.product
+      related.value = res.data.related
+      reviewsByProduct.value[res.data.product.id] = res.data.reviews.items
+    } finally {
+      loadingOne.value = false
+    }
+  }
+
   async function loadReviews(id: number, force = false) {
     const { request } = useApi()
     const res = await offlineStore.loadCollection<ProductReview[]>(
@@ -110,6 +133,7 @@ export const useProductStore = defineStore('product', () => {
   }
 
   async function adminCreate(payload: ProductPayload) {
+    if (!canCall('product:create', 1000)) return null
     const { request } = useApi()
     const body = hasFileImages(payload.images) ? buildProductFormData(payload, false) : payload
     return runMutation<Product>({
@@ -122,6 +146,7 @@ export const useProductStore = defineStore('product', () => {
   }
 
   async function adminUpdate(id: number, payload: Partial<ProductPayload>) {
+    if (!canCall(`product:update:${id}`, 1000)) return null
     const { request } = useApi()
     const body = hasFileImages(payload.images)
       ? buildProductFormData(payload as ProductPayload, true)
@@ -138,6 +163,7 @@ export const useProductStore = defineStore('product', () => {
   }
 
   async function adminDelete(id: number) {
+    if (!canCall(`product:delete:${id}`, 1000)) return null
     const { request } = useApi()
     return runMutation<null>({
       request: () => request<null>(`/admin/productos/${id}`, { method: 'DELETE' }),
@@ -153,7 +179,7 @@ export const useProductStore = defineStore('product', () => {
     loadingList, loadingOne, filters,
     adminList, adminPagination, adminFilters,
     count, byId,
-    loadList, loadOne, loadRelated, loadReviews,
+    loadList, loadOne, loadRelated, loadReviews, loadProductDetail,
     loadAdminList, adminCreate, adminUpdate, adminDelete
   }
 })

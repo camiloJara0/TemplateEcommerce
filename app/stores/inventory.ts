@@ -6,6 +6,14 @@ import type {
   StockAlert
 } from '~/types/admin'
 
+export interface InventoryFilters {
+  product_id?: number
+  product_variant_id?: number
+  tipo?: string
+  page?: number
+  per_page?: number
+}
+
 export const useInventoryStore = defineStore('inventory', () => {
   const offlineStore = useOfflineStore()
   const movements = ref<InventoryMovement[]>([])
@@ -16,12 +24,12 @@ export const useInventoryStore = defineStore('inventory', () => {
 
   const stockAlertCount = computed(() => alerts.value.length)
 
-  async function loadMovements() {
+  async function loadMovements(filters?: InventoryFilters) {
     loadingMovements.value = true
     try {
       const { request } = useApi()
-      const data = await request<Paginated<InventoryMovement>>('/admin/inventario/movimientos')
-      movements.value = data.data.items
+      const data = await request<Paginated<InventoryMovement>>('/admin/inventario/movimientos', { query: filters })
+      movements.value = data.data.data
       movementsPagination.value = data.data.pagination
     } finally {
       loadingMovements.value = false

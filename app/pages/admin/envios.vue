@@ -10,8 +10,8 @@ const { adminList, adminPagination, loading } = storeToRefs(shipmentStore)
 const { date } = useFormat()
 
 const currentPage = ref(1)
-const statusFilter = ref('')
-const carrierFilter = ref('')
+const statusFilter = ref('#')
+const carrierFilter = ref('#')
 
 const showCreate = ref(false)
 const newShipment = ref<{ order_id: number, carrier: Carrier, address_id: number, weight?: number }>({
@@ -98,7 +98,7 @@ useSeoMeta({ title: 'Envíos — Admin' })
       <USelect
         v-model="statusFilter"
         :items="[
-          { label: 'Todos los estados', value: '' },
+          { label: 'Todos los estados', value: '#' },
           ...statusOptions
         ]"
         class="w-48"
@@ -107,7 +107,7 @@ useSeoMeta({ title: 'Envíos — Admin' })
       <USelect
         v-model="carrierFilter"
         :items="[
-          { label: 'Todas las transportadoras', value: '' },
+          { label: 'Todas las transportadoras', value: '#' },
           ...carrierOptions
         ]"
         class="w-48"

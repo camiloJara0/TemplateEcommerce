@@ -72,12 +72,14 @@ const estadoColor = (estado: string) => {
 }
 
 function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob)
+  const url = URL.createObjectURL(blob instanceof Blob ? blob : new Blob([blob]))
   const a = document.createElement('a')
   a.href = url
   a.download = filename
+  document.body.appendChild(a)
   a.click()
-  URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 100)
 }
 
 async function downloadReport(tipo: string, formato: string, query?: Record<string, string>) {
@@ -86,8 +88,9 @@ async function downloadReport(tipo: string, formato: string, query?: Record<stri
     query: params,
     responseType: 'blob'
   })
+  const blob = res.data instanceof Blob ? res.data : new Blob([res.data])
   const ext = formato === 'excel' ? 'xlsx' : formato
-  downloadBlob(res.data, `reporte-${tipo}.${ext}`)
+  downloadBlob(blob, `reporte-${tipo}.${ext}`)
 }
 
 async function loadVentas() {

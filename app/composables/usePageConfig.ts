@@ -4,7 +4,7 @@ import { DEFAULT_TIENDA_CONFIG } from '~/types/store'
 export function usePageConfig() {
   const configStore = useStoreConfigStore()
 
-  async function loadPageConfig(force = true) {
+  async function loadPageConfig(force = false) {
     await configStore.loadTienda(force)
   }
 

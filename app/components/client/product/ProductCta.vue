@@ -6,7 +6,6 @@ defineProps<{ config: ProductCtaSection }>()
 
 <template>
   <section
-    v-if="config.show"
     class="py-16 rounded-xl"
     :style="{ backgroundColor: config.bg_color, color: config.text_color }"
   >

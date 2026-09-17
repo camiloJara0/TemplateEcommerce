@@ -277,10 +277,28 @@ export interface CategoriesHomeSection {
 }
 
 // ─── Secciones de Producto (14 secciones) ────────────────────────────────────
+// Secciones GLOBALES: se configuran UNA vez en el tienda editor, aplican a TODOS los productos.
+// Secciones INDIVIDUALES: se configuran por producto en ProductForm, se activan con product_ids.
+
+export type ProductSectionType = 'hero' | 'benefits' | 'gallery' | 'problem_solution' | 'transform' | 'features' | 'comparison' | 'bundle' | 'countdown' | 'testimonials' | 'ugc' | 'warranty' | 'faq' | 'cta'
+
+export const GLOBAL_PRODUCT_SECTIONS: ProductSectionType[] = ['hero', 'benefits', 'gallery', 'warranty', 'faq', 'cta']
+export const INDIVIDUAL_PRODUCT_SECTIONS: ProductSectionType[] = ['problem_solution', 'transform', 'features', 'comparison', 'bundle', 'countdown', 'testimonials', 'ugc']
+
+export function isGlobalSection(type: ProductSectionType): boolean {
+  return GLOBAL_PRODUCT_SECTIONS.includes(type)
+}
+
+export function isIndividualSection(type: ProductSectionType): boolean {
+  return INDIVIDUAL_PRODUCT_SECTIONS.includes(type)
+}
+
+// ─── Secciones Globales (show: boolean) ──────────────────────────────────────
 
 export interface ProductHeroSection {
   show: boolean
-  layout: 'gallery-left' | 'gallery-right' | 'full-width'
+  order: number
+  variant: 'gallery-left' | 'gallery-right' | 'full-width'
   gallery_style: 'grid' | 'stacked' | 'zoom'
   show_breadcrumbs: boolean
   show_share: boolean
@@ -295,22 +313,63 @@ export interface ProductBenefitItem {
 
 export interface ProductBenefitsSection {
   show: boolean
+  order: number
+  variant: 'horizontal' | 'vertical'
   title: string
   subtitle: string
   items: ProductBenefitItem[]
-  layout: 'horizontal' | 'vertical'
 }
 
 export interface ProductGallerySection {
   show: boolean
-  style: 'grid' | 'masonry' | 'carousel'
+  order: number
+  variant: 'grid' | 'masonry' | 'carousel' | 'spotlight'
   columns: number
   show_thumbnails: boolean
   enable_zoom: boolean
 }
 
-export interface ProductProblemSection {
+export interface ProductWarrantySection {
   show: boolean
+  order: number
+  variant: 'cards' | 'icons' | 'minimal'
+  headline: string
+  items: Array<{ icon: string, title: string, description: string }>
+  cta_label: string
+  cta_url: string
+}
+
+export interface ProductFaqItem {
+  question: string
+  answer: string
+}
+
+export interface ProductFaqSection {
+  show: boolean
+  order: number
+  variant: 'accordion' | 'tabs' | 'simple'
+  title: string
+  subtitle: string
+  items: ProductFaqItem[]
+}
+
+export interface ProductCtaSection {
+  show: boolean
+  order: number
+  variant: 'banner' | 'split' | 'gradient'
+  headline: string
+  subtext: string
+  cta_primary: { label: string, url: string }
+  cta_secondary: { label: string, url: string } | null
+  bg_color: string
+  text_color: string
+}
+
+// ─── Secciones Individuales (product_ids: number[]) ──────────────────────────
+
+export interface ProductProblemSection {
+  product_ids: number[]
+  order: number
   headline: string
   problems: Array<{ icon: string, title: string, description: string }>
   solution_headline: string
@@ -318,14 +377,15 @@ export interface ProductProblemSection {
 }
 
 export interface ProductTransformSection {
-  show: boolean
+  product_ids: number[]
+  order: number
+  variant: 'side-by-side' | 'overlay' | 'cards'
   headline: string
   subtext: string
   before_image: string | null
   after_image: string | null
   before: Array<{ label: string, description: string }>
   after: Array<{ label: string, description: string }>
-  slider_style: 'side-by-side' | 'overlay' | 'cards'
 }
 
 export interface ProductFeatureItem {
@@ -336,10 +396,11 @@ export interface ProductFeatureItem {
 }
 
 export interface ProductFeaturesSection {
-  show: boolean
+  product_ids: number[]
+  order: number
+  variant: 'list' | 'grid' | 'alternating'
   title: string
   subtitle: string
-  layout: 'list' | 'grid' | 'alternating'
   items: ProductFeatureItem[]
 }
 
@@ -354,7 +415,9 @@ export interface ProductComparisonRow {
 }
 
 export interface ProductComparisonSection {
-  show: boolean
+  product_ids: number[]
+  order: number
+  variant: 'table' | 'cards' | 'visual'
   headline: string
   subtext: string
   columns: ProductComparisonColumn[]
@@ -370,7 +433,9 @@ export interface ProductBundleItem {
 }
 
 export interface ProductBundleSection {
-  show: boolean
+  product_ids: number[]
+  order: number
+  variant: 'grid' | 'split' | 'carousel'
   headline: string
   subtext: string
   discount_label: string
@@ -379,7 +444,9 @@ export interface ProductBundleSection {
 }
 
 export interface ProductCountdownSection {
-  show: boolean
+  product_ids: number[]
+  order: number
+  variant: 'minimal' | 'urgent' | 'elegant'
   headline: string
   subtext: string
   end_date: string
@@ -396,10 +463,11 @@ export interface ProductTestimonialItem {
 }
 
 export interface ProductTestimonialsSection {
-  show: boolean
+  product_ids: number[]
+  order: number
+  variant: 'carousel' | 'grid' | 'masonry' | 'spotlight'
   title: string
   subtitle: string
-  layout: 'carousel' | 'grid' | 'masonry'
   items: ProductTestimonialItem[]
 }
 
@@ -411,43 +479,18 @@ export interface ProductUgcItem {
 }
 
 export interface ProductUgcSection {
-  show: boolean
+  product_ids: number[]
+  order: number
+  variant: 'carousel' | 'grid' | 'masonry'
   title: string
   subtitle: string
-  layout: 'carousel' | 'grid'
   items: ProductUgcItem[]
 }
 
-export interface ProductWarrantySection {
-  show: boolean
-  headline: string
-  items: Array<{ icon: string, title: string, description: string }>
-  cta_label: string
-  cta_url: string
-}
+// ─── Agregados ──────────────────────────────────────────────────────────────
 
-export interface ProductFaqItem {
-  question: string
-  answer: string
-}
-
-export interface ProductFaqSection {
-  show: boolean
-  title: string
-  subtitle: string
-  style: 'accordion' | 'tabs' | 'simple'
-  items: ProductFaqItem[]
-}
-
-export interface ProductCtaSection {
-  show: boolean
-  headline: string
-  subtext: string
-  cta_primary: { label: string, url: string }
-  cta_secondary: { label: string, url: string } | null
-  bg_color: string
-  text_color: string
-}
+export type ProductGlobalSectionKey = 'hero' | 'benefits' | 'gallery' | 'warranty' | 'faq' | 'cta'
+export type ProductIndividualSectionKey = 'problem_solution' | 'transform' | 'features' | 'comparison' | 'bundle' | 'countdown' | 'testimonials' | 'ugc'
 
 export interface ProductoSecciones {
   hero: ProductHeroSection
@@ -467,6 +510,20 @@ export interface ProductoSecciones {
 }
 
 export type ProductSectionKey = keyof ProductoSecciones
+
+/** Returns true if the section is active for the given product */
+export function isProductSectionActive(
+  sections: ProductoSecciones,
+  key: ProductSectionKey,
+  productId?: number
+): boolean {
+  const section = sections[key] as unknown as Record<string, unknown>
+  if ('show' in section) return section.show as boolean
+  if ('product_ids' in section && productId != null) {
+    return (section.product_ids as number[]).includes(productId)
+  }
+  return false
+}
 
 // ─── Nuevas secciones Home ────────────────────────────────────────────────────
 
@@ -714,21 +771,98 @@ export const ABOUT_SECTION_META: Record<AboutSectionKey, { label: string, icon: 
   cta: { label: 'CTA', icon: 'i-lucide-megaphone' },
 }
 
-export const PRODUCT_SECTION_META: Record<ProductSectionKey, { label: string, icon: string }> = {
-  hero: { label: 'Hero Producto', icon: 'i-lucide-package' },
-  benefits: { label: 'Beneficios', icon: 'i-lucide-badge-check' },
-  gallery: { label: 'Galería', icon: 'i-lucide-images' },
-  problem_solution: { label: 'Problema/Solución', icon: 'i-lucide-lightbulb' },
-  transform: { label: 'Transformación', icon: 'i-lucide-arrow-right-left' },
-  features: { label: 'Características', icon: 'i-lucide-settings' },
-  comparison: { label: 'Comparativa', icon: 'i-lucide-table' },
-  bundle: { label: 'Bundle Oferta', icon: 'i-lucide-package-plus' },
-  countdown: { label: 'Countdown', icon: 'i-lucide-timer' },
-  testimonials: { label: 'Testimonios', icon: 'i-lucide-message-square-quote' },
-  ugc: { label: 'UGC Clientes', icon: 'i-lucide-camera' },
-  warranty: { label: 'Garantía', icon: 'i-lucide-shield-check' },
-  faq: { label: 'FAQ', icon: 'i-lucide-circle-help' },
-  cta: { label: 'CTA Final', icon: 'i-lucide-megaphone' },
+export const PRODUCT_SECTION_META: Record<ProductSectionKey, { label: string, icon: string, type: ProductSectionType }> = {
+  hero: { label: 'Hero Producto', icon: 'i-lucide-package', type: 'hero' },
+  benefits: { label: 'Beneficios', icon: 'i-lucide-badge-check', type: 'benefits' },
+  gallery: { label: 'Galería', icon: 'i-lucide-images', type: 'gallery' },
+  problem_solution: { label: 'Problema/Solución', icon: 'i-lucide-lightbulb', type: 'problem_solution' },
+  transform: { label: 'Transformación', icon: 'i-lucide-arrow-right-left', type: 'transform' },
+  features: { label: 'Características', icon: 'i-lucide-settings', type: 'features' },
+  comparison: { label: 'Comparativa', icon: 'i-lucide-table', type: 'comparison' },
+  bundle: { label: 'Bundle Oferta', icon: 'i-lucide-package-plus', type: 'bundle' },
+  countdown: { label: 'Countdown', icon: 'i-lucide-timer', type: 'countdown' },
+  testimonials: { label: 'Testimonios', icon: 'i-lucide-message-square-quote', type: 'testimonials' },
+  ugc: { label: 'UGC Clientes', icon: 'i-lucide-camera', type: 'ugc' },
+  warranty: { label: 'Garantía', icon: 'i-lucide-shield-check', type: 'warranty' },
+  faq: { label: 'FAQ', icon: 'i-lucide-circle-help', type: 'faq' },
+  cta: { label: 'CTA Final', icon: 'i-lucide-megaphone', type: 'cta' },
+}
+
+/** Section variant options for the variant picker */
+export const PRODUCT_SECTION_VARIANTS: Record<string, { key: string, label: string, description: string }[]> = {
+  hero: [
+    { key: 'gallery-left', label: 'Galería izquierda', description: 'Galería a la izquierda, info a la derecha' },
+    { key: 'gallery-right', label: 'Galería derecha', description: 'Info a la izquierda, galería a la derecha' },
+    { key: 'full-width', label: 'Ancho completo', description: 'Galería y info en layout completo' },
+  ],
+  gallery: [
+    { key: 'grid', label: 'Cuadrícula', description: 'Imágenes en grilla responsive' },
+    { key: 'masonry', label: 'Masonry', description: 'Imágenes en columnas irregulares' },
+    { key: 'carousel', label: 'Carrusel', description: 'Slider con navegación' },
+    { key: 'spotlight', label: 'Spotlight', description: 'Imagen principal con thumbnails' },
+  ],
+  comparison: [
+    { key: 'table', label: 'Tabla', description: 'Comparación en tabla clásica' },
+    { key: 'cards', label: 'Tarjetas', description: 'Tarjetas lado a lado con checks' },
+    { key: 'visual', label: 'Visual', description: 'Comparación visual con gradiente' },
+  ],
+  bundle: [
+    { key: 'grid', label: 'Cuadrícula', description: 'Productos en grilla con precio bundle' },
+    { key: 'split', label: 'Dividido', description: 'Lista a la izquierda, resumen a la derecha' },
+    { key: 'carousel', label: 'Carrusel', description: 'Slider horizontal de productos' },
+  ],
+  countdown: [
+    { key: 'minimal', label: 'Minimal', description: 'Limpio y elegante' },
+    { key: 'urgent', label: 'Urgente', description: 'Colores rojos, animación pulse' },
+    { key: 'elegant', label: 'Elegante', description: 'Fondo oscuro, tipografía refinada' },
+  ],
+  testimonials: [
+    { key: 'carousel', label: 'Carrusel', description: 'Slider con controles' },
+    { key: 'grid', label: 'Cuadrícula', description: 'Tarjetas en grilla' },
+    { key: 'masonry', label: 'Masonry', description: 'Columnas irregulares' },
+    { key: 'spotlight', label: 'Destacado', description: 'Testimonio grande con quote' },
+  ],
+  ugc: [
+    { key: 'carousel', label: 'Carrusel', description: 'Scroll horizontal de contenido' },
+    { key: 'grid', label: 'Cuadrícula', description: 'Grid de contenido de usuario' },
+    { key: 'masonry', label: 'Masonry', description: 'Columnas irregulares' },
+  ],
+  warranty: [
+    { key: 'cards', label: 'Tarjetas', description: 'Tarjetas con iconos grandes' },
+    { key: 'icons', label: 'Iconos', description: 'Iconos en fila horizontal' },
+    { key: 'minimal', label: 'Mínimo', description: 'Línea simple con iconos pequeños' },
+  ],
+  faq: [
+    { key: 'accordion', label: 'Accordion', description: 'Preguntas expandibles' },
+    { key: 'tabs', label: 'Tabs', description: 'Pestañas con contenido' },
+    { key: 'simple', label: 'Simple', description: 'Tarjetas estáticas' },
+  ],
+  cta: [
+    { key: 'banner', label: 'Banner', description: 'Banner centrado con gradiente' },
+    { key: 'split', label: 'Dividido', description: 'Texto a la izquierda, imagen derecha' },
+    { key: 'gradient', label: 'Gradiente', description: 'Fondo gradiente vibrante' },
+  ],
+}
+
+/** Mock product data for section previews in the tienda editor */
+export const MOCK_PRODUCT_FOR_PREVIEW = {
+  id: 1,
+  name: 'Producto de ejemplo',
+  slug: 'producto-ejemplo',
+  sku: 'SKU-001',
+  price: 99900,
+  price_discount: 79900,
+  description: 'Este es un producto de ejemplo utilizado para previsualizar las secciones de la página de producto.',
+  stock: 25,
+  images: [
+    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600',
+    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600',
+    'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600',
+  ],
+  brand: 'Marca Ejemplo',
+  rating: 4,
+  reviews_count: 128,
+  slug_url: '/producto/producto-ejemplo',
 }
 
 export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
@@ -885,21 +1019,23 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
     ],
   },
   producto: {
-    hero: { show: true, layout: 'gallery-left', gallery_style: 'grid', show_breadcrumbs: true, show_share: true, sticky_add_to_cart: true },
+    hero: { show: true, order: 0, variant: 'gallery-left', gallery_style: 'grid', show_breadcrumbs: true, show_share: true, sticky_add_to_cart: true },
     benefits: {
       show: true,
+      order: 1,
+      variant: 'horizontal',
       title: '¿Por qué elegir este producto?',
       subtitle: 'Diseñado para ti',
-      layout: 'horizontal',
       items: [
         { icon: 'i-lucide-truck', title: 'Envío gratis', description: 'En pedidos superiores a $99.000' },
         { icon: 'i-lucide-shield-check', title: 'Garantía 1 año', description: 'Cobertura completa' },
         { icon: 'i-lucide-rotate-ccw', title: 'Devolución gratis', description: '30 días sin preguntas' },
       ],
     },
-    gallery: { show: false, style: 'grid', columns: 2, show_thumbnails: true, enable_zoom: true },
+    gallery: { show: false, order: 2, variant: 'grid', columns: 2, show_thumbnails: true, enable_zoom: true },
     problem_solution: {
-      show: false,
+      product_ids: [],
+      order: 3,
       headline: '¿Cansado de...?',
       problems: [
         { icon: 'i-lucide-x-circle', title: 'Problema 1', description: 'Descripción del problema' },
@@ -912,27 +1048,31 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
       ],
     },
     transform: {
-      show: false,
+      product_ids: [],
+      order: 4,
+      variant: 'overlay',
       headline: 'La transformación',
       subtext: 'Mira la diferencia',
       before_image: null,
       after_image: null,
       before: [{ label: 'Antes', description: 'Situación anterior' }],
       after: [{ label: 'Después', description: 'Situación mejorada' }],
-      slider_style: 'overlay',
     },
     features: {
-      show: false,
+      product_ids: [],
+      order: 5,
+      variant: 'alternating',
       title: 'Características',
       subtitle: 'Todo lo que necesitas saber',
-      layout: 'alternating',
       items: [
         { icon: 'i-lucide-zap', title: 'Rendimiento', description: 'Alto rendimiento probado', image: null },
         { icon: 'i-lucide-shield', title: 'Durabilidad', description: 'Materiales premium', image: null },
       ],
     },
     comparison: {
-      show: false,
+      product_ids: [],
+      order: 6,
+      variant: 'table',
       headline: '¿Por qué nosotros?',
       subtext: 'Compara y decide',
       columns: [
@@ -946,7 +1086,9 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
       ],
     },
     bundle: {
-      show: false,
+      product_ids: [],
+      order: 7,
+      variant: 'grid',
       headline: 'Lleva el pack completo',
       subtext: 'Ahorra comprando en bundle',
       discount_label: 'Ahorra 25%',
@@ -954,7 +1096,9 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
       cta_label: 'Agregar bundle al carrito',
     },
     countdown: {
-      show: false,
+      product_ids: [],
+      order: 8,
+      variant: 'elegant',
       headline: 'Oferta por tiempo limitado',
       subtext: 'No dejes pasar esta oportunidad',
       end_date: '',
@@ -962,21 +1106,25 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
       text_color: '#ffffff',
     },
     testimonials: {
-      show: false,
+      product_ids: [],
+      order: 9,
+      variant: 'carousel',
       title: 'Lo que dicen quienes ya lo compraron',
       subtitle: 'Opiniones verificadas',
-      layout: 'carousel',
       items: [],
     },
     ugc: {
-      show: false,
+      product_ids: [],
+      order: 10,
+      variant: 'carousel',
       title: 'Visto en Instagram',
       subtitle: 'Clientes reales usando nuestro producto',
-      layout: 'carousel',
       items: [],
     },
     warranty: {
       show: false,
+      order: 11,
+      variant: 'cards',
       headline: 'Compra con confianza',
       items: [
         { icon: 'i-lucide-shield-check', title: 'Garantía 1 año', description: 'Cobertura completa de fábrica' },
@@ -988,9 +1136,10 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
     },
     faq: {
       show: false,
+      order: 12,
+      variant: 'accordion',
       title: 'Preguntas frecuentes',
       subtitle: 'Resolvemos tus dudas',
-      style: 'accordion',
       items: [
         { question: '¿Cuánto tarda el envío?', answer: 'El envío estándar tarda 3-5 días hábiles.' },
         { question: '¿Puedo devolver el producto?', answer: 'Sí, tienes 30 días para devoluciones.' },
@@ -998,6 +1147,8 @@ export const DEFAULT_TIENDA_CONFIG: TiendaConfig = {
     },
     cta: {
       show: false,
+      order: 13,
+      variant: 'banner',
       headline: '¿Listo para comprar?',
       subtext: 'Agrega al carrito y recíbelo en casa',
       cta_primary: { label: 'Comprar ahora', url: '/carrito' },

@@ -10,7 +10,17 @@ const showModal = ref(false)
 const editingId = ref<number | null>(null)
 const editingCategory = ref<{ name?: string, description?: string, is_active?: boolean, sort_order?: number, parent_id?: number } | null>(null)
 
+const catPage = ref(1)
+const catPerPage = 15
+
 const parentOptions = computed(() => items.value.map(c => ({ label: c.name, value: c.id })))
+
+const paginatedItems = computed(() => {
+  const start = (catPage.value - 1) * catPerPage
+  return items.value.slice(start, start + catPerPage)
+})
+
+const catLastPage = computed(() => Math.max(1, Math.ceil(items.value.length / catPerPage)))
 
 async function openCreate() {
   editingId.value = null
@@ -84,7 +94,7 @@ useSeoMeta({ title: 'Categorías — Admin' })
       { key: 'name', label: 'Nombre', class: 'min-w-[200px]' },
       { key: 'sort_order', label: 'Orden', class: 'tabular-nums w-24' },
       { key: 'is_active', label: 'Estado' }
-    ]" :rows="items" :loading="loading" empty-title="Sin categorías"
+    ]" :rows="paginatedItems" :loading="loading" empty-title="Sin categorías"
       empty-description="Crea categorías para organizar tu catálogo.">
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
@@ -114,5 +124,10 @@ useSeoMeta({ title: 'Categorías — Admin' })
         </div>
       </template>
     </DashboardDataTable>
+
+    <div v-if="catLastPage > 1" class="flex justify-center">
+      <UPagination :v-model:page="catPage" :total="catLastPage * 10" :items-per-page="10"
+        @update:page="(p: number) => catPage = p" />
+    </div>
   </div>
 </template>

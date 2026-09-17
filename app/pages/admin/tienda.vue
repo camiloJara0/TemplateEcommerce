@@ -176,13 +176,12 @@ const tabs = [
   { key: 'producto' as const, label: 'Producto', icon: 'i-lucide-package' },
   { key: 'about' as const, label: 'Nosotros', icon: 'i-lucide-users' },
   { key: 'styles' as const, label: 'Global', icon: 'i-lucide-palette' },
-  { key: 'plantillas' as const, label: 'Plantillas', icon: 'i-lucide-layout-template' },
 ]
 </script>
 
 <template>
   <NuxtLayout :name="layout">
-    <div class="h-[calc(100dvh-4rem)] flex flex-col -m-6">
+    <div class=" flex flex-col -m-6" :class="{'h-[calc(100dvh-4rem)]': !fullscreen, 'h-screen': fullscreen}">
       <!-- Toolbar -->
       <AdminEditorToolbar
         :has-changes="hasChanges"
@@ -282,21 +281,6 @@ const tabs = [
               />
             </template>
           </UTabs>
-        </div>
-
-        <!-- Templates -->
-        <div v-else-if="activeTab === 'plantillas'" class="flex-1 overflow-y-auto">
-          <div class="p-4 space-y-4">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-              Explora todas las plantillas disponibles en la página dedicada.
-            </p>
-            <UButton
-              label="Abrir marketplace de plantillas"
-              icon="i-lucide-layout-template"
-              to="/admin/plantillas"
-              block
-            />
-          </div>
         </div>
 
       </div>

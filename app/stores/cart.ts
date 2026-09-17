@@ -2,6 +2,7 @@ import type { Cart, AddCartItemPayload, UpdateCartItemPayload } from '~/types/co
 
 export const useCartStore = defineStore('cart', () => {
   const offlineStore = useOfflineStore()
+  const { canCall } = useRateLimit()
   const cart = ref<Cart | null>(null)
   const loading = ref(false)
   const sessionId = ref<string | null>(initSessionId())
@@ -47,6 +48,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   async function addItem(payload: AddCartItemPayload) {
+    if (!canCall(`cart:add:${payload.id}`, 500)) return null
     const { request } = useApi()
     const sid = getSessionId()
     const body = { ...payload, session_id: payload.session_id ?? sid }
@@ -67,6 +69,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   async function updateItem(itemId: number, payload: UpdateCartItemPayload) {
+    if (!canCall(`cart:update:${itemId}`, 500)) return null
     const { request } = useApi()
     const sid = getSessionId()
     return runMutation<Cart>({
@@ -90,6 +93,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   async function removeItem(itemId: number) {
+    if (!canCall(`cart:remove:${itemId}`, 500)) return null
     const { request } = useApi()
     const sid = getSessionId()
     return runMutation<Cart>({

@@ -38,12 +38,12 @@ function dismiss() {
       </div>
     </div>
 
-    <NuxtLink
+    <UButton
       :to="config.cta_url"
       class="urgency-banner__cta"
     >
-      {{ config.cta_label }}
-    </NuxtLink>
+      <p class="text-black">{{ config.cta_label }}</p>
+    </UButton>
 
     <button
       v-if="config.show_close"

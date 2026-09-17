@@ -5,13 +5,17 @@ definePageMeta({ layout: 'admin', middleware: ['auth'] })
 
 const inventoryStore = useInventoryStore()
 const productStore = useProductStore()
-const { movements, loadingMovements, alerts, loadingAlerts } = storeToRefs(inventoryStore)
+const { movements, movementsPagination, loadingMovements, alerts, loadingAlerts } = storeToRefs(inventoryStore)
 const { items: products } = storeToRefs(productStore)
 const { date } = useFormat()
 
 const showMovementModal = ref(false)
 const showAlertModal = ref(false)
 const productOptions = computed(() => products.value.map(p => ({ label: p.name, value: p.id })))
+
+const movementFilters = ref<{ tipo?: string; page?: number }>({})
+const movementTipoFilter = ref('all')
+const movementPage = ref(1)
 
 const movementInitial = ref<Parameters<typeof inventoryStore.createMovement>[0]>({
   product_id: 0,
@@ -26,9 +30,16 @@ const alertInitial = ref<Parameters<typeof inventoryStore.createAlert>[0]>({
   active: true
 })
 
+async function loadMovements() {
+  const filters: Record<string, any> = { page: movementPage.value }
+  if (movementTipoFilter.value && movementTipoFilter.value !== 'all') filters.tipo = movementTipoFilter.value
+  await inventoryStore.loadMovements(filters)
+}
+
 async function submitMovement(payload: unknown) {
   await inventoryStore.createMovement(payload as Parameters<typeof inventoryStore.createMovement>[0])
   showMovementModal.value = false
+  await loadMovements()
 }
 
 async function submitAlert(payload: unknown) {
@@ -38,7 +49,7 @@ async function submitAlert(payload: unknown) {
 
 onMounted(async () => {
   await Promise.all([
-    inventoryStore.loadMovements(),
+    loadMovements(),
     inventoryStore.loadAlerts(),
     productStore.loadList()
   ])
@@ -203,6 +214,20 @@ useSeoMeta({ title: 'Inventario — Admin' })
         </UModal>
       </div>
 
+      <div class="flex flex-wrap items-end gap-3">
+        <USelect
+          v-model="movementTipoFilter"
+          :items="[
+            { label: 'Todos los tipos', value: 'all' },
+            { label: 'Entrada', value: 'entrada' },
+            { label: 'Salida', value: 'salida' },
+            { label: 'Ajuste', value: 'ajuste' }
+          ]"
+          class="w-44"
+          @update:model-value="movementPage = 1; loadMovements()"
+        />
+      </div>
+
       <DashboardDataTable
         :columns="[
           { key: 'created_at', label: 'Fecha' },
@@ -242,6 +267,11 @@ useSeoMeta({ title: 'Inventario — Admin' })
           <span class="text-sm text-slate-500 line-clamp-1">{{ (row as any).razon ?? '—' }}</span>
         </template>
       </DashboardDataTable>
+
+      <div v-if="movementsPagination && movementsPagination.last_page > 1" class="flex justify-center">
+        <UPagination :v-model:page="movementsPagination.current_page" :total="movementsPagination.total" :items-per-page="movementsPagination.per_page"
+          @update:page="(p: number) => { movementPage = p; loadMovements() }" />
+      </div>
     </section>
   </div>
 </template>

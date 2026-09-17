@@ -78,7 +78,7 @@ async function placeOrder() {
       notes: notes.value || undefined
     })
     // await cartStore.clear()
-    if (result.data?.id) {
+    if (result?.data?.id) {
       await navigateTo(`/checkout/pago/${result.data.id}`)
     }
   } finally {
@@ -92,7 +92,7 @@ watch([selectedAddressId, selectedShippingId], () => {
 
 onMounted(async () => {
   await Promise.all([
-    cartStore.load(),
+    cartStore.cart ? Promise.resolve() : cartStore.load(),
     addressStore.load(),
     shippingStore.loadList()
   ])

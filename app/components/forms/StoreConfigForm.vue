@@ -14,17 +14,11 @@ const props = withDefaults(defineProps<Props>(), {
   submitLabel: 'Guardar configuración',
   loading: false,
   initial: () => ({
-    store_name: '',
-    store_tagline: '',
-    logo: '',
     currency: 'COP',
     tax_rate: 0.19,
     default_language: 'es' as Language,
     support_email: '',
     support_phone: '',
-    color_primario: '',
-    color_secundario: '',
-    color_fondo: '',
     meta_title: '',
     meta_description: '',
     meta_keywords: '',
@@ -39,7 +33,6 @@ const emit = defineEmits<{
 
 const submitLoading = ref(false)
 const { form, visibleErrors, isValid, touch, submit: validate, setForm } = useFormValidation([
-  { key: 'store_name', label: 'Nombre de la tienda', required: true, minLength: 2, maxLength: 120 },
   { key: 'currency', label: 'Moneda', required: true, custom: (v) => {
     if (!v) return null
     if (!/^[A-Z]{3}$/.test(String(v))) return 'Código ISO de 3 letras (ej. COP, USD)'
@@ -50,8 +43,7 @@ const { form, visibleErrors, isValid, touch, submit: validate, setForm } = useFo
     if (!Number.isFinite(n) || n < 0 || n > 1) return 'Debe estar entre 0 y 1 (ej. 0.19 = 19%)'
     return null
   } },
-  { key: 'support_email', label: 'Email de soporte', isEmail: true },
-  { key: 'store_tagline', label: 'Eslogan', maxLength: 200 }
+  { key: 'support_email', label: 'Email de soporte', isEmail: true }
 ])
 
 setForm({ ...props.initial })
@@ -67,17 +59,11 @@ async function onSubmit() {
   submitLoading.value = true
   try {
     const payload: StoreConfigPayload = {
-      store_name: String(form.value.store_name ?? ''),
-      store_tagline: form.value.store_tagline || undefined,
-      logo: form.value.logo || undefined,
       currency: String(form.value.currency ?? 'COP').toUpperCase(),
       tax_rate: Number(form.value.tax_rate ?? 0),
       default_language: form.value.default_language as Language,
       support_email: form.value.support_email || undefined,
       support_phone: form.value.support_phone || undefined,
-      color_primario: form.value.color_primario || undefined,
-      color_secundario: form.value.color_secundario || undefined,
-      color_fondo: form.value.color_fondo || undefined,
       meta_title: form.value.meta_title || undefined,
       meta_description: form.value.meta_description || undefined,
       meta_keywords: form.value.meta_keywords || undefined,
@@ -97,26 +83,6 @@ defineExpose({ form, visibleErrors, isValid })
 
 <template>
   <UForm class="space-y-6" :state="form" @submit.prevent="onSubmit">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <UiBaseInput
-        v-model="form.store_name"
-        label="Nombre de la tienda"
-        required
-        :error="visibleErrors.store_name || undefined"
-        @blur="touch('store_name')"
-      />
-      <UiBaseInput
-        v-model="form.store_tagline"
-        label="Eslogan"
-        :error="visibleErrors.store_tagline || undefined"
-        @blur="touch('store_tagline')"
-      />
-    </div>
-    <UiBaseInput
-      v-model="form.logo"
-      label="URL del logo"
-      icon="i-lucide-image"
-    />
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <UiBaseInput
         v-model="form.currency"
@@ -156,40 +122,28 @@ defineExpose({ form, visibleErrors, isValid })
         autocomplete="tel"
       />
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <UiBaseInput
-        v-model="form.color_primario"
-        label="Color primario"
-        placeholder="#5b6cff"
-      />
-      <UiBaseInput
-        v-model="form.color_secundario"
-        label="Color secundario"
-        placeholder="#d946ef"
-      />
-      <UiBaseInput
-        v-model="form.color_fondo"
-        label="Color de fondo"
-        placeholder="#0b0d12"
-      />
+    <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+      <p class="text-xs font-medium text-slate-500 mb-3">SEO</p>
+      <div class="space-y-4">
+        <UiBaseInput
+          v-model="form.meta_title"
+          label="Meta título"
+        />
+        <UiBaseTextarea
+          v-model="form.meta_description"
+          label="Meta descripción"
+          :rows="3"
+        />
+        <UiBaseInput
+          v-model="form.meta_keywords"
+          label="Meta keywords (separadas por coma)"
+        />
+        <UiBaseInput
+          v-model="form.og_image"
+          label="Imagen Open Graph (URL)"
+        />
+      </div>
     </div>
-    <UiBaseInput
-      v-model="form.meta_title"
-      label="Meta título (SEO)"
-    />
-    <UiBaseTextarea
-      v-model="form.meta_description"
-      label="Meta descripción (SEO)"
-      :rows="3"
-    />
-    <UiBaseInput
-      v-model="form.meta_keywords"
-      label="Meta keywords (separadas por coma)"
-    />
-    <UiBaseInput
-      v-model="form.og_image"
-      label="Imagen Open Graph (URL)"
-    />
 
     <slot name="extras" />
 

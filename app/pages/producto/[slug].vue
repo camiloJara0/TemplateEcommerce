@@ -27,6 +27,7 @@ const image = computed(() => selectedImage.value ?? current.value?.images?.[0]?.
 const outOfStock = computed(() => (current.value?.stock ?? 0) <= 0)
 
 const reviewService = useResenasService()
+const { canCall } = useRateLimit()
 
 const newReviewRating = ref(5)
 const newReviewComment = ref('')
@@ -56,6 +57,7 @@ async function addToCart(name: string) {
 
 async function submitReview() {
   if (!current.value || !newReviewComment.value) return
+  if (!canCall('review:submit', 3000)) return
   submittingReview.value = true
   try {
     await reviewService.crear(current.value.id, {
@@ -71,11 +73,7 @@ async function submitReview() {
 
 watchEffect(async () => {
   if (slug) {
-    await productStore.loadOne(slug)
-    if (current.value?.id) {
-      await productStore.loadReviews(current.value.id)
-      await productStore.loadRelated(current.value.id)
-    }
+    await productStore.loadProductDetail(slug)
   }
 })
 

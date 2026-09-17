@@ -10,7 +10,7 @@ const { items, pagination, filters, loading } = storeToRefs(adminOrderStore)
 const { currency, date, relative } = useFormat()
 
 const search = ref('')
-const statusFilter = ref<OrderStatus | ''>('')
+const statusFilter = ref<OrderStatus | 'all'>('all')
 const showChangeStatus = ref(false)
 const changeTarget = ref<{ id: number, current: OrderStatus } | null>(null)
 const newStatus = ref<OrderStatus>('pagado')
@@ -53,7 +53,7 @@ async function submitRefund() {
 }
 
 const statusOptions = [
-  { label: 'Todos', value: 'p' },
+  { label: 'Todos', value: 'all' },
   { label: 'Nuevo', value: 'nuevo' },
   { label: 'Pagado', value: 'pagado' },
   { label: 'Preparando', value: 'preparando' },
@@ -76,7 +76,7 @@ const changeOptions = [
 async function applyFilters() {
   await adminOrderStore.loadList({
     busqueda: search.value || undefined,
-    status: statusFilter.value || undefined
+    status: statusFilter.value !== "all" ? statusFilter.value : undefined
   })
 }
 
@@ -201,9 +201,10 @@ useSeoMeta({ title: 'Pedidos — Admin' })
       class="flex justify-center"
     >
       <UPagination
-        :model-value="pagination.current_page"
-        :page-count="pagination.last_page"
-        @update:model-value="(p: number) => adminOrderStore.loadList({ ...filters, page: p })"
+        :v-model:page="pagination.current_page"
+        :total="pagination.total"
+        @update:page="(p: number) => adminOrderStore.loadList({ ...filters, page: p })"
+        :items-per-page="pagination.per_page"
       />
     </div>
 

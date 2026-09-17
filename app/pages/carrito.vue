@@ -33,7 +33,7 @@ function goToCheckout() {
 }
 
 onMounted(() => {
-  void cartStore.load()
+  if (!cartStore.cart) void cartStore.load()
 })
 
 useSeoMeta({

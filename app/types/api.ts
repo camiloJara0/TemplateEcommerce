@@ -91,7 +91,7 @@ export interface UpdateProfilePayload {
 }
 
 export type ProductStatus = 'activo' | 'inactivo'
-export type OrderStatus = 'nuevo' | 'pagado' | 'preparando' | 'enviado' | 'entregado' | 'cancelado' | 'devuelto'
+export type OrderStatus = 'nuevo' | 'pagado' | 'preparando' | 'enviado' | 'entregado' | 'cancelado' | 'devuelto' | 'all'
 export type PaymentStatus = 'pendiente' | 'aprobado' | 'pagado' | 'fallido' | 'rechazado' | 'reembolsado'
 export type ShippingStatus = 'pendiente' | 'en_preparacion' | 'despachado' | 'en_transito' | 'entregado'
 export type CouponType = 'percent' | 'fixed' | 'free_shipping'

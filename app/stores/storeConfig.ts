@@ -181,6 +181,26 @@ export const useStoreConfigStore = defineStore('storeConfig', () => {
     }
   }
 
+  async function loadCombined(force = false) {
+    if (!force && publicConfig.value && tiendaConfig.value) return
+
+    loadingPublic.value = true
+    loadingTienda.value = true
+    try {
+      const { request } = useApi()
+      const res = await request<{ publica: PublicStoreConfig; tienda: TiendaConfig }>(
+        '/configuracion/completa'
+      )
+      publicConfig.value = res.data.publica
+      tiendaConfig.value = res.data.tienda
+      writeSS(PUBLIC_SS_KEY, res.data.publica)
+      writeSS(TIENDA_SS_KEY, res.data.tienda)
+    } finally {
+      loadingPublic.value = false
+      loadingTienda.value = false
+    }
+  }
+
   async function loadTiendaAdmin() {
     loadingTienda.value = true
     try {
@@ -224,6 +244,6 @@ export const useStoreConfigStore = defineStore('storeConfig', () => {
     loadingPublic, loadingAdmin, loadingTienda,
     currency, taxRate, storeName, effectiveTiendaConfig,
     loadPublic, loadAdmin, updateAdmin,
-    loadTienda, loadTiendaAdmin, updateTienda
+    loadTienda, loadCombined, loadTiendaAdmin, updateTienda
   }
 })

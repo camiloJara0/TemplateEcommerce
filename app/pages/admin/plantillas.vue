@@ -356,12 +356,12 @@ async function handleApply(template: Template) {
           <p class="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">{{ selectedTemplate.description }}</p>
 
           <!-- Preview Visual -->
-          <div class="aspect-video rounded-xl overflow-y-auto mb-6 relative">
+          <div class="aspect-video rounded-xl overflow-scroll mb-6 relative max-h-auto min-h-[50vh]">
             <ClientPageRenderer 
               :config="selectedTemplate.config"
-              mode="admin-preview"
+              mode="template-preview"
               :dark="false"
-              :scale="0.65"
+              :scale="1"
             />
           </div>
 

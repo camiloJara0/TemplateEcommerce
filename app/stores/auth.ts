@@ -127,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
       await request<null>('/logout', { method: 'POST' })
     } finally {
       clearSession()
+      navigateTo('/')
     }
   }
 

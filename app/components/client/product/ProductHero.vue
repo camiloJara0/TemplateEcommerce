@@ -5,7 +5,7 @@ defineProps<{ config: ProductHeroSection }>()
 </script>
 
 <template>
-  <section v-if="config.show" class="mb-8">
+  <section class="mb-8">
     <!-- Breadcrumbs -->
     <div v-if="config.show_breadcrumbs" class="flex items-center gap-2 text-sm text-theme-muted mb-6">
       <NuxtLink to="/" class="hover:text-theme-brand">Inicio</NuxtLink>
