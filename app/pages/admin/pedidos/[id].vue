@@ -23,7 +23,7 @@ useSeoMeta({ title: () => order.value ? `Pedido ${order.value.order_number ?? or
 </script>
 
 <template>
-  <div class="space-y-6 animate-fade-up max-w-4xl">
+  <div class="space-y-6 animate-fade-up max-w-4xl mx-auto">
     <NuxtLink
       to="/admin/pedidos"
       class="text-sm text-slate-500 hover:text-brand-600 inline-flex items-center gap-1"

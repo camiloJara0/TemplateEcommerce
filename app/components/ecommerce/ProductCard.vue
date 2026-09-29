@@ -23,6 +23,10 @@ const outOfStock = computed(() => (props.product.stock ?? 0) <= 0)
 const hovered = ref(false)
 
 function addToCart(product: Product) {
+  if (product.variants?.length) {
+    emit('quickview', product)
+    return
+  }
   carrito.addItem(product as unknown as AddCartItemPayload)
   toast.add({
     title: 'Agregado al carrito',

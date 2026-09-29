@@ -142,16 +142,16 @@ async function loadProductos() {
 
 function loadData(tab: string) {
   switch (tab) {
-    case 'ventas':
+    case '0':
       loadVentas()
       break
-    case 'inventario':
+    case '1':
       loadInventario()
       break
-    case 'clientes':
+    case '2':
       loadClientes()
       break
-    case 'productos':
+    case '3':
       loadProductos()
       break
   }
@@ -163,7 +163,7 @@ function onTabChange(val: string | number) {
   loadData(tab)
 }
 
-onMounted(() => loadData('ventas'))
+onMounted(() => loadData('0'))
 
 useSeoMeta({ title: 'Reportes — Admin' })
 </script>

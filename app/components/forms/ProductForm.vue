@@ -88,6 +88,128 @@ function getNewImagePreview(file: File): string {
   return URL.createObjectURL(file)
 }
 
+// ── Tags ─────────────────────────────────────────────────────────────────────
+const tagStore = useTagStore()
+const selectedTags = ref<number[]>(
+  Array.isArray(props.initial?.tags) ? [...(props.initial?.tags ?? [])] : []
+)
+
+onMounted(() => {
+  void tagStore.loadList()
+})
+
+function toggleTag(id: number) {
+  const index = selectedTags.value.indexOf(id)
+  if (index >= 0) selectedTags.value.splice(index, 1)
+  else selectedTags.value.push(id)
+}
+
+// ── Variantes ────────────────────────────────────────────────────────────────
+const attributeStore = useVariantAttributeStore()
+const showAttributeManager = ref(false)
+const newAttributeName = ref('')
+const newAttributeValues = ref<Record<number, string>>({})
+
+type EditableVariant = {
+  id?: number
+  sku: string
+  price?: number | null
+  price_discount?: number | null
+  stock?: number
+  image?: string | null
+  attribute_values: number[]
+}
+
+const variants = ref<EditableVariant[]>(
+  (props.initial?.variants ?? []).map(v => ({
+    id: v.id,
+    sku: v.sku,
+    price: v.price ?? null,
+    price_discount: v.price_discount ?? null,
+    stock: v.stock ?? 0,
+    image: v.image ?? null,
+    imageUpload: null,
+    attribute_values: (v.attribute_values ?? []).filter((id): id is number => typeof id === 'number')
+  }))
+)
+
+onMounted(() => {
+  void attributeStore.loadList()
+})
+
+const allAttributeValues = computed(() => attributeStore.items.flatMap(a =>
+  a.values.map(v => ({ id: v.id, attributeId: a.id, attribute: a.name, value: v.value }))
+))
+
+function addVariant() {
+  const base = String(form.value.sku ?? '').trim() || 'SKU'
+  const suffix = variants.value.length + 1
+  const existing = new Set(variants.value.map(v => v.sku))
+  let sku = `${base}-${suffix}`
+  let step = suffix
+  while (existing.has(sku)) {
+    step += 1
+    sku = `${base}-${step}`
+  }
+
+  variants.value.push({
+    sku,
+    price: Number(form.value.price ?? 0),
+    price_discount: form.value.price_discount ? Number(form.value.price_discount) : null,
+    stock: 0,
+    image: null,
+    attribute_values: []
+  })
+}
+
+function removeVariant(index: number) {
+  variants.value.splice(index, 1)
+}
+
+function toggleVariantValue(variant: EditableVariant, valueId: number) {
+  const index = variant.attribute_values.indexOf(valueId)
+  if (index >= 0) variant.attribute_values.splice(index, 1)
+  else variant.attribute_values.push(valueId)
+}
+
+function variantCombination(variant: EditableVariant): string {
+  if (!variant.attribute_values.length) return 'Sin combinación'
+  return allAttributeValues.value
+    .filter(v => variant.attribute_values.includes(v.id))
+    .map(v => `${v.attribute}: ${v.value}`)
+    .join(' / ')
+}
+
+function variantValueClass(variant: EditableVariant, valueId: number): string {
+  return variant.attribute_values.includes(valueId)
+    ? 'bg-primary-500 border-primary-500 text-white'
+    : 'bg-transparent border-slate-300 text-slate-600 dark:border-slate-600 dark:text-slate-300 hover:border-primary-400'
+}
+
+async function addAttribute() {
+  const name = newAttributeName.value.trim()
+  if (!name) return
+  await attributeStore.crear({ name })
+  newAttributeName.value = ''
+}
+
+async function addAttributeValue(attributeId: number) {
+  const value = (newAttributeValues.value[attributeId] ?? '').trim()
+  if (!value) return
+  await attributeStore.crearValor(attributeId, value)
+  newAttributeValues.value[attributeId] = ''
+}
+
+async function removeAttribute(attributeId: number) {
+  if (!confirm('¿Eliminar este atributo y todos sus valores?')) return
+  await attributeStore.eliminar(attributeId)
+}
+
+async function removeAttributeValue(valueId: number) {
+  if (!confirm('¿Eliminar este valor?')) return
+  await attributeStore.eliminarValor(valueId)
+}
+
 // ── Page Config (individual sections only) ──────────────────────────────────
 const showPageConfig = ref(false)
 const pageConfig = ref<Record<string, unknown>>(props.initial?.page_config as Record<string, unknown> ?? {})
@@ -248,6 +370,8 @@ const previewProduct = computed(() => ({
   price: form.value.price || MOCK_PRODUCT_FOR_PREVIEW.price,
   price_discount: form.value.price_discount || MOCK_PRODUCT_FOR_PREVIEW.price_discount,
   description: form.value.description || MOCK_PRODUCT_FOR_PREVIEW.description,
+  images: form.value.images || MOCK_PRODUCT_FOR_PREVIEW.images,
+  image: form.value.images[0] || MOCK_PRODUCT_FOR_PREVIEW.images[0]
 }))
 
 // ── Submit ──────────────────────────────────────────────────────────────────
@@ -271,12 +395,30 @@ async function onSubmit() {
     formData.append('is_featured', form.value.is_featured)
     formData.append('estado', String((form.value.estado as 'activo' | 'inactivo') ?? 'activo'))
 
-    if (form.value.tags?.length) {
-      form.value.tags.forEach((tagId: number) => formData.append('tags[]', String(tagId)))
+    if (selectedTags.value.length) {
+      selectedTags.value.forEach((tagId: number) => formData.append('tags[]', String(tagId)))
+    } else {
+      formData.append('tags', '')
     }
 
     existingImages.value.forEach((url) => formData.append('existing_image_urls[]', url))
+    if (!existingImages.value.length) formData.append('existing_image_urls', '')
+
     newImageFiles.value.forEach((file) => formData.append('images[]', file))
+
+    if (variants.value.length) {
+      variants.value.forEach((variant, index) => {
+        if (variant.id) formData.append(`variants[${index}][id]`, String(variant.id))
+        formData.append(`variants[${index}][sku]`, String(variant.sku ?? ''))
+        if (variant.price != null) formData.append(`variants[${index}][price]`, String(Number(variant.price)))
+        if (variant.price_discount != null) formData.append(`variants[${index}][price_discount]`, String(Number(variant.price_discount)))
+        formData.append(`variants[${index}][stock]`, String(Number(variant.stock ?? 0)))
+        if (variant.imageUpload) formData.append(`variants[${index}][image]`, variant.imageUpload)
+        variant.attribute_values.forEach(valueId => formData.append(`variants[${index}][attribute_values][]`, String(valueId)))
+      })
+    } else {
+      formData.append('variants', '')
+    }
 
     if (hasPageConfig) {
       formData.append('page_config_json', JSON.stringify(pageConfig.value))
@@ -308,7 +450,7 @@ defineExpose({ form, visibleErrors, isValid })
 <template>
   <div class="flex gap-4 h-full">
     <!-- Main form -->
-    <UForm class="flex-1 space-y-4 overflow-y-auto" :state="form" @submit.prevent="onSubmit">
+    <UForm class="flex-1 space-y-4 overflow-y-auto h-[70vh]" :state="form" @submit.prevent="onSubmit">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <UiBaseInput
           v-model="form.name"
@@ -381,6 +523,30 @@ defineExpose({ form, visibleErrors, isValid })
         label="Producto destacado"
       />
 
+      <!-- Tags -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Etiquetas</label>
+          <span class="text-xs text-slate-400">{{ selectedTags.length }} seleccionadas</span>
+        </div>
+        <USkeleton v-if="tagStore.loading && !tagStore.items.length" class="h-8" />
+        <div v-else-if="tagStore.items.length" class="flex flex-wrap gap-2">
+          <button
+            v-for="tag in tagStore.items" :key="tag.id" type="button"
+            class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+            :class="selectedTags.includes(tag.id)
+              ? 'bg-primary-500 border-primary-500 text-white'
+              : 'bg-transparent border-slate-300 text-slate-600 dark:border-slate-600 dark:text-slate-300 hover:border-primary-400'"
+            @click="toggleTag(tag.id)"
+          >
+            {{ tag.name }}
+          </button>
+        </div>
+        <p v-else class="text-xs text-slate-400">
+          No hay etiquetas. Créalas desde el botón "Etiquetas" en la cabecera.
+        </p>
+      </div>
+
       <!-- Image Manager -->
       <div class="space-y-2">
         <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Imágenes del producto</label>
@@ -417,9 +583,10 @@ defineExpose({ form, visibleErrors, isValid })
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 px-2 py-0.5 rounded-full">
-              {{ INDIVIDUAL_PRODUCT_SECTIONS.filter(k => isSectionActive(k)).length }} activas
-            </span>
+            <div class="flex gap-1 items-center text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 px-2 h-8 rounded-full">
+              <p>{{ INDIVIDUAL_PRODUCT_SECTIONS.filter(k => isSectionActive(k)).length }} </p>
+              <p>activas</p>
+            </div>
             <UButton label="Preview" icon="i-lucide-eye" size="xs" variant="outline" @click="changePreview" />
           </div>
         </div>
@@ -686,7 +853,102 @@ defineExpose({ form, visibleErrors, isValid })
                 </div>
               </div>
             </template>
+          </div>
+        </div>
+      </div>
 
+      <!-- Variantes -->
+      <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+        <div class="flex items-center justify-between p-4">
+          <div class="flex items-center gap-3">
+            <UIcon name="i-lucide-layers-3" class="size-5 text-primary-600" />
+            <div class="text-left">
+              <p class="font-medium text-slate-900 dark:text-white text-sm">
+                Variantes
+              </p>
+              <p class="text-xs text-slate-500">
+                Combinaciones de atributos (Color, Talla, …)
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <UButton :label="showAttributeManager ? 'Ocultar atributos' : 'Atributos'" icon="i-lucide-settings-2" size="xs" variant="outline" @click="showAttributeManager = !showAttributeManager" />
+            <UButton label="Agregar variante" icon="i-lucide-plus" size="xs" color="primary" @click="addVariant" />
+          </div>
+        </div>
+
+        <!-- Gestor de atributos -->
+        <div v-if="showAttributeManager" class="border-t border-slate-200 dark:border-slate-700 p-4 space-y-3">
+          <USkeleton v-if="attributeStore.loading && !attributeStore.items.length" class="h-20" />
+
+          <div v-for="attribute in attributeStore.items" :key="attribute.id" class="border border-slate-200 dark:border-slate-800 rounded-lg p-3 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-sm font-semibold">
+                {{ attribute.name }}
+              </p>
+              <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" aria-label="Eliminar atributo" @click="removeAttribute(attribute.id)" />
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span v-for="value in attribute.values" :key="value.id" class="group inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                {{ value.value }}
+                <button type="button" class="text-slate-400 hover:text-red-500" aria-label="Eliminar valor" @click="removeAttributeValue(value.id)">
+                  <UIcon name="i-lucide-x" class="size-3" />
+                </button>
+              </span>
+              <span v-if="!attribute.values.length" class="text-xs text-slate-400">Sin valores</span>
+            </div>
+            <div class="flex gap-2">
+              <UiBaseInput v-model="newAttributeValues[attribute.id]" label="" placeholder="Nuevo valor" size="sm" @keyup.enter="addAttributeValue(attribute.id)" />
+              <UButton label="Añadir" icon="i-lucide-plus" size="sm" variant="soft" color="neutral" @click="addAttributeValue(attribute.id)" />
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <UiBaseInput v-model="newAttributeName" label="" placeholder="Nombre del atributo (Color, Talla…)" size="sm" @keyup.enter="addAttribute" />
+            <UButton label="Crear atributo" icon="i-lucide-plus" size="sm" color="primary" @click="addAttribute" />
+          </div>
+        </div>
+
+        <!-- Lista de variantes -->
+        <div class="border-t border-slate-200 dark:border-slate-700 p-4 space-y-3">
+          <div v-if="!variants.length" class="text-xs text-slate-400">
+            Sin variantes: el producto usará el stock general.
+          </div>
+
+          <div v-for="(variant, index) in variants" :key="variant.id ?? 'new-' + index" class="border border-slate-200 dark:border-slate-800 rounded-lg p-3 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-400 shrink-0">
+                  #{{ index + 1 }}
+                </span>
+                <span class="text-xs text-slate-500 truncate">
+                  {{ variantCombination(variant) }}
+                </span>
+              </div>
+              <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" aria-label="Eliminar variante" @click="removeVariant(index)" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <UiBaseInput v-model="variant.sku" label="SKU" size="sm" />
+              <UiBaseInput v-model.number="variant.price" label="Precio" type="number" size="sm" />
+              <UiBaseInput v-model.number="variant.price_discount" label="Precio descuento" type="number" size="sm" />
+              <UiBaseInput v-model.number="variant.stock" label="Stock" type="number" size="sm" />
+            </div>
+            <UFileUpload v-model="variant.imageUpload" label="URL imagen (opcional)" size="sm" icon="i-lucide-image" />
+
+            <div class="space-y-1">
+              <p class="text-xs font-medium text-slate-500">
+                Combinación
+              </p>
+              <div v-if="allAttributeValues.length" class="flex flex-wrap gap-2">
+                <button v-for="av in allAttributeValues" :key="av.id" type="button" class="px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors" :class="variantValueClass(variant, av.id)" @click="toggleVariantValue(variant, av.id)">
+                  {{ av.attribute }}: {{ av.value }}
+                </button>
+              </div>
+              <p v-else class="text-[11px] text-slate-400">
+                Crea atributos y valores para definir combinaciones.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -704,11 +966,8 @@ defineExpose({ form, visibleErrors, isValid })
     </UForm>
 
     <!-- Optional preview panel -->
-    <div v-if="showPreview" class="w-[60%] h-full shrink-0 border-l border-slate-200 dark:border-slate-700 overflow-y-auto hidden xl:block">
-      <div class="sticky top-0 z-10 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-700 px-3 py-2 flex items-center justify-between">
-        <p class="text-xs font-medium text-slate-500">Preview en vivo</p>
-        <UButton icon="i-lucide-x" size="xs" variant="ghost" @click="showPreview = false" />
-      </div>
+    <div v-if="showPreview" class="w-[60%] h-[75vh] shrink-0 border-l border-slate-200 dark:border-slate-700 overflow-y-auto hidden xl:block">
+
       <div class="p-2">
         <ClientProductSectionRenderer
           :sections="previewSections"

@@ -37,7 +37,7 @@ const props = defineProps<{ config: TeamSection }>()
           </div>
           <h3 class="font-bold text-theme">{{ member.name }}</h3>
           <p class="text-sm text-theme-brand mb-2">{{ member.role }}</p>
-          <p class="text-xs text-theme-muted max-w-[200px] mx-auto">{{ member.bio }}</p>
+          <p class="text-xs text-theme-muted max-w-50 mx-auto">{{ member.bio }}</p>
           <div v-if="member.social_links" class="flex justify-center gap-3 mt-3">
             <a v-if="member.social_links.instagram" :href="member.social_links.instagram" target="_blank" class="text-theme-muted hover:text-theme-brand transition-colors">
               <UIcon name="i-lucide-instagram" class="size-4" />

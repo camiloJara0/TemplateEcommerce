@@ -16,7 +16,8 @@ export const useCouponStore = defineStore('coupon', () => {
         'coupons',
         () => request<Coupon[]>('/admin/cupones')
       )
-      adminList.value = data
+      adminPagination.value = data.pagination
+      adminList.value = data.items
     } finally {
       loading.value = false
     }

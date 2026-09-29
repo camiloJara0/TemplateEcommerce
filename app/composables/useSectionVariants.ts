@@ -1,10 +1,6 @@
 import type { Component } from 'vue'
-import type {
-  HeroSection, BenefitsSection, CategoriesSection, FeaturedSection,
-  TestimonialsSection, CtaSection, HeaderSection, CategoriesHomeSection,
-  SectionVariantMeta,
-} from '~/types/store'
-import { VARIANT_MAP, type SectionType } from '~/lib/PageBuilder'
+import type { SectionVariantMeta } from '~/types/store'
+import { VARIANT_MAP } from '~/lib/PageBuilder'
 
 // ─── Variant Component Maps ──────────────────────────────────────────────────
 
@@ -30,7 +26,7 @@ import FeaturedLargeCards from '~/components/client/sections/featured/FeaturedLa
 import CtaBanner from '~/components/client/sections/cta/CtaBanner.vue'
 import CtaSplit from '~/components/client/sections/cta/CtaSplit.vue'
 import CtaGradient from '~/components/client/sections/cta/CtaGradient.vue'
-import HeaderAnimation from '~/components/client/AnimatedHeader.vue'
+import HeaderAnimation from '~/components/client/sections/header/AnimatedHeader.vue'
 import HeaderVideo from '~/components/client/sections/header/HeaderVideo.vue'
 import UrgencyBanner from '~/components/client/sections/urgency/UrgencyBanner.vue'
 import CountdownOffer from '~/components/client/sections/conversion/CountdownOffer.vue'
@@ -41,13 +37,13 @@ import TimelineSection from '~/components/client/sections/timeline/TimelineSecti
 import BlogGrid from '~/components/client/sections/blog/BlogGrid.vue'
 import ArticleFeatured from '~/components/client/sections/blog/ArticleFeatured.vue'
 
-import NewsletterSection from '~/components/client/NewsletterSection.vue'
-import BrandLogosSection from '~/components/client/BrandLogosSection.vue'
-import GalleryFeedSection from '~/components/client/GalleryFeedSection.vue'
-import StatsSection from '~/components/client/StatsSection.vue'
-import VideoSection from '~/components/client/VideoSection.vue'
-import MapSection from '~/components/client/MapSection.vue'
-import RichTextSection from '~/components/client/RichTextSection.vue'
+import NewsletterSection from '~/components/client/sections/newsletters/NewsletterSection.vue'
+import BrandLogosSection from '~/components/client/sections/brands/BrandLogosSection.vue'
+import GalleryFeedSection from '~/components/client/sections/galery/GalleryFeedSection.vue'
+import StatsSection from '~/components/client/sections/stats/StatsSection.vue'
+import VideoSection from '~/components/client/sections/video/VideoSection.vue'
+import MapSection from '~/components/client/sections/map/MapSection.vue'
+import RichTextSection from '~/components/client/sections/rich_text/RichTextSection.vue'
 import DealsEditor from '~/components/admin/editors/DealsEditor.vue'
 
 // ─── Variant Maps ────────────────────────────────────────────────────────────

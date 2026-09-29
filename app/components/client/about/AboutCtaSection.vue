@@ -17,20 +17,22 @@ const props = defineProps<{ config: AboutCtaSection }>()
       <h2 class="text-2xl sm:text-3xl font-bold mb-3">{{ config.headline }}</h2>
       <p v-if="config.subtext" class="text-theme-muted max-w-xl mx-auto mb-8">{{ config.subtext }}</p>
       <div class="flex flex-wrap gap-3 justify-center">
-        <NuxtLink
+        <UButton
           v-if="config.cta_primary"
           :to="config.cta_primary.url"
           class="px-8 py-3 rounded-xl font-semibold bg-theme-brand text-theme-on-brand hover:scale-105 transition-transform"
+          variant="soft"
         >
           {{ config.cta_primary.label }}
-        </NuxtLink>
-        <NuxtLink
+        </UButton>
+        <UButton
           v-if="config.cta_secondary"
           :to="config.cta_secondary.url"
           class="px-8 py-3 rounded-xl font-semibold border-2 border-theme-brand text-theme-brand hover:bg-theme-brand hover:text-theme-on-brand transition-all"
+          color="neutral"
         >
           {{ config.cta_secondary.label }}
-        </NuxtLink>
+        </UButton>
       </div>
     </div>
   </section>

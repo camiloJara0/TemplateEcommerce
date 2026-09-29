@@ -15,10 +15,10 @@ useSeoMeta({
 <template>
   <div>
     <ClientAboutHeroSection :config="nosotros.hero" />
-    <ClientMissionVisionSection :config="nosotros.mission_vision" />
-    <ClientValuesSection :config="nosotros.values" />
-    <ClientTeamSection :config="nosotros.team" />
-    <ClientTimelineSection :config="nosotros.timeline" />
+    <ClientAboutMissionVisionSection :config="nosotros.mission_vision" />
+    <ClientAboutValuesSection :config="nosotros.values" />
+    <ClientAboutTeamSection :config="nosotros.team" />
+    <ClientAboutTimelineSection :config="nosotros.timeline" />
     <ClientAboutMapSection :config="nosotros.map" />
     <ClientAboutCtaSection :config="nosotros.cta" />
   </div>

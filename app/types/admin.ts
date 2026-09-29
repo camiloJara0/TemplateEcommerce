@@ -48,15 +48,13 @@ export interface CreateStockAlertPayload {
 }
 
 export interface ProductVariantPayload {
+  id?: number
   sku: string
-  price: number
-  price_discount?: number
+  price?: number | null
+  price_discount?: number | null
   stock?: number
-  image?: string
-  attribute_values?: Array<{
-    attribute: string
-    value: string
-  }>
+  image?: string | null
+  attribute_values?: number[]
 }
 
 export interface ProductPayload {

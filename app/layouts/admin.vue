@@ -11,6 +11,7 @@ const title = computed(() => {
     '/admin/productos': 'Productos',
     '/admin/categorias': 'Categorías',
     '/admin/inventario': 'Inventario',
+    '/admin/cupones': 'Cupones',
     '/admin/pagos': 'Pagos',
     '/admin/envios': 'Envíos',
     '/admin/reportes': 'Reportes',

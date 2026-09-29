@@ -74,6 +74,7 @@ function sectionMeta(key: ProductSectionKey) {
 function isSelected(key: string) {
   return props.editMode && props.selectedSection === key
 }
+
 </script>
 
 <template>
@@ -97,13 +98,15 @@ function isSelected(key: string) {
         <!-- Hero -->
         <ClientProductHero v-if="key === 'hero'" :config="sections.hero">
           <div class="grid md:grid-cols-2 gap-8 py-8">
-            <ClientProductGallery
-              v-if="sections.gallery.show && galleryImages.length"
-              :config="sections.gallery"
-              :images="galleryImages"
-            />
-            <div v-else-if="productImages.length" class="space-y-4">
-              <img :src="productImages[0]" class="w-full h-96 object-cover rounded-2xl" :alt="(productData.name as string) ?? 'Producto'" />
+            <div>
+              <div  class="space-y-4">
+                <img :src="galleryImages[0]" class="w-full h-96 object-cover rounded-2xl" :alt="(productData.name as string) ?? 'Producto'" />
+              </div>
+              <ClientProductGallery
+                v-if="sections.gallery.show && galleryImages.length"
+                :config="sections.gallery"
+                :images="galleryImages"
+              />
             </div>
             <div class="space-y-6">
               <div v-if="productData.brand" class="text-sm text-theme-brand font-medium">{{ productData.brand }}</div>

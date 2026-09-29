@@ -21,6 +21,7 @@ export interface Brand {
   description?: string | null
   image?: string | null
   is_active?: boolean
+  products_count?: number
   created_at?: string
   updated_at?: string
 }
@@ -29,6 +30,7 @@ export interface Tag {
   id: number
   name: string
   slug?: string
+  products_count?: number
 }
 
 export interface ProductImage {
@@ -44,6 +46,18 @@ export interface VariantAttributeValue {
   value: string
 }
 
+export interface AdminVariantAttributeValue {
+  id: number
+  attribute_id?: number
+  value: string
+}
+
+export interface AdminVariantAttribute {
+  id: number
+  name: string
+  values: AdminVariantAttributeValue[]
+}
+
 export interface ProductVariant {
   id: number
   product_id: number
@@ -53,6 +67,7 @@ export interface ProductVariant {
   stock: number
   image?: string | null
   attribute_values?: VariantAttributeValue[]
+  combinacion: string
 }
 
 export interface Product {

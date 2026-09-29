@@ -261,6 +261,9 @@ const tabs = [
               {label:'Estilos', slot: 'estilos'},
               {label:'Navbar', slot: 'navbar'},
               {label:'Footer', slot: 'footer'}]"
+              :ui="{
+                trigger: 'data-[state=active]:!bg-transparent'
+              }"
             >
             <template #estilos>
               <AdminEditorsGlobalStylesEditor

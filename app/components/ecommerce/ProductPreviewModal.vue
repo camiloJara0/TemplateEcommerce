@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product } from '~/types/catalog'
+import type { Product, ProductVariant } from '~/types/catalog'
 
 const props = defineProps<{
   product: Product | null
@@ -20,6 +20,7 @@ const discount = computed(() => props.product ? discountPercent(props.product.pr
 const images = computed(() => props.product?.images ?? [])
 const currentImageIndex = ref(0)
 const currentImage = computed(() => images.value[currentImageIndex.value]?.url)
+const variationActive = ref<ProductVariant | null>(null)
 
 function nextImage() {
   if (currentImageIndex.value < images.value.length - 1) {
@@ -39,7 +40,16 @@ function prevImage() {
 
 function addToCart() {
   if (!props.product) return
-  carrito.addItem({ id: props.product.id, quantity: 1 })
+  if (props.product.variants?.length && !variationActive.value) {
+    toast.add({
+      title: 'Selecciona variacion del producto',
+      description: props.product.name,
+      color: 'error',
+      icon: 'i-lucide-shopping-bag'
+    })
+    return
+  }
+  carrito.addItem({ id: props.product.id, quantity: 1, product_variant_id: variationActive.value?.id })
   toast.add({
     title: 'Agregado al carrito',
     description: props.product.name,
@@ -224,8 +234,22 @@ watch(() => props.open, (val) => {
             </div>
           </div>
 
+          <div v-if="product.variants?.length" >
+            <p class="text-xs">Variaciones</p>
+            <div class="py-2 flex gap-1 items-center">
+              <UButton v-for="(variant, id) in product.variants" 
+                :variant="variationActive?.id === variant.id ? 'solid' : 'soft'" 
+                :color="variationActive?.id === variant.id ? 'primary' : 'neutral'" size="xs"
+                @click="() => {variationActive = variant;}">
+                {{ variant.combinacion }}
+              </UButton>
+            </div>
+          </div>
+
           <!-- Spacer -->
           <div class="mt-auto" />
+
+          <UBadge v-if="product.variants?.length" color="warning" class="text-sm my-1">Selecciona una variante!</UBadge>
 
           <!-- Actions -->
           <div class="flex gap-3">

@@ -64,7 +64,7 @@ function selectImage(i: number) {
         <div class="flex transition-transform duration-500 ease-out" :style="{ transform: `translateX(-${activeIndex * 100}%)` }">
           <div v-for="(img, i) in images" :key="i" class="w-full shrink-0">
             <div
-              class="relative aspect-[4/3] overflow-hidden cursor-zoom-in"
+              class="relative aspect-4/3 overflow-hidden cursor-zoom-in"
               @click="config.enable_zoom && (isZoomed = !isZoomed)"
               @mousemove="onMouseMove"
               @mouseleave="isZoomed = false"

@@ -19,10 +19,10 @@ const props = defineProps<{
     <div class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
       <div class="origin-top-left" style="transform: scale(0.6); width: 166%; min-height: 400px">
         <ClientAboutHeroSection v-if="selected === 'hero'" :config="config.hero" />
-        <ClientMissionVisionSection v-else-if="selected === 'mission_vision'" :config="config.mission_vision" />
-        <ClientValuesSection v-else-if="selected === 'values'" :config="config.values" />
-        <ClientTeamSection v-else-if="selected === 'team'" :config="config.team" />
-        <ClientTimelineSection v-else-if="selected === 'timeline'" :config="config.timeline" />
+        <ClientAboutMissionVisionSection v-else-if="selected === 'mission_vision'" :config="config.mission_vision" />
+        <ClientAboutValuesSection v-else-if="selected === 'values'" :config="config.values" />
+        <ClientAboutTeamSection v-else-if="selected === 'team'" :config="config.team" />
+        <ClientAboutTimelineSection v-else-if="selected === 'timeline'" :config="config.timeline" />
         <ClientAboutMapSection v-else-if="selected === 'map'" :config="config.map" />
         <ClientAboutCtaSection v-else-if="selected === 'cta'" :config="config.cta" />
       </div>

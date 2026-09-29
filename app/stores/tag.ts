@@ -8,6 +8,10 @@ export const useTagStore = defineStore('tag', () => {
   const count = computed(() => items.value.length)
   const byId = (id: number) => items.value.find(t => t.id === id) ?? null
 
+  const adminItems = ref<Tag[]>([])
+  const adminLoading = ref(false)
+  const adminLoaded = ref(false)
+
   async function loadList(force = false) {
     loading.value = true
     try {
@@ -23,12 +27,30 @@ export const useTagStore = defineStore('tag', () => {
     }
   }
 
+  async function loadAdminList(force = false) {
+    if (!force && adminLoaded.value) return
+    adminLoading.value = true
+    try {
+      const { request } = useApi()
+      const res = await request<Tag[]>('/admin/etiquetas', { method: 'GET' })
+      adminItems.value = res.data ?? []
+      adminLoaded.value = true
+    } finally {
+      adminLoading.value = false
+    }
+  }
+
+  function refreshAfterMutation() {
+    void loadList(true)
+    if (adminLoaded.value) void loadAdminList(true)
+  }
+
   async function adminCreate(payload: TagPayload) {
     const { request } = useApi()
     return runMutation<{ id: number }>({
       request: () => request<{ id: number }>('/admin/etiquetas', { method: 'POST', body: payload }),
       successMessage: 'Etiqueta creada',
-      onSuccess: () => { void loadList(true) }
+      onSuccess: refreshAfterMutation
     })
   }
 
@@ -37,7 +59,7 @@ export const useTagStore = defineStore('tag', () => {
     return runMutation<{ id: number }>({
       request: () => request<{ id: number }>(`/admin/etiquetas/${id}`, { method: 'PUT', body: payload }),
       successMessage: 'Etiqueta actualizada',
-      onSuccess: () => { void loadList(true) }
+      onSuccess: refreshAfterMutation
     })
   }
 
@@ -48,9 +70,14 @@ export const useTagStore = defineStore('tag', () => {
       successMessage: 'Etiqueta eliminada',
       onSuccess: () => {
         items.value = items.value.filter(t => t.id !== id)
+        adminItems.value = adminItems.value.filter(t => t.id !== id)
       }
     })
   }
 
-  return { items, loading, count, byId, loadList, adminCreate, adminUpdate, adminDelete }
+  return {
+    items, loading, count, byId, loadList,
+    adminItems, adminLoading, adminLoaded, loadAdminList,
+    adminCreate, adminUpdate, adminDelete
+  }
 })

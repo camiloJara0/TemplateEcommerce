@@ -4,6 +4,7 @@ export const useAddressStore = defineStore('address', () => {
   const offlineStore = useOfflineStore()
   const items = ref<Address[]>([])
   const loading = ref(false)
+  
   const count = computed(() => items.value.length)
   const byId = (id: number) => items.value.find(a => a.id === id) ?? null
   const principal = computed(() => items.value.find(a => a.es_principal) ?? null)

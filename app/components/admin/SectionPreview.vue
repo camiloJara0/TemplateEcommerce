@@ -21,10 +21,10 @@ const ctaComponent = computed(() => getComponent('cta', props.config.secciones.c
     <div class="origin-top-left" style="transform: scale(0.5); width: 200%; min-height: 200vh">
       <div v-if="previewPage === 'nosotros'" class="min-h-screen">
         <ClientAboutHeroSection :config="config.nosotros.hero" />
-        <ClientMissionVisionSection :config="config.nosotros.mission_vision" />
-        <ClientValuesSection :config="config.nosotros.values" />
-        <ClientTeamSection :config="config.nosotros.team" />
-        <ClientTimelineSection :config="config.nosotros.timeline" />
+        <ClientAboutMissionVisionSection :config="config.nosotros.mission_vision" />
+        <ClientAboutValuesSection :config="config.nosotros.values" />
+        <ClientAboutTeamSection :config="config.nosotros.team" />
+        <ClientAboutTimelineSection :config="config.nosotros.timeline" />
         <ClientAboutMapSection :config="config.nosotros.map" />
         <ClientAboutCtaSection :config="config.nosotros.cta" />
       </div>
@@ -33,13 +33,13 @@ const ctaComponent = computed(() => getComponent('cta', props.config.secciones.c
         <component :is="heroComponent" :config="config.secciones.hero" />
         <component :is="benefitsComponent" :config="config.secciones.benefits" />
         <component :is="categoriesComponent" :config="config.categories_home" />
-        <ClientNewsletterSection :config="config.secciones.newsletter" />
+        <ClientSectionsNewslettersNewsletterSection :config="config.secciones.newsletter" />
         <component :is="testimonialsComponent" :config="config.secciones.testimonials" />
-        <ClientStatsSection :config="config.secciones.stats" />
-        <ClientBrandLogosSection :config="config.secciones.brand_logos" />
-        <ClientVideoSection :config="config.secciones.video" />
-        <ClientMapSection :config="config.secciones.map" />
-        <ClientRichTextSection :config="config.secciones.richtext" />
+        <ClientSectionsStatsSection :config="config.secciones.stats" />
+        <ClientSectionsBrandsBrandLogosSection :config="config.secciones.brand_logos" />
+        <ClientSectionsVideoSection :config="config.secciones.video" />
+        <ClientSectionsMapSection :config="config.secciones.map" />
+        <ClientSectionsRichTextSection :config="config.secciones.richtext" />
         <component :is="ctaComponent" :config="config.secciones.cta" />
       </div>
     </div>

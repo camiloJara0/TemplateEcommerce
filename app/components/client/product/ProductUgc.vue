@@ -93,7 +93,7 @@ function scrollTo(index: number) {
           <div class="p-3">
             <div class="flex items-center gap-2 mb-1.5">
               <div class="w-6 h-6 rounded-full bg-linear-to-br from-primary-400 to-pink-400 flex items-center justify-center shrink-0">
-                <span class="text-[9px] font-bold text-white">{{ item.author[0] }}</span>
+                <span class="text-[9px] font-bold text-white">{{ item.author?.[0] }}</span>
               </div>
               <span class="font-medium text-xs text-theme truncate">{{ item.author }}</span>
             </div>

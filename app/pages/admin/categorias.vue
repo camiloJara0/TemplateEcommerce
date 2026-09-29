@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import type { CategoryPayload } from '~/types/admin'
 
 definePageMeta({ layout: 'admin', middleware: ['auth'] })
 
@@ -40,14 +41,17 @@ async function openEdit(category: NonNullable<typeof items.value>[number]) {
   showModal.value = true
 }
 
-async function handleSubmit(payload: unknown) {
-  const data = payload as Parameters<typeof categoryStore.adminCreate>[0]
+async function categoryAction(payload: CategoryPayload) {
   if (editingId.value) {
-    await categoryStore.adminUpdate(editingId.value, data)
-  } else {
-    await categoryStore.adminCreate(data)
+    return categoryStore.adminUpdate(editingId.value, payload)
   }
+  return categoryStore.adminCreate(payload)
+}
+
+function handleSubmit() {
   showModal.value = false
+  editingId.value = null
+  editingCategory.value = null
 }
 
 async function remove(category: NonNullable<typeof items.value>[number]) {
@@ -84,7 +88,7 @@ useSeoMeta({ title: 'Categorías — Admin' })
         <template #body>
           <div class="p-4">
             <FormsCategoryForm :initial="editingCategory ?? undefined" :parent-options="parentOptions"
-              @success="handleSubmit" />
+              :action="categoryAction" @success="handleSubmit" />
           </div>
         </template>
       </UModal>

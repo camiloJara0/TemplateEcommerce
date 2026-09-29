@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useResenasService } from '~/composables/services/resenas'
+import type { ProductVariant } from '~/types/catalog'
 
 definePageMeta({ layout: 'client' })
 
@@ -18,6 +19,7 @@ const productReviews = computed(() => reviewsByProduct.value[Number(current.valu
 const isFavorite = computed(() => current.value ? productIds.value.includes(current.value.id) : false)
 
 const quantity = ref(1)
+const variationActive = ref<ProductVariant | null>(null)
 const selectedImage = ref<string | null>(null)
 
 const { currency, discountPercent, effectivePrice } = useFormat()
@@ -42,9 +44,19 @@ async function toggleFavorite() {
 async function addToCart(name: string) {
   if (!name) return
   if (!current.value) return
+  if (current.value.variants?.length && !variationActive.value) {
+    toast.add({
+      title: 'Selecciona variacion del producto',
+      description: name,
+      color: 'error',
+      icon: 'i-lucide-shopping-bag'
+    })
+    return
+  }
   await cartStore.addItem({
     id: current.value.id,
-    quantity: quantity.value
+    quantity: quantity.value,
+    product_variant_id: variationActive.value?.id
   })
 
   toast.add({
@@ -150,8 +162,9 @@ useHead({
       >
         <NuxtLink
           to="/"
-          class="hover:text-theme-brand"
-        >Inicio</NuxtLink>
+          class="hover:text-theme-brand">
+          Inicio
+        </NuxtLink>
         <span class="mx-2">/</span>
         <NuxtLink
           to="/catalogo"
@@ -166,6 +179,12 @@ useHead({
         <!-- Gallery -->
         <div class="space-y-3">
           <div class="surface overflow-hidden aspect-square bg-theme-imagenes">
+            <img
+              v-if="variationActive"
+              :src="variationActive.image"
+              :alt="current.name"
+              class="size-full object-cover"
+            >
             <img
               v-if="image"
               :src="image"
@@ -247,7 +266,19 @@ useHead({
             {{ current.rating_avg.toFixed(1) }} · {{ current.rating_count }} reseñas
           </p>
 
-          <div class="mt-5 flex items-baseline gap-3">
+          <div v-if="variationActive" class="mt-5 flex items-baseline gap-3">
+            <span class="text-3xl sm:text-4xl font-semibold tabular-nums">
+              {{ currency(effectivePrice(variationActive.price_discount ?? variationActive.price)) }}
+            </span>
+            <span
+              v-if="discount > 0"
+              class="text-lg text-theme-muted line-through tabular-nums"
+            >
+              {{ currency(variationActive.price) }}
+            </span>
+          </div>
+
+          <div v-else class="mt-5 flex items-baseline gap-3">
             <span class="text-3xl sm:text-4xl font-semibold tabular-nums">
               {{ currency(price) }}
             </span>
@@ -257,6 +288,15 @@ useHead({
             >
               {{ currency(current.price) }}
             </span>
+          </div>
+
+          <div v-if="current.variants" class="py-2 flex gap-1 items-center">
+            <UButton v-for="(variant, id) in current.variants" 
+              :variant="variationActive?.id === variant.id ? 'solid' : 'soft'" 
+              :color="variationActive?.id === variant.id ? 'primary' : 'neutral'" size="xs"
+              @click="() => {variationActive = variant; console.log(variationActive)}">
+              {{ variant.combinacion }}
+            </UButton>
           </div>
 
           <p
@@ -457,7 +497,7 @@ useHead({
 
       <!-- Product page sections (configured via admin) -->
       <ClientProductPage
-        v-if="current"
+        v-if="current.slug === route.params.slug"
         :product="current"
         :images="current.images?.map(img => img.url)"
         :hide-hero="true"

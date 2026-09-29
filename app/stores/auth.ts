@@ -17,7 +17,7 @@ const ROLE_DEFAULT_ROUTE: Record<string, string> = {
 const USER_STORAGE_KEY = 'auth_user'
 
 export const useAuthStore = defineStore('auth', () => {
-  const tokenCookie = useCookie<string | null>('auth_token', { sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 })
+  const tokenCookie = useCookie<string | null>('auth_token', { sameSite: 'lax', maxAge: 60 * 60 * 16 })
   const userState = useState<User | null>('auth_user', () => null)
 
   const token = computed<string | null>(() => tokenCookie.value ?? null)

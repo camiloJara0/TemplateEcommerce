@@ -16,7 +16,7 @@ useHead({
 const appSettings = computed(
   () => (appConfig.app as { name?: string; description?: string } | undefined) ?? {}
 )
-
+console.log(configStore.effectiveTiendaConfig)
 const title = computed(() => configStore.effectiveTiendaConfig?.brand?.name || appSettings.value.name || 'CommerceOS')
 const description = computed(() => appSettings.value.description || 'Ecommerce premium')
 

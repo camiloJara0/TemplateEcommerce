@@ -19,6 +19,30 @@ const typeBadge: Record<string, { label: string, color: 'primary' | 'success' | 
   free_shipping: { label: 'Envío gratis', color: 'info' }
 }
 
+type CouponStatus = 'scheduled' | 'active' | 'inactive' | 'expired' | 'exhausted'
+
+function statusOf(coupon: Coupon): CouponStatus {
+  const now = Date.now()
+  if (coupon.starts_at && new Date(coupon.starts_at).getTime() > now) return 'scheduled'
+  if (coupon.expires_at && new Date(coupon.expires_at).getTime() < now) return 'expired'
+  if (coupon.usage_limit != null && (coupon.used_count ?? 0) >= coupon.usage_limit) return 'exhausted'
+  if (coupon.active === false) return 'inactive'
+  return 'active'
+}
+
+const statusBadge: Record<CouponStatus, { label: string, color: 'success' | 'info' | 'warning' | 'error' | 'neutral' }> = {
+  active: { label: 'Activo', color: 'success' },
+  scheduled: { label: 'Programado', color: 'info' },
+  inactive: { label: 'Inactivo', color: 'neutral' },
+  expired: { label: 'Expirado', color: 'warning' },
+  exhausted: { label: 'Agotado', color: 'error' }
+}
+
+function usagePercent(coupon: Coupon): number {
+  if (!coupon.usage_limit) return 0
+  return Math.min(100, Math.round(((coupon.used_count ?? 0) / coupon.usage_limit) * 100))
+}
+
 async function openCreate() {
   editingId.value = null
   editingCoupon.value = null
@@ -50,13 +74,17 @@ async function openEdit(coupon: Coupon) {
   showModal.value = true
 }
 
-async function handleSubmit(payload: unknown) {
-  if (editingId.value) {
-    await couponStore.adminUpdate(editingId.value, payload as Partial<CouponPayload>)
-  } else {
-    await couponStore.adminCreate(payload as CouponPayload)
-  }
+async function handleSubmit() {
   showModal.value = false
+  editingId.value = null
+  editingCoupon.value = null
+}
+
+async function couponAction(payload: CouponPayload) {
+  if (editingId.value) {
+    return couponStore.adminUpdate(editingId.value, payload)
+  }
+  return couponStore.adminCreate(payload)
 }
 
 async function remove(coupon: NonNullable<typeof adminList.value>[number]) {
@@ -103,6 +131,7 @@ useSeoMeta({ title: 'Cupones — Admin' })
           <div class="p-4">
             <FormsCouponForm
               :initial="editingCoupon ?? undefined"
+              :action="couponAction"
               @success="handleSubmit"
             />
           </div>
@@ -141,7 +170,17 @@ useSeoMeta({ title: 'Cupones — Admin' })
         </span>
       </template>
       <template #cell-used_count="{ row }">
-        <span class="tabular-nums">{{ (row as any).used_count ?? 0 }} / {{ (row as any).usage_limit ?? '∞' }}</span>
+        <div class="min-w-28 space-y-1">
+          <span class="tabular-nums text-sm">
+            {{ (row as any).used_count ?? 0 }} / {{ (row as any).usage_limit ?? '∞' }}
+          </span>
+          <UProgress
+            v-if="(row as any).usage_limit"
+            :model-value="usagePercent(row as any)"
+            :color="usagePercent(row as any) >= 100 ? 'error' : 'primary'"
+            size="xs"
+          />
+        </div>
       </template>
       <template #cell-expires_at="{ row }">
         <span
@@ -155,8 +194,8 @@ useSeoMeta({ title: 'Cupones — Admin' })
       </template>
       <template #cell-active="{ row }">
         <UBadge
-          :label="(row as any).active ? 'Activo' : 'Inactivo'"
-          :color="(row as any).active ? 'success' : 'neutral'"
+          :label="statusBadge[statusOf(row as any)].label"
+          :color="statusBadge[statusOf(row as any)].color"
           variant="subtle"
           size="sm"
         />
