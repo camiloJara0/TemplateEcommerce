@@ -21,6 +21,21 @@ class BrandController extends Controller
         ]));
     }
 
+    public function adminIndex()
+    {
+        $marcas = Brand::withCount('products')->orderBy('name')->get();
+
+        return ApiResponse::success($marcas->map(fn ($b) => [
+            'id' => $b->id,
+            'name' => $b->name,
+            'slug' => $b->slug,
+            'description' => $b->description,
+            'image' => $b->image,
+            'is_active' => (bool) $b->is_active,
+            'products_count' => (int) $b->products_count,
+        ]));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

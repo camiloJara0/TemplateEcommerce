@@ -108,10 +108,10 @@ class ProductController extends Controller
             'stock' => $validated['stock'] ?? 0,
             'is_featured' => $validated['is_featured'] ?? false,
             'estado' => $validated['estado'] ?? config('ecommerce.default_status', 'activo'),
-            'page_config' => $validated['page_config'] ?? ($validated['page_config_json'] ? json_decode($validated['page_config_json'], true) : null),
+            'page_config' => $validated['page_config'] ?? (!empty($validated['page_config_json']) ? json_decode($validated['page_config_json'], true) : null),
         ]);
 
-        $this->sincronizarExtras($producto, $validated);
+        $this->sincronizarExtras($producto, $validated, $request);
 
         return ApiResponse::success(
             new ProductResource($producto->load(['category', 'brand', 'images', 'tags', 'variants.attributeValues.attribute'])),
@@ -144,7 +144,7 @@ class ProductController extends Controller
                     : $producto->page_config),
         ]);
 
-        $this->sincronizarExtras($producto, $validated);
+        $this->sincronizarExtras($producto, $validated, $request);
 
         return ApiResponse::success(
             new ProductResource($producto->load(['category', 'brand', 'images', 'tags', 'variants.attributeValues.attribute'])),
@@ -189,7 +189,7 @@ class ProductController extends Controller
             'variants.*.price' => 'nullable|numeric|min:0',
             'variants.*.price_discount' => 'nullable|numeric|min:0',
             'variants.*.stock' => 'nullable|integer|min:0',
-            'variants.*.image' => 'nullable|string',
+            'variants.*.image' => 'nullable|file',
             'variants.*.attribute_values' => 'nullable|array',
             'variants.*.attribute_values.*' => 'exists:variant_attribute_values,id',
         ];
@@ -199,32 +199,34 @@ class ProductController extends Controller
 
 
 
-    private function sincronizarExtras(Product $producto, array $datos): void
+    private function sincronizarExtras(Product $producto, array $datos, Request $request): void
     {
-        $producto->images()->delete();
+        if ($request->has('existing_image_urls') || $request->has('images')) {
+            $producto->images()->delete();
 
-        $existingUrls = $datos['existing_image_urls'] ?? [];
-        $newFiles = $datos['images'] ?? [];
-        $allImages = array_merge($existingUrls, $newFiles);
+            $existingUrls = array_filter((array) ($datos['existing_image_urls'] ?? []));
+            $newFiles = (array) ($datos['images'] ?? []);
+            $allImages = array_merge($existingUrls, $newFiles);
 
-        foreach (array_values($allImages) as $pos => $imagen) {
-            if (empty($imagen)) continue;
+            foreach (array_values($allImages) as $pos => $imagen) {
+                if (empty($imagen)) continue;
 
-            if ($imagen instanceof UploadedFile) {
-                $path = $imagen->store('products/images', 'public');
-                $urlCompleta = asset('storage/' . $path);
-            } else {
-                $urlCompleta = $imagen;
+                if ($imagen instanceof UploadedFile) {
+                    $path = $imagen->store('products/images', 'public');
+                    $urlCompleta = asset('storage/' . $path);
+                } else {
+                    $urlCompleta = $imagen;
+                }
+
+                $producto->images()->create([
+                    'url' => $urlCompleta,
+                    'position' => $pos,
+                ]);
             }
-
-            $producto->images()->create([
-                'url' => $urlCompleta,
-                'position' => $pos,
-            ]);
         }
 
-        if (isset($datos['tags'])) {
-            $producto->tags()->sync($datos['tags']);
+        if ($request->has('tags')) {
+            $producto->tags()->sync(array_filter((array) ($datos['tags'] ?? [])));
         }
 
         $idsProcesados = [];
@@ -270,15 +272,23 @@ class ProductController extends Controller
             $idsProcesados[] = $variante->id;
         }
 
-        if ($idsProcesados) {
-            $producto->variants()
-                ->whereNotIn('id', $idsProcesados)
-                ->delete();
+        if ($request->has('variants')) {
+            if ($idsProcesados) {
+                $producto->variants()
+                    ->whereNotIn('id', $idsProcesados)
+                    ->delete();
+            } else {
+                $producto->variants()->delete();
+            }
         }
 
         if ($producto->variants()->exists()) {
             $producto->update([
                 'stock' => $producto->variants()->sum('stock')
+            ]);
+        } else {
+            $producto->update([
+                'stock' => $datos['stock'] ?? $producto->stock
             ]);
         }
     }

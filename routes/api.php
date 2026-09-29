@@ -21,6 +21,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\VariantAttributeController;
 use Illuminate\Support\Facades\Route;
 
 // ===== Rutas públicas de autenticación =====
@@ -149,14 +150,25 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
     Route::delete('/categorias/{categoria}', [CategoryController::class, 'destroy'])->middleware('permission:productos.categorias.eliminar');
 
     // Marcas
+    Route::get('/marcas', [BrandController::class, 'adminIndex'])->middleware('permission:productos.marcas.ver');
     Route::post('/marcas', [BrandController::class, 'store'])->middleware('permission:productos.marcas.crear');
     Route::put('/marcas/{marca}', [BrandController::class, 'update'])->middleware('permission:productos.marcas.editar');
     Route::delete('/marcas/{marca}', [BrandController::class, 'destroy'])->middleware('permission:productos.marcas.eliminar');
 
     // Etiquetas
+    Route::get('/etiquetas', [TagController::class, 'adminIndex'])->middleware('permission:productos.etiquetas.ver');
     Route::post('/etiquetas', [TagController::class, 'store'])->middleware('permission:productos.etiquetas.crear');
     Route::put('/etiquetas/{tag}', [TagController::class, 'update'])->middleware('permission:productos.etiquetas.editar');
     Route::delete('/etiquetas/{tag}', [TagController::class, 'destroy'])->middleware('permission:productos.etiquetas.eliminar');
+
+    // Atributos de variantes (Color, Talla, ...)
+    Route::get('/variant-attributes', [VariantAttributeController::class, 'index'])->middleware('permission:productos.atributos.ver');
+    Route::post('/variant-attributes', [VariantAttributeController::class, 'store'])->middleware('permission:productos.atributos.crear');
+    Route::put('/variant-attributes/{atributo}', [VariantAttributeController::class, 'update'])->middleware('permission:productos.atributos.editar');
+    Route::delete('/variant-attributes/{atributo}', [VariantAttributeController::class, 'destroy'])->middleware('permission:productos.atributos.eliminar');
+    Route::post('/variant-attributes/{atributo}/values', [VariantAttributeController::class, 'storeValue'])->middleware('permission:productos.atributos.crear');
+    Route::put('/variant-values/{valor}', [VariantAttributeController::class, 'updateValue'])->middleware('permission:productos.atributos.editar');
+    Route::delete('/variant-values/{valor}', [VariantAttributeController::class, 'destroyValue'])->middleware('permission:productos.atributos.eliminar');
 
     // Inventario
     Route::get('/inventario/movimientos', [InventoryController::class, 'movimientos'])->middleware('permission:inventario.ver');
