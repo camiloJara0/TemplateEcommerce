@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('zona_horaria')->nullable()->default('UTC');
             $table->string('idioma')->default('es');
             $table->string('tema')->default('claro');
+            $table->string('telefono', 30)->nullable();
+            $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
         });
     }

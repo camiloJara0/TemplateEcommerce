@@ -22,6 +22,10 @@ use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\VariantAttributeController;
+use App\Http\Controllers\AuditoriaController;
+use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\ContactMessageReplyController;
+use App\Http\Controllers\NewsletterSubscriberController;
 use Illuminate\Support\Facades\Route;
 
 // ===== Rutas públicas de autenticación =====
@@ -84,6 +88,11 @@ Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
 
     // Seguimiento público de envíos
     Route::get('/envios/tracking/{trackingNumber}', [ShipmentController::class, 'tracking']);
+
+    // Contacto
+    Route::post('/contact', [ContactMessageController::class, 'store']);
+    Route::post('/newsletter', [NewsletterSubscriberController::class, 'store']);
+    Route::post('/confirmarNewsletter', [NewsletterSubscriberController::class, 'confirmarSubscripcion']);
 });
 
 // ===== Webhook de pagos (sin autenticación) =====
@@ -102,6 +111,7 @@ Route::get('/v1/pagos/provider', function () {
 Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1')->group(function () {
     Route::get('/perfil', [UserController::class, 'perfil']);
     Route::put('/perfil', [UserController::class, 'actualizarPerfil']);
+    Route::post('/perfil', [UserController::class, 'eliminarPerfil']);
     Route::post('/logout', [UserController::class, 'logout']);
 
     Route::get('/direcciones', [AddressController::class, 'index']);
@@ -142,7 +152,22 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
     Route::delete('/productos/{producto}', [ProductController::class, 'destroy'])->middleware('permission:productos.eliminar');
 
     // Usuarios
-    Route::get('/usuarios', [UserController::class, 'usuarios']);
+    Route::get('/usuarios', [UserController::class, 'usuarios'])->middleware('permission:usuarios.ver');
+    Route::post('/usuarios', [UserController::class, 'store'])->middleware('permission:usuarios.crear');
+    Route::put('/usuarios/{id}', [UserController::class, 'update'])->middleware('permission:usuarios.editar');
+    Route::post('/eliminar_usuario', [UserController::class, 'eliminarUsuario'])->middleware('permission:usuarios.eliminar');
+    Route::put('/perfiles/{id}', [UserController::class, 'reactivarUsuario'])->middleware('permission:usuarios.reactivar');
+
+    // Comunidad
+    Route::get('/contact', [ContactMessageController::class, 'index'])->middleware('permission:usuarios.ver');
+    Route::put('/contact/{id}', [ContactMessageController::class, 'update']);
+    Route::post('/reply_contact', [ContactMessageReplyController::class, 'store'])->middleware('permission:usuarios.editar');
+    Route::get('/newsletter', [NewsletterSubscriberController::class, 'index'])->middleware('permission:usuarios.ver');
+
+    // Auditoria
+    Route::get('/auditoria', [AuditoriaController::class, 'index']);
+    Route::get('/auditoria/filtros', [AuditoriaController::class, 'filtros']);
+    Route::post('/settings/auditoria', [SettingsController::class, 'retencion_auditoria'])->middleware('permission:configuracion.editar');
 
     // Categorías
     Route::post('/categorias', [CategoryController::class, 'store'])->middleware('permission:productos.categorias.crear');
@@ -229,6 +254,6 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
     Route::put('/configuracion/pagos', [SettingsController::class, 'actualizarPagos'])->middleware('permission:configuracion.editar');
 
     // Upload de imágenes para page builder
-    Route::post('/upload', [UploadController::class, 'store']);
-    Route::delete('/upload', [UploadController::class, 'destroy']);
+    Route::post('/upload', [UploadController::class, 'store'])->middleware('permission:configuracion.editar');
+    Route::delete('/upload', [UploadController::class, 'destroy'])->middleware('permission:configuracion.editar');
 });

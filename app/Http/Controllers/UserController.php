@@ -18,7 +18,7 @@ class UserController extends Controller
 {
     public function usuarios()
     {
-        $usuarios = User::where('estado', 'activo')->select('id', 'nombre', 'email', 'foto')->get();
+        $usuarios = User::where('estado', 'activo')->select('id', 'nombre', 'email', 'foto')->with(['rol'])->get();
 
         return ApiResponse::success($usuarios);
     }
@@ -55,6 +55,79 @@ class UserController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return ApiResponse::error('Error al registrar usuario', 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'rol_id' => 'required|exists:roles,id'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'nombre' => $validated['nombre'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'idioma' => 'es',
+                'estado' => 'activo',
+            ]);
+
+            $user->roles()->attach($validated['rol_id']);
+            Auditoria::registrar($user, 'crear', 'Se registró en la plataforma');
+
+            app(\App\Services\NotificationService::class)->registro($user);
+
+            DB::commit();
+
+            return ApiResponse::success(
+                $user->only(['id', 'nombre', 'email', 'zona_horaria', 'idioma', 'tema']),
+                'Usuario registrado exitosamente',
+                201
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ApiResponse::error('Error al registrar usuario', 500);
+        }
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'password' => 'nullable|string|min:8|confirmed',
+            'rol_id' => 'required|exists:roles,id'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $userRegistra = Auth::user();
+
+            $user = User::where('id', $request->id)->first();
+            $user->nombre = $validated['nombre'];
+            $user->email = $validated['email'];
+            if ($validated['password']) {
+                $user->password = Hash::make($validated['password']);
+            }
+            $user->save();
+
+            $user->roles()->sync([$validated['rol_id']]);
+            Auditoria::registrar($userRegistra, 'actualizar', 'Se actualizo información de personal en la plataforma', $user);
+
+            DB::commit();
+
+            return ApiResponse::success(
+                $user->only(['id', 'nombre', 'email', 'zona_horaria', 'idioma', 'tema']),
+                'Usuario actualizado exitosamente',
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ApiResponse::error('Error al actualizar usuario'. $e, 500);
         }
     }
 
@@ -206,5 +279,48 @@ class UserController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return ApiResponse::success(null, 'Sesión cerrada exitosamente');
+    }
+
+    public function eliminarUsuario(Request $request)
+    {
+        $user = User::where('id', $request->id)->first();
+        $userRegistra = Auth::user();
+
+        if(!$user){
+            return response()->json([
+                'success' => true,
+                'mesagge' => 'No se encontro el usuario'
+            ], 500);
+        }
+        Auditoria::registrar($userRegistra, 'eliminar', 'Eliminar usuario del equipo');
+
+        $user->update(['estado' => 'inactivo']);
+
+        return ApiResponse::success(null, 'Cuenta eliminada exitosamente');
+    }
+
+    public function reactivarUsuario(User $user)
+    {
+        $userRegistra = Auth::user();
+        Auditoria::registrar($userRegistra, 'actualizar', 'Reactivación de cuenta');
+
+        $user->update(['estado' => 'activo']);
+
+        return ApiResponse::success(null, 'Cuenta reactivada exitosamente');
+    }
+
+    public function eliminarPerfil(Request $request)
+    {
+        $usuario = User::where('id', $request->id)->first();
+        if(!$usuario){
+            return response()->json([
+                'success' => true,
+                'mesagge' => 'No se encontro el usuario'
+            ], 500);
+        }
+        Auditoria::registrar($usuario, 'eliminar', 'Eliminación de cuenta');
+        $usuario->update(['estado' => 'inactivo']);
+
+        return ApiResponse::success(null, 'Cuenta eliminada exitosamente');
     }
 }

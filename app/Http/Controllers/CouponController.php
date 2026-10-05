@@ -33,6 +33,9 @@ class CouponController extends Controller
             'code' => 'required|string|max:50|unique:coupons,code',
             'type' => 'required|in:percent,fixed,free_shipping',
             'value' => 'required|numeric|min:0',
+            'category_id' => 'nullable|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'product_id' => 'nullable|exists:products,id',
             'min_subtotal' => 'nullable|numeric|min:0',
             'max_discount' => 'nullable|numeric|min:0',
             'usage_limit' => 'nullable|integer|min:1',
@@ -46,6 +49,9 @@ class CouponController extends Controller
             'code' => strtoupper($validated['code']),
             'type' => $validated['type'],
             'value' => $validated['value'],
+            'category_id' => $validated['category_id'] ?? null,
+            'brand_id' => $validated['brand_id'] ?? null,
+            'product_id' => $validated['product_id'] ?? null,
             'min_subtotal' => $validated['min_subtotal'] ?? 0,
             'max_discount' => $validated['max_discount'] ?? null,
             'usage_limit' => $validated['usage_limit'] ?? null,
@@ -64,6 +70,9 @@ class CouponController extends Controller
             'code' => 'sometimes|string|max:50|unique:coupons,code,' . $cupon->id,
             'type' => 'sometimes|in:percent,fixed,free_shipping',
             'value' => 'sometimes|numeric|min:0',
+            'category_id' => 'nullable|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'product_id' => 'nullable|exists:products,id',
             'min_subtotal' => 'nullable|numeric|min:0',
             'max_discount' => 'nullable|numeric|min:0',
             'usage_limit' => 'nullable|integer|min:1',
@@ -95,14 +104,17 @@ class CouponController extends Controller
             'code' => 'required|string|max:50',
             'subtotal' => 'required|numeric|min:0',
             'shipping' => 'nullable|numeric|min:0',
+            'session_id' => 'required|string',
         ]);
 
         try {
+
             $resultado = app(CouponService::class)->aplicarACarrito(
                 $validated['code'],
                 (float) $validated['subtotal'],
                 (float) ($validated['shipping'] ?? 0),
-                $request->user()
+                $request->user(),
+                $validated['session_id']
             );
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage(), 422, 'COUPON_ERROR');

@@ -24,7 +24,8 @@ class CheckoutService
                     $couponCode,
                     $subtotal,
                     $shipping,
-                    auth()->user()
+                    auth()->user(),
+                    $cart->session_id
                 );
 
                 $discount = $cupon['discount'];

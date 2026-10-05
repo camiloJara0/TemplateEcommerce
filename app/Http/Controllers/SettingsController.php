@@ -18,6 +18,7 @@ class SettingsController extends Controller
             'default_language',
             'support_email',
             'support_phone',
+            'dias_retencion_auditoria',
         ],
         'colores' => [
             'color_primario',
@@ -68,6 +69,17 @@ class SettingsController extends Controller
         $this->aplicarConfig($validated);
 
         return ApiResponse::success($this->index()->getData()->data, 'Configuración actualizada');
+    }
+
+    public function retencion_auditoria(Request $request)
+    {
+        $validated = $request->validate([
+            'dias_retencion_auditoria' => 'required|integer|min:1|max:365',
+        ]);
+
+        Setting::establecer('dias_retencion_auditoria', $validated['dias_retencion_auditoria'], 'general');
+
+        return ApiResponse::success(['dias_retencion_auditoria' => $validated['dias_retencion_auditoria']], 'Configuración de retención de auditoría actualizada');
     }
 
     public function publico()

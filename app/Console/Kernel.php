@@ -16,6 +16,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // Comandos programados del ecommerce (stock, reportes, etc.)
+        $schedule->command('audit:purge')
+            ->daily();
     }
 
     /**

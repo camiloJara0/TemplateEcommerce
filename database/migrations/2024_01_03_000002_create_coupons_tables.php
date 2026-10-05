@@ -13,6 +13,9 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->string('type')->default('percent'); // percent|fixed|free_shipping
             $table->decimal('value', 18, 2)->default(0);
+            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
+            $table->foreignId('brand_id')->nullable()->constrained('brands')->nullOnDelete();
+            $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
             $table->decimal('min_subtotal', 18, 2)->default(0);
             $table->decimal('max_discount', 18, 2)->nullable();
             $table->integer('usage_limit')->nullable();
