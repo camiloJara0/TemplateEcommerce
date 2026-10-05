@@ -4,10 +4,12 @@ import type { NewsletterSection } from '~/types/store'
 const props = defineProps<{ config: NewsletterSection }>()
 const email = ref('')
 const submitted = ref(false)
+const communityStore = useCommunityStore()
 
-function submit() {
+async function submit() {
   if (!email.value) return
-  submitted.value = true
+  submitted.value = false
+  await communityStore.subscribe({ correo: email.value })
   setTimeout(() => { submitted.value = false; email.value = '' }, 3000)
 }
 </script>

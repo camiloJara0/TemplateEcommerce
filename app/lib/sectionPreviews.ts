@@ -452,6 +452,21 @@ const PREVIEW_SVGS: Record<string, Record<string, SectionPreview>> = {
       </svg>`,
     },
   },
+  contact: {
+    default: {
+      label: 'Estándar',
+      svg: `<svg viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="200" fill="#f8fafc"/>
+        <rect x="10" y="10" width="300" height="180" rx="12" fill="#fef2f2"/>
+        <rect x="80" y="40" width="160" height="14" rx="3" fill="white" opacity="0.9"/>
+        <rect x="60" y="64" width="200" height="8" rx="1.5" fill="white" opacity="0.6"/>
+        <rect x="50" y="90" width="220" height="32" rx="8" fill="white" opacity="0.15" stroke="white" stroke-width="1"/>
+        <rect x="60" y="98" width="100" height="8" rx="1.5" fill="white" opacity="0.5"/>
+        <rect x="210" y="90" width="50" height="32" rx="8" fill="white"/>
+        <rect x="220" y="102" width="30" height="8" rx="1.5" fill="#fef2f2" opacity="0.4"/>
+      </svg>`,
+    },
+  },
   brand_logos: {
     default: {
       label: 'Estándar',

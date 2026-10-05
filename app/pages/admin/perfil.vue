@@ -8,6 +8,7 @@ const editing = ref(false)
 const saving = ref(false)
 const form = ref({ nombre: '', telefono: '', idioma: '' })
 
+
 onMounted(async () => {
   await profileStore.load(true)
   if (profileStore.profile) {
@@ -167,5 +168,6 @@ useSeoMeta({ title: 'Mi perfil — Admin' })
         <UButton label="Configurar" size="sm" variant="outline" color="neutral" disabled />
       </div>
     </div>
+
   </div>
 </template>

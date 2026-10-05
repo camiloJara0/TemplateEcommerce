@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import type { GlobalStyles } from '~/types/store'
+import type { BrandConfig, GlobalStyles } from '~/types/store'
 
-const props = defineProps<{ value: GlobalStyles }>()
-const emit = defineEmits<{ update: [value: GlobalStyles] }>()
+const props = defineProps<{ value: GlobalStyles, valueBrand: BrandConfig }>()
+const emit = defineEmits<{ update: [value: GlobalStyles], updateBrand: [value: BrandConfig] }>()
 
 function updateGroup(group: 'tipografia' | 'colores' | 'paleta' | 'fondos' | 'borders' | 'spacing', field: string, val: unknown) {
   emit('update', {
     ...props.value,
     [group]: { ...props.value[group], [field]: val }
   } as GlobalStyles)
+}
+
+function updateBrand(field: 'name' | 'tagline' | 'logo', val: string) {
+  emit('updateBrand', {
+    ...props.valueBrand,
+    [field]: val
+  })
 }
 
 const fontOptions = [
@@ -103,6 +110,32 @@ const gradDirMap: Record<string, string> = {
 
 <template>
   <div class="space-y-6">
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- 0. Marca — lo principal -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <div class="space-y-3">
+      <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Marca</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Nombre y eslogan de la tienda, se usan en el header y en el favicon.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <UiBaseInput
+          v-model="valueBrand.name"
+          label="Nombre de la tienda"
+          @update:model-value="updateBrand('name', String($event))"
+        />
+        <UiBaseInput
+          v-model="valueBrand.tagline"
+          label="Eslogan de la tienda"
+          @update:model-value="updateBrand('tagline', String($event))"
+        /> 
+      </div>
+      <AdminImageUpload
+        :model-value="valueBrand.logo"
+        label="Logo de la tienda"
+        @update:model-value="updateBrand('logo', String($event))"
+      />
+    </div>
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- 1. COLORES (brand + accent) — lo más usado primero -->
     <!-- ═══════════════════════════════════════════════════ -->

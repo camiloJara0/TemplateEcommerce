@@ -18,6 +18,7 @@ export type OfflineResource =
   | 'profile'
   | 'store_config'
   | 'tienda_config'
+  | 'community'
 
 export type OfflineStatus = 'pending' | 'syncing' | 'failed'
 
@@ -62,7 +63,8 @@ export const OFFLINE_COLLECTIONS = [
   'profile',
   'store_config',
   'shipping_methods',
-  'tienda_config'
+  'tienda_config',
+  'community'
 ] as const
 
 export type OfflineCollectionName = (typeof OFFLINE_COLLECTIONS)[number]
@@ -84,7 +86,8 @@ export const RESOURCE_COLLECTION: Record<OfflineResource, OfflineCollectionName>
   notification: 'notifications',
   profile: 'profile',
   store_config: 'store_config',
-  tienda_config: 'tienda_config'
+  tienda_config: 'tienda_config',
+  community: 'community'
 }
 
 export const OFFLINE_COLLECTION_LABELS: Record<OfflineCollectionName, string> = {
@@ -105,7 +108,8 @@ export const OFFLINE_COLLECTION_LABELS: Record<OfflineCollectionName, string> = 
   profile: 'Perfil',
   store_config: 'Configuración',
   shipping_methods: 'Métodos de envío',
-  tienda_config: 'Configuración de tienda'
+  tienda_config: 'Configuración de tienda',
+  community: 'Formularios de contacto'
 }
 
 export const OFFLINE_RESOURCES = Object.keys(RESOURCE_COLLECTION) as OfflineResource[]

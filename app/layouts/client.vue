@@ -21,7 +21,7 @@ const { brand, footer, social } = usePageConfig()
       <slot />
     </main>
 
-    <footer class="border-t border-theme bg-theme">
+    <footer class="border-t border-theme bg-theme homepage-section-bg">
       <div class="page-container py-12 sm:py-16">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           <div class="col-span-2 md:col-span-1">

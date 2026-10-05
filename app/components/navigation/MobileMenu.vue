@@ -3,6 +3,7 @@ defineProps<{
   links: Array<{ label: string, to: string }>
 }>()
 
+const appConfig = useAppConfig()
 const open = defineModel<boolean>('open', { default: false })
 const authStore = useAuthStore()
 
@@ -28,7 +29,7 @@ const accountLinks = [
             class="size-4 text-theme-on-brand"
           />
         </div>
-        <span class="font-semibold">CommerceOS</span>
+        <span class="font-semibold">{{ appConfig.app?.name || 'CommerceOS' }}</span>
       </div>
     </template>
 

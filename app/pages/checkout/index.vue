@@ -54,8 +54,10 @@ async function applyCoupon() {
   await orderStore.applyCoupon({
     code: couponCode.value,
     subtotal: subtotal.value,
-    shipping: shipping.value
+    shipping: shipping.value,
+    session_id: sessionId.value ?? null
   })
+  await refreshPreview()
 }
 
 async function placeOrder() {
@@ -74,7 +76,7 @@ async function placeOrder() {
       session_id: sessionId.value ?? undefined,
       address_id: selectedAddressId.value,
       shipping_method_id: selectedShippingId.value,
-      coupon_code: appliedCoupon.value?.code || couponCode.value || undefined,
+      coupon_code: appliedCoupon.value?.coupon?.code || couponCode.value || undefined,
       notes: notes.value || undefined
     })
     // await cartStore.clear()
@@ -227,7 +229,7 @@ useSeoMeta({
           </div>
           <UBadge
             v-if="appliedCoupon"
-            :label="`${appliedCoupon.code} aplicado`"
+            :label="`${appliedCoupon.coupon?.code} aplicado`"
             color="success"
             variant="subtle"
             icon="i-lucide-check"

@@ -46,6 +46,7 @@ export interface AdminStoreConfig {
     default_language?: Language
     support_email?: string | null
     support_phone?: string | null
+    dias_retencion_auditoria?: number
   }
   colores: {
     color_primario?: string
@@ -157,6 +158,7 @@ export interface TiendaSecciones {
   deals: DealsSection
   testimonials: TestimonialsSection
   newsletter: NewsletterSection
+  contact: ContactSection
   brand_logos: BrandLogosSection
   gallery_feed: GalleryFeedSection
   stats: StatsSection
@@ -539,6 +541,22 @@ export interface NewsletterSection {
   image: string | null
 }
 
+export interface ContactSection {
+  show: boolean
+  headline: string
+  subtext: string
+  placeholder: string
+  button_label: string
+  bg_color: string
+  text_color: string
+  layout: 'centered' | 'split'
+  image: string | null
+  placeholder_name: string
+  placeholder_email: string
+  placeholder_asunto: string
+  placeholder_mensaje: string
+}
+
 export interface BrandLogosSection {
   show: boolean
   title: string
@@ -744,6 +762,7 @@ export const SECTION_META: Record<SectionKey, { label: string, icon: string }> =
   deals: { label: 'Ofertas', icon: 'i-lucide-tag' },
   testimonials: { label: 'Testimonios', icon: 'i-lucide-message-square-quote' },
   newsletter: { label: 'Newsletter', icon: 'i-lucide-mail' },
+  contact: { label: 'Contacto', icon: 'i-lucide-phone' },
   brand_logos: { label: 'Marcas', icon: 'i-lucide-heart' },
   gallery_feed: { label: 'Galería', icon: 'i-lucide-instagram' },
   stats: { label: 'Estadísticas', icon: 'i-lucide-bar-chart-3' },

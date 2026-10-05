@@ -7,6 +7,10 @@ definePageMeta({ layout: 'admin', middleware: ['auth'] })
 
 const authStore = useAuthStore()
 const profileStore = useProfileStore()
+
+const communityStore = useCommunityStore()
+const {adminList: messages, subscriptors} = storeToRefs(communityStore)
+
 const { updatePersonal } = useAuthService()
 const { user: currentUser } = storeToRefs(authStore)
 
@@ -72,11 +76,11 @@ const formatDate = (dateString: string | null) => {
 
 const columnsAudit = [
   { accessorKey: 'usuario.nombre', header: 'Usuario'},
-  { accessorKey: 'accion', header: 'Acción'},
-  { accessorKey: 'descripcion', header: 'Descripción'},
-  { accessorKey: 'created_at', header: 'Fecha', 
+  { accessorKey: 'correo', header: 'Correo'},
+  { accessorKey: 'estado', header: 'Estado'},
+  { accessorKey: 'fecha_confirmacion', header: 'Fecha', 
     cell: ({ row }) => {
-      const texto = row.original.created_at || ''
+      const texto = row.original.fecha_confirmacion || ''
       return h('p', formatDate(texto))
     }
   },
@@ -92,6 +96,8 @@ async function applyFilters() {
 }
 
 onMounted(async () => {
+  await communityStore.loadAdminList()
+  await communityStore.loadSubscriptors()
   void loadUsers()
   await profileStore.loadAuditoria()
   await profileStore.loadFiltros()
@@ -101,16 +107,16 @@ onMounted(async () => {
 <template>
   <div class="space-y-6 animate-fade-up">
 
-    <UTabs :items="[{ label: 'Usuarios', slot: 'usuarios' }, { label: 'Auditoria', slot: 'auditoria' }]"
+    <UTabs :items="[{ label: 'Contactos', slot: 'usuarios' }, { label: 'Publicidad', slot: 'auditoria' }]"
       :ui="{ trigger: 'data-[state=active]:!bg-transparent' }">
       <template #usuarios>
         <div class="page-header">
           <div>
             <h1 class="page-title">
-              Usuarios
+              Mensajes
             </h1>
             <p class="page-subtitle">
-              {{ allUsers.length }} usuarios en el sistema
+              usuarios en el sistema
             </p>
           </div>
           <div>
@@ -139,7 +145,7 @@ onMounted(async () => {
               <tr>
                 <th
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  Usuario
+                  Nombre
                 </th>
                 <th
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -147,11 +153,11 @@ onMounted(async () => {
                 </th>
                 <th
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  Rol
+                  Asunto
                 </th>
                 <th
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  Sesión actual
+                  Estado
                 </th>
                 <th
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -160,65 +166,51 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-if="currentUser" class="bg-brand-50/50 dark:bg-brand-950/20">
-                <td class="px-5 py-3.5">
-                  <div class="flex items-center gap-3">
-                    <UAvatar :alt="currentUser.nombre" size="sm">
-                      {{ initials(currentUser.nombre) }}
-                    </UAvatar>
-                    <div>
-                      <p class="text-sm font-medium">
-                        {{ currentUser.nombre }}
-                      </p>
-                      <p class="text-xs text-slate-400">
-                        {{ currentUser.id }}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-5 py-3.5 text-sm">
-                  {{ currentUser.email }}
-                </td>
-                <td class="px-5 py-3.5">
-                  <UBadge :label="currentUser.rol?.[0]?.name ?? 'admin'" color="primary" variant="subtle" size="sm" />
-                </td>
-                <td class="px-5 py-3.5">
-                  <UBadge label="Tú" color="success" variant="subtle" size="sm" />
-                </td>
-              </tr>
               <tr
-                v-for="user in allUsers.filter(u => !search || u.nombre.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))"
-                :key="user.id" class="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors">
+                v-for="message in messages.filter(u => !search || u.nombre?.toLowerCase().includes(search.toLowerCase()) || u.correo.toLowerCase().includes(search.toLowerCase()))"
+                :key="message.id" class="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors">
                 <td class="px-5 py-3.5">
                   <div class="flex items-center gap-3">
-                    <UAvatar :alt="user.nombre" size="sm">
-                      {{ initials(user.nombre) }}
+                    <UAvatar :alt="message.nombre" size="sm">
+                      {{ initials(message.nombre) }}
                     </UAvatar>
                     <p class="text-sm font-medium">
-                      {{ user.nombre }}
+                      {{ message.nombre }}
                     </p>
                   </div>
                 </td>
                 <td class="px-5 py-3.5 text-sm">
-                  {{ user.email }}
+                  {{ message.correo }}
                 </td>
                 <td class="px-5 py-3.5">
-                  <UBadge :label="user.rol?.[0]?.name ?? 'cliente'" color="neutral" variant="subtle" size="sm" />
+                  {{ message.asunto }}
                 </td>
                 <td class="px-5 py-3.5 text-sm text-slate-400">
-                  —
+                  {{ message.estado }}
                 </td>
                 <td class="px-5 py-3.5 text-sm text-slate-400">
-                  <UButton icon="i-lucide-pen" color="neutral" variant="ghost" size="xs"
-                    @click="() => { showEdit = true; userSelected = { ...user, rol_id: user.rol?.[0].id } }"></UButton>
-                  <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteUser(user.id)">
-                  </UButton>
+                  <UModal>
+                    <UButton icon="i-lucide-pen" color="neutral" variant="ghost" size="xs" @click=""/>
+                    <template #header>
+                      <div>
+                        <h3 class="font-semibold">Responder mensaje</h3>
+                      </div>
+                    </template>
+                    <template #body>
+                      <div class="space-y-4">
+
+                        <FormsContactForm :initial="message"/>
+                      </div>
+                    </template>
+                  </UModal>
+                  <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" />
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
       </template>
+
       <template #auditoria>
         <div class="page-header">
           <div>
@@ -271,7 +263,7 @@ onMounted(async () => {
         </div>
         <!-- Audit Logs -->
         <div class="surface rounded-xl border border-theme p-6 space-y-4 my-4">
-          <UTable :columns="columnsAudit" :data="auditLogs" />
+          <UTable :columns="columnsAudit" :data="subscriptors" />
         </div>
       </template>
     </UTabs>

@@ -11,6 +11,9 @@ const formInitial = computed<Partial<StoreConfigPayload> | undefined>(() => {
   const cfg = adminConfig.value
   if (!cfg) return undefined
   return {
+    store_name: cfg.general.store_name ?? undefined,
+    store_tagline: cfg.general.store_tagline ?? undefined,
+    logo: cfg.general.logo ?? undefined,
     currency: cfg.general.currency,
     tax_rate: cfg.general.tax_rate,
     default_language: cfg.general.default_language,
@@ -19,7 +22,7 @@ const formInitial = computed<Partial<StoreConfigPayload> | undefined>(() => {
     meta_title: cfg.seo.meta_title ?? undefined,
     meta_description: cfg.seo.meta_description ?? undefined,
     meta_keywords: cfg.seo.meta_keywords ?? undefined,
-    og_image: cfg.seo.og_image ?? undefined
+    og_image: cfg.seo.og_image ?? undefined,
   }
 })
 

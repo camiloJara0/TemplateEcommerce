@@ -15,8 +15,15 @@ const emit = defineEmits<{
   undo: []
   redo: []
   expand: []
+  export: []
+  import: [file: File]
   'toggle-fullscreen': []
 }>()
+const file = ref<File | null>(null)
+
+function subir() {
+  if (file.value) emit('import', file.value)
+}
 </script>
 
 <template>
@@ -61,6 +68,28 @@ const emit = defineEmits<{
       class="rounded-xl"
       :disabled="!canRedo"
       @click="emit('redo')"
+    />
+
+    <div class="w-px h-5 bg-slate-200 dark:bg-slate-800" />
+
+    <UButton 
+      icon="i-lucide-folder-input"
+      color="neutral"
+      variant="ghost"
+      size="sm"
+      class="rounded-xl"
+      @click="emit('export')"
+    />
+
+    <UFileUpload 
+      icon="i-lucide-folder-down"
+      color="neutral"
+      size="sm"
+      class="rounded-xl"
+      variant="button"
+      v-model="file"
+      @change="subir"
+      loading
     />
 
     <div class="w-px h-5 bg-slate-200 dark:bg-slate-800" />

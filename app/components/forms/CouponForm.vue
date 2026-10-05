@@ -2,12 +2,15 @@
 import type { CouponPayload } from '~/types/admin'
 import type { CouponType } from '~/types/api'
 import { useAdminCuponesService } from '~/composables/services/admin/cupones'
+import type { SelectOption } from '../ui/BaseSelect.vue'
 
 interface Props {
   action?: (payload: CouponPayload) => Promise<unknown>
   submitLabel?: string
   loading?: boolean
   initial?: Partial<CouponPayload>
+  categoryOptions?: SelectOption[]
+  brandOptions?: SelectOption[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,6 +20,9 @@ const props = withDefaults(defineProps<Props>(), {
     code: '',
     type: 'percent' as CouponType,
     value: 0,
+    category_id: undefined as unknown as number,
+    brand_id: undefined as unknown as number,
+    product_id: undefined as unknown as number,
     min_subtotal: undefined as unknown as number,
     max_discount: undefined as unknown as number,
     usage_limit: undefined as unknown as number,
@@ -24,7 +30,9 @@ const props = withDefaults(defineProps<Props>(), {
     starts_at: '',
     expires_at: '',
     active: true
-  })
+  }),
+  categoryOptions: () => [] as SelectOption[],
+  brandOptions: () => [] as SelectOption[]
 })
 
 const emit = defineEmits<{
@@ -63,6 +71,9 @@ async function onSubmit() {
       code: String(form.value.code ?? '').toUpperCase(),
       type: form.value.type as CouponType,
       value: Number(form.value.value ?? 0),
+      category_id: form.value.category_id || undefined,
+      brand_id: form.value.brand_id || undefined,
+      product_id: form.value.product_id || undefined,
       min_subtotal: form.value.min_subtotal != null ? Number(form.value.min_subtotal) : undefined,
       max_discount: form.value.max_discount != null ? Number(form.value.max_discount) : undefined,
       usage_limit: form.value.usage_limit != null ? Number(form.value.usage_limit) : undefined,
@@ -160,6 +171,20 @@ defineExpose({ form, visibleErrors, isValid })
           class="w-full"
         />
       </UFormField>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <UiBaseSelect
+          v-model="form.category_id"
+          label="Categoría"
+          :items="categoryOptions"
+          placeholder="Selecciona"
+        />
+        <UiBaseSelect
+          v-model="form.brand_id"
+          label="Marca"
+          :items="brandOptions"
+          placeholder="Selecciona"
+        />
     </div>
     <UCheckbox
       v-model="form.active"

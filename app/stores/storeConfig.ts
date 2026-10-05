@@ -239,11 +239,38 @@ export const useStoreConfigStore = defineStore('storeConfig', () => {
     })
   }
 
+  async function updateRetencionAuditorial(payload: { dias_retencion_auditoria: number }) {
+    const { request } = useApi()
+    console.log({dias_retencion_auditoria: payload})
+    return runMutation<{ dias_retencion_auditoria: number }>({
+      request: () => request<{ dias_retencion_auditoria: number }>('/admin/settings/auditoria', { method: 'POST', body: {dias_retencion_auditoria: payload} }),
+      offline: {
+        type: 'update',
+        resource: 'store_config',
+        method: 'POST',
+        url: '/admin/settings/auditoria',
+        body: { ...payload }
+      },
+      successMessage: 'Configuración de retención de auditoría actualizada',
+      onSuccess: (data) => {
+        if (adminConfig.value) {
+          adminConfig.value = {
+            ...adminConfig.value,
+            general: {
+              ...adminConfig.value.general,
+              dias_retencion_auditoria: data.dias_retencion_auditoria
+            }
+          }
+        }
+      }
+    })
+  }
+
   return {
     publicConfig, adminConfig, tiendaConfig,
     loadingPublic, loadingAdmin, loadingTienda,
     currency, taxRate, storeName, effectiveTiendaConfig,
     loadPublic, loadAdmin, updateAdmin,
-    loadTienda, loadCombined, loadTiendaAdmin, updateTienda
+    loadTienda, loadCombined, loadTiendaAdmin, updateTienda, updateRetencionAuditorial
   }
 })

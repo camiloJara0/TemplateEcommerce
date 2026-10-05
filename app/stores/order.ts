@@ -111,7 +111,7 @@ export const useOrderStore = defineStore('order', () => {
       onSuccess: (data) => {
         appliedCoupon.value = data
         if (preview.value) {
-          preview.value = { ...preview.value, coupon: data }
+          preview.value = { ...preview.value, coupon: data.coupon }
         }
       }
     })

@@ -2,7 +2,9 @@
 definePageMeta({ layout: 'auth' })
 
 const toast = useToast()
-const authStore = useAuthStore()
+const route = useRoute()
+const communityStore = useCommunityStore()
+const token = route.query.token
 
 useSeoMeta({ title: 'Iniciar sesión', robots: 'noindex, nofollow' })
 
@@ -14,6 +16,17 @@ function handleSuccess() {
     icon: 'i-lucide-info',
   })
 }
+
+onMounted(async () => {
+  if(!token) return
+  await communityStore.confirmSubscribe(token)
+  toast.add({
+    title: 'Subscrito',
+    description: 'Te mandaremos ofertas y novedades!.',
+    color: 'info',
+    icon: 'i-lucide-info',
+  })
+})
 </script>
 
 <template>

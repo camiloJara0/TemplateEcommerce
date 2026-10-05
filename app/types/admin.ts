@@ -157,6 +157,9 @@ export interface CouponPayload {
   code: string
   type: CouponType
   value: number
+  category_id: number
+  brand_id: number
+  product_id: number
   min_subtotal?: number
   max_discount?: number
   usage_limit?: number
@@ -250,4 +253,23 @@ export interface AdminCatalogGroup {
   categorias: Category[]
   marcas: Brand[]
   etiquetas: Tag[]
+}
+
+export interface AdminAuditFilters {
+  usuario?: string
+  accion?: number
+  fecha?: number
+  per_page?: number
+  page?: number
+}
+
+export interface AuditLog {
+  id: number
+  usuario_id: number
+  accion: string
+  modulo: string
+  descripcion: string
+  ip: string
+  objeto_type?: string
+  objeto_id?: number
 }

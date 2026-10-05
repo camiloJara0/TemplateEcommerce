@@ -2,6 +2,7 @@ import type {
   Carrier,
   CouponType,
   OrderStatus,
+  Pagination,
   PaymentProvider,
   PaymentStatus,
   ShippingStatus
@@ -194,12 +195,27 @@ export interface Coupon {
   expires_at?: string | null
   active?: boolean
   description?: string | null
+  coupon: CouponObject
+  pagination: Pagination[]
+  items: CouponObject[]
+}
+
+export interface CouponObject {
+  code: string
+  type: CouponType
+  value: number
+  min_subtotal?: number
+  max_discount?: number
+  usage_limit?: number
+  used_count?: number
+  per_user_limit?: number
 }
 
 export interface ApplyCouponPayload {
   code: string
   subtotal: number
   shipping?: number
+  session_id: string | null
 }
 
 export interface Favorite {
@@ -225,4 +241,54 @@ export interface TrackingInfo {
   ciudad_destino?: string
   created_at?: string
   updated_at?: string
+}
+
+export interface AdminContact extends CreateContactPayload {
+  contact?: Contact
+  user?: {
+    id: number
+    nombre: string
+    foto?: string | null
+  }
+}
+
+export interface CreateContactPayload {
+  nombre?: string
+  nit?: string
+  correo: string
+  asunto: string
+  mensaje: string
+  user_id?: number
+}
+
+export interface ResponseContactPayload {
+  contact_message_id?: number
+  respuesta?: string
+  estado: string
+  user_id?: number
+  id?: number
+}
+
+export interface Contact {
+  id: number
+  user_id: number
+  user?: {
+    id: number
+    nombre: string
+    foto?: string | null
+  }
+  nombre?: string | null
+  correo: string
+  nit?: string | null
+  asunto: string
+  mensaje: string
+  fecha_lectura: string
+  estado?: 'Pendiente' | 'Leido' | 'Respondido' | 'Cerrado'
+  created_at?: string
+  updated_at?: string
+}
+
+export interface SubscribeNewsPayload {
+  correo: string
+  user_id?: number
 }

@@ -45,6 +45,7 @@ import VideoSection from '~/components/client/sections/video/VideoSection.vue'
 import MapSection from '~/components/client/sections/map/MapSection.vue'
 import RichTextSection from '~/components/client/sections/rich_text/RichTextSection.vue'
 import DealsEditor from '~/components/admin/editors/DealsEditor.vue'
+import Contact from '~/components/client/sections/newsletters/Contact.vue'
 
 // ─── Variant Maps ────────────────────────────────────────────────────────────
 
@@ -186,6 +187,9 @@ const ARTICLE_COMPONENTS: Record<string, Component> = {
   default: ArticleFeatured
 }
 
+const CONTACT_COMPONENTS: Record<string, Component> = {
+  default: Contact
+}
 
 
 // ─── Main Component Map ──────────────────────────────────────────────────────
@@ -214,7 +218,8 @@ const COMPONENT_MAP: Record<string, Record<string, Component>> = {
   video: VIDEO_COMPONENTS,
   map: MAP_COMPONENTS,
   richtext: RICHTEXT_COMPONENTS,
-  deals: DEALS_COMPONENTS
+  deals: DEALS_COMPONENTS,
+  contact: CONTACT_COMPONENTS
 }
 
 // ─── Composable ──────────────────────────────────────────────────────────────

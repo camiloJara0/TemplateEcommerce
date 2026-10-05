@@ -6,12 +6,19 @@ import type { Coupon } from '~/types/commerce'
 definePageMeta({ layout: 'admin', middleware: ['auth'] })
 
 const couponStore = useCouponStore()
+const categoryStore = useCategoryStore()
+const brandStore = useBrandStore()
 const { adminList, loading } = storeToRefs(couponStore)
 const { currency, date } = useFormat()
 
 const showModal = ref(false)
 const editingId = ref<number | null>(null)
 const editingCoupon = ref<Partial<CouponPayload> | null>(null)
+const { items: categories } = storeToRefs(categoryStore)
+const { items: brands } = storeToRefs(brandStore)
+
+const categoryOptions = computed(() => categories.value.map(c => ({ label: c.name, value: c.id })))
+const brandOptions = computed(() => brands.value.map(b => ({ label: b.name, value: b.id })))
 
 const typeBadge: Record<string, { label: string, color: 'primary' | 'success' | 'info' }> = {
   percent: { label: '%', color: 'primary' },
@@ -133,6 +140,7 @@ useSeoMeta({ title: 'Cupones — Admin' })
               :initial="editingCoupon ?? undefined"
               :action="couponAction"
               @success="handleSubmit"
+              :category-options="categoryOptions" :brand-options="brandOptions"
             />
           </div>
         </template>

@@ -17,7 +17,7 @@ const userMenuItems = [
   { label: 'Notificaciones', to: '/cuenta/notificaciones', icon: 'i-lucide-bell' },
   { label: 'Cerrar Sesion', to: '/auth/login', icon: 'i-lucide-log-out', color: 'error' as const },
 ]
-
+console.log(brand)
 watch(() => route.fullPath, () => {
   mobileOpen.value = false
 })

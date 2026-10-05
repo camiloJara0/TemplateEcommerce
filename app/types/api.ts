@@ -72,6 +72,8 @@ export interface RegisterPayload {
   email: string
   password: string
   password_confirmation: string
+  rol_id?: number | null
+  id?: number | null
 }
 
 export interface SendCodePayload {

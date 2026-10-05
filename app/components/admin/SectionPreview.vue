@@ -34,6 +34,7 @@ const ctaComponent = computed(() => getComponent('cta', props.config.secciones.c
         <component :is="benefitsComponent" :config="config.secciones.benefits" />
         <component :is="categoriesComponent" :config="config.categories_home" />
         <ClientSectionsNewslettersNewsletterSection :config="config.secciones.newsletter" />
+        <ClientSectionsNewslettersContact :config="config.secciones.contact" />
         <component :is="testimonialsComponent" :config="config.secciones.testimonials" />
         <ClientSectionsStatsSection :config="config.secciones.stats" />
         <ClientSectionsBrandsBrandLogosSection :config="config.secciones.brand_logos" />

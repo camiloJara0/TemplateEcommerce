@@ -18,6 +18,7 @@ const { getOrderedSections, updateSectionVariant } = usePageSections()
 useSeoMeta({ title: 'Editor de tienda — Admin' })
 
 const config = ref<TiendaConfig>(JSON.parse(JSON.stringify(DEFAULT_TIENDA_CONFIG)))
+  console.log('config.value', config.value)
 const selectedSection = ref<string>('hero-1')
 const selectedAboutSection = ref<AboutSectionKey>('hero')
 const activeTab = ref<'home' | 'producto' | 'about' | 'styles' | 'plantillas'>('home')
@@ -51,6 +52,42 @@ function redo() {
   const snapshot = history.value[historyIndex.value]
   if (snapshot) config.value = JSON.parse(snapshot)
   hasChanges.value = true
+}
+
+async function handleImport(file: File) {
+    const archivo = file;
+    if (!archivo) return;
+
+    const lector = new FileReader();
+
+    lector.onload = async (event) => {
+        try {
+            const result = event.target?.result;
+            if (typeof result !== 'string') return;
+            const data = JSON.parse(result);
+
+            await configStore.updateTienda(data);
+            config.value = data
+        } catch (error) {
+            console.error('Error al leer el archivo:', error);
+        }
+    };
+
+    lector.readAsText(archivo);
+}
+
+function handleExport() {
+    const blob = new Blob(
+        [JSON.stringify(config.value, null, 2)],
+        { type: 'application/json' }
+    );
+
+    const enlace = document.createElement('a');
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = 'tienda.json';
+    enlace.click();
+
+    URL.revokeObjectURL(enlace.href);
 }
 
 function updateSection(key: SectionKey, value: any) {
@@ -194,6 +231,8 @@ const tabs = [
         @preview="handlePreview"
         @undo="undo"
         @redo="redo"
+        @import="(file) => handleImport(file)"
+        @export="handleExport"
         @toggle-fullscreen="fullscreen = !fullscreen"
       />
 
@@ -268,7 +307,9 @@ const tabs = [
             <template #estilos>
               <AdminEditorsGlobalStylesEditor
                 :value="config.estilos"
+                :valueBrand="config.brand"
                 @update="updateStyles"
+                @updateBrand="updateBrand"
               />
             </template>
             <template #navbar>

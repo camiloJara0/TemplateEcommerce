@@ -30,6 +30,26 @@ export function useAuthService() {
     })
   }
 
+  async function registerPersonal(payload: RegisterPayload) {
+    return runMutation<{ user: LoginData['user'] }>({
+      request: () => request<{ user: LoginData['user'] }>('/admin/usuarios', {
+        method: 'POST',
+        body: payload
+      }),
+      successMessage: 'Cuenta creada correctamente',
+    })
+  }
+
+  async function updatePersonal(payload: RegisterPayload) {
+    return runMutation<{ user: LoginData['user'] }>({
+      request: () => request<{ user: LoginData['user'] }>(`/admin/usuarios/${payload.id}`, {
+        method: 'PUT',
+        body: payload
+      }),
+      successMessage: 'Cuenta actualizada correctamente',
+    })
+  }
+
   async function logout() {
     const result = await runMutation<null>({
       request: () => authStore.logout().then(() => ({ success: true, data: null }) as ApiResponse<null>),
@@ -66,9 +86,11 @@ export function useAuthService() {
   return {
     login,
     register,
+    registerPersonal,
     logout,
     enviarCodigo,
     verificarCodigoCambio,
+    updatePersonal,
     user: computed(() => authStore.user),
     isAuthenticated: computed(() => authStore.isAuthenticated)
   }

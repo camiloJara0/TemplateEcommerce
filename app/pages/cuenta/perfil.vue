@@ -5,6 +5,7 @@ definePageMeta({ layout: 'client', middleware: ['auth'] })
 
 const profileStore = useProfileStore()
 const addressStore = useAddressStore()
+const authStore = useAuthStore()
 
 const editing = ref(false)
 const saving = ref(false)
@@ -81,6 +82,17 @@ async function removeAddress(id: number) {
   await addressStore.remove(id)
 }
 
+async function deleteProfile() {
+  saving.value = true
+  try {
+    await profileStore.deleteProfile(profileStore.profile?.id)
+    editing.value = false
+    authStore.logout()
+  } finally {
+    saving.value = false
+  }
+}
+
 useSeoMeta({ title: 'Mi perfil — Cuenta' })
 </script>
 
@@ -95,14 +107,25 @@ useSeoMeta({ title: 'Mi perfil — Cuenta' })
     <div class="surface rounded-xl border border-theme p-6 space-y-6">
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold text-theme">Información personal</h2>
-        <UButton
-          v-if="!editing"
-          label="Editar"
-          icon="i-lucide-pencil"
-          size="sm"
-          variant="outline"
-          @click="editing = true"
-        />
+        <div class="flex gap-1">
+          <UButton
+            v-if="!editing"
+            label="Editar"
+            icon="i-lucide-pencil"
+            size="sm"
+            variant="outline"
+            @click="editing = true"
+          />
+          <UButton
+            v-if="!editing"
+            label="Eliminar"
+            icon="i-lucide-trash-2"
+            size="sm"
+            variant="outline"
+            color="error"
+            @click="deleteProfile"
+          />
+        </div>
       </div>
 
       <div v-if="!editing" class="grid grid-cols-1 sm:grid-cols-2 gap-4">

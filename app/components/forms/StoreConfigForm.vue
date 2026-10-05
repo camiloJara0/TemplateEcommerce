@@ -14,6 +14,9 @@ const props = withDefaults(defineProps<Props>(), {
   submitLabel: 'Guardar configuración',
   loading: false,
   initial: () => ({
+    store_name: 'CommerceOs',
+    store_tagline: 'Tu tienda en línea',
+    logo: '',
     currency: 'COP',
     tax_rate: 0.19,
     default_language: 'es' as Language,
@@ -59,6 +62,9 @@ async function onSubmit() {
   submitLoading.value = true
   try {
     const payload: StoreConfigPayload = {
+      store_name: form.value.store_name || undefined,
+      store_tagline: form.value.store_tagline || undefined,
+      logo: form.value.logo || undefined,
       currency: String(form.value.currency ?? 'COP').toUpperCase(),
       tax_rate: Number(form.value.tax_rate ?? 0),
       default_language: form.value.default_language as Language,
@@ -83,6 +89,34 @@ defineExpose({ form, visibleErrors, isValid })
 
 <template>
   <UForm class="space-y-6" :state="form" @submit.prevent="onSubmit">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <UiBaseInput
+        v-model="form.store_name"
+        label="Nombre de la tienda"
+        required
+        :error="visibleErrors.store_name || undefined"
+        @blur="touch('store_name')"
+      />
+      <UiBaseInput
+        v-model="form.store_tagline"
+        label="Eslogan de la tienda"
+        :error="visibleErrors.store_tagline || undefined"
+        @blur="touch('store_tagline')"
+      />
+      <AdminImageUpload
+        v-model="form.logo"
+        label="Logo de la tienda"
+        :error="visibleErrors.logo || undefined"
+        @blur="touch('logo')"
+      />
+      <UiBaseInput
+        v-model="form.logo"
+        label="Logo (URL)"
+        type="url"
+        :error="visibleErrors.logo || undefined"
+        @blur="touch('logo')"
+      />
+    </div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <UiBaseInput
         v-model="form.currency"

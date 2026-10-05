@@ -27,7 +27,8 @@ const groups = [
     items: [
       { label: 'Editor de tienda', icon: 'i-lucide-layout-template', to: '/admin/tienda' },
       { label: 'Plantillas', icon: 'i-lucide-layout-grid', to: '/admin/plantillas' },
-      { label: 'Configuración', icon: 'i-lucide-settings', to: '/admin/configuracion' }
+      { label: 'Configuración', icon: 'i-lucide-settings', to: '/admin/configuracion' },
+      { label: 'Comunidad', icon: 'i-lucide-user-group', to: '/admin/comunidad' },
     ]
   },
   {

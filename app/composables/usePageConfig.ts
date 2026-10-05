@@ -1,4 +1,4 @@
-import type { TiendaConfig, HeroSection, BenefitsSection, CategoriesSection, FeaturedSection, DealsSection, TestimonialsSection, CtaSection, HeaderSection, CategoriesHomeSection, ProductoSecciones, NosotrosSecciones, NewsletterSection, BrandLogosSection, GalleryFeedSection, StatsSection, VideoSection, MapSection, RichTextSection } from '~/types/store'
+import type { TiendaConfig, HeroSection, BenefitsSection, CategoriesSection, FeaturedSection, DealsSection, TestimonialsSection, CtaSection, HeaderSection, CategoriesHomeSection, ProductoSecciones, NosotrosSecciones, NewsletterSection, BrandLogosSection, GalleryFeedSection, StatsSection, VideoSection, MapSection, RichTextSection, ContactSection } from '~/types/store'
 import { DEFAULT_TIENDA_CONFIG } from '~/types/store'
 
 export function usePageConfig() {
@@ -18,6 +18,7 @@ export function usePageConfig() {
   const testimonials = computed<TestimonialsSection>(() => config.value.secciones.testimonials)
   const cta = computed<CtaSection>(() => config.value.secciones.cta)
   const newsletter = computed<NewsletterSection>(() => config.value.secciones.newsletter)
+  const contact = computed<ContactSection>(() => config.value.secciones.contact)
   const brandLogos = computed<BrandLogosSection>(() => config.value.secciones.brand_logos)
   const galleryFeed = computed<GalleryFeedSection>(() => config.value.secciones.gallery_feed)
   const stats = computed<StatsSection>(() => config.value.secciones.stats)
@@ -48,6 +49,7 @@ export function usePageConfig() {
     testimonials,
     cta,
     newsletter,
+    contact,
     brandLogos,
     galleryFeed,
     stats,

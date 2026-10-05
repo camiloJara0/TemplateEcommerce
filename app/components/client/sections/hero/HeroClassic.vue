@@ -18,7 +18,7 @@ const props = defineProps<{ config: HeroSection }>()
       style="background-image: radial-gradient(circle at 10% 20%, rgb(99 102 241 / 0.15), transparent 35%), radial-gradient(circle at 90% 10%, rgb(217 70 239 / 0.12), transparent 30%)"
     />
 
-    <div class="page-container relative section-padding">
+    <div class="page-container relative section-padding homepage-section-bg">
       <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <div class="animate-fade-up">
           <UBadge

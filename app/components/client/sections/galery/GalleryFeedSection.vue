@@ -5,7 +5,7 @@ const props = defineProps<{ config: GalleryFeedSection }>()
 </script>
 
 <template>
-  <section v-if="config.show && config.items.length" class="py-14 sm:py-20">
+  <section v-if="config.show && config.items.length" class="py-14 sm:py-20 homepage-section-bg">
     <div class="page-container">
       <div class="text-center mb-10">
         <h2 class="text-2xl sm:text-3xl font-bold text-theme mb-2">{{ config.title }}</h2>

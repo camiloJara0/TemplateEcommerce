@@ -110,6 +110,16 @@ export const SECTION_DEFINITIONS: SectionDefinition[] = [
     defaultConfig: DEFAULT_TIENDA_CONFIG.secciones.newsletter,
   },
   {
+    type: 'contact',
+    label: 'Contacto',
+    icon: 'i-lucide-message-square',
+    category: 'conversion',
+    variants: [
+      { key: 'default', label: 'Estándar', description: 'Formulario de contacto', icon: 'i-lucide-message-square' },
+    ],
+    defaultConfig: DEFAULT_TIENDA_CONFIG.secciones.contact,
+  },
+  {
     type: 'brand_logos',
     label: 'Marcas',
     icon: 'i-lucide-heart',

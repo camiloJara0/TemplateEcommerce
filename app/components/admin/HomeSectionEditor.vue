@@ -218,6 +218,77 @@ function onVariantSelect(key: string) {
           />
         </template>
 
+        <!-- Contact Section -->
+        <template v-if="baseType === 'contact'">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Visible</label>
+            <USwitch :model-value="config.secciones.contact?.show"
+              @update:model-value="update('contact', { ...config.secciones.contact, show: $event })" />
+          </div>
+          <p class="text-xs text-muted">Los mensajes llegerán al correo registrado desde configuración</p>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Headline</label>
+            <UInput :model-value="config.secciones.contact?.headline"
+              @update:model-value="update('contact', { ...config.secciones.contact, headline: $event })" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Subtext</label>
+            <UInput :model-value="config.secciones.contact?.subtext"
+              @update:model-value="update('contact', { ...config.secciones.contact, subtext: $event })" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Placeholder Nombre</label>
+              <UInput :model-value="config.secciones.contact?.placeholder"
+                @update:model-value="update('contact', { ...config.secciones.contact, placeholder_name: $event })" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Placeholder Email</label>
+              <UInput :model-value="config.secciones.contact?.placeholder"
+                @update:model-value="update('contact', { ...config.secciones.contact, placeholder_email: $event })" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Placeholder Asunto</label>
+              <UInput :model-value="config.secciones.contact?.placeholder"
+                @update:model-value="update('contact', { ...config.secciones.contact, placeholder_asunto: $event })" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Placeholder Mensaje</label>
+              <UInput :model-value="config.secciones.contact?.placeholder"
+                @update:model-value="update('contact', { ...config.secciones.contact, placeholder_mensaje: $event })" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Botón</label>
+              <UInput :model-value="config.secciones.contact?.button_label"
+                @update:model-value="update('contact', { ...config.secciones.contact, button_label: $event })" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Color fondo</label>
+              <UInput type="color" :model-value="config.secciones.contact?.bg_color"
+                @update:model-value="update('contact', { ...config.secciones.contact, bg_color: $event })" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Color texto</label>
+              <UInput type="color" :model-value="config.secciones.contact?.text_color"
+                @update:model-value="update('contact', { ...config.secciones.contact, text_color: $event })" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Layout</label>
+            <USelect :model-value="config.secciones.contact?.layout"
+              :items="[{ label: 'Centrado', value: 'centered' }, { label: 'Dividido', value: 'split' }]"
+              @update:model-value="update('contact', { ...config.secciones.contact, layout: $event })" />
+          </div>
+          <AdminImageUpload
+            :model-value="config.secciones.contact?.image"
+            label="Imagen"
+            folder="sections/contact"
+            @update:model-value="update('contact', { ...config.secciones.contact, image: $event })"
+          />
+        </template>
+
         <!-- Stats Section -->
         <template v-if="baseType === 'stats'">
           <div>
@@ -827,7 +898,7 @@ function onVariantSelect(key: string) {
         </template>
 
         <!-- Generic fallback for new section types -->
-        <template v-if="!['hero','newsletter','stats','video','map','richtext','brand_logos','gallery_feed','benefits','featured','deals','testimonials','cta','categories','urgency_banner','countdown_offer','stock_counter','sticky_add_to_cart','faq','timeline','blog_grid','article_featured'].includes(baseType)">
+        <template v-if="!['hero','newsletter','stats','video','map','richtext','brand_logos','gallery_feed','benefits','featured','deals','testimonials','cta','categories','urgency_banner','countdown_offer','stock_counter','sticky_add_to_cart','faq','timeline','blog_grid','article_featured', 'contact'].includes(baseType)">
           <div class="text-center py-8 text-slate-400 dark:text-slate-500">
             <UIcon name="i-lucide-settings" class="size-8 mx-auto mb-2 opacity-50" />
             <p class="text-sm font-medium">Editor no disponible</p>
