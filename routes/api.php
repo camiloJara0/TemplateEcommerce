@@ -26,6 +26,8 @@ use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\ContactMessageReplyController;
 use App\Http\Controllers\NewsletterSubscriberController;
+use App\Http\Controllers\NewsletterCampaignController;
+use App\Http\Controllers\WebhookEventController;
 use Illuminate\Support\Facades\Route;
 
 // ===== Rutas públicas de autenticación =====
@@ -89,10 +91,14 @@ Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
     // Seguimiento público de envíos
     Route::get('/envios/tracking/{trackingNumber}', [ShipmentController::class, 'tracking']);
 
-    // Contacto
+    // Contacto y newsletter (público)
     Route::post('/contact', [ContactMessageController::class, 'store']);
+    Route::post('/contacto', [ContactMessageController::class, 'store']);
     Route::post('/newsletter', [NewsletterSubscriberController::class, 'store']);
     Route::post('/confirmarNewsletter', [NewsletterSubscriberController::class, 'confirmarSubscripcion']);
+    // Baja de la suscripción (enlace incluido en cada correo de campaña)
+    Route::get('/newsletter/baja/{token}', [NewsletterSubscriberController::class, 'baja']);
+    Route::post('/newsletter/baja', [NewsletterSubscriberController::class, 'cancelar'])->middleware('throttle:30,1');
 });
 
 // ===== Webhook de pagos (sin autenticación) =====
@@ -160,9 +166,30 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
 
     // Comunidad
     Route::get('/contact', [ContactMessageController::class, 'index'])->middleware('permission:usuarios.ver');
-    Route::put('/contact/{id}', [ContactMessageController::class, 'update']);
+    Route::put('/contact/{id}', [ContactMessageController::class, 'update'])->middleware('permission:usuarios.editar');
     Route::post('/reply_contact', [ContactMessageReplyController::class, 'store'])->middleware('permission:usuarios.editar');
+
+    // Suscriptores del newsletter
     Route::get('/newsletter', [NewsletterSubscriberController::class, 'index'])->middleware('permission:usuarios.ver');
+    Route::put('/newsletter/{subscriber}', [NewsletterSubscriberController::class, 'update'])->middleware('permission:usuarios.editar');
+    Route::delete('/newsletter/{subscriber}', [NewsletterSubscriberController::class, 'destroy'])->middleware('permission:usuarios.eliminar');
+
+    // Campañas publicitarias
+    Route::get('/newsletter_campaign', [NewsletterCampaignController::class, 'index'])->middleware('permission:usuarios.ver');
+    Route::get('/newsletter_campaign/filtros', [NewsletterCampaignController::class, 'filtros'])->middleware('permission:usuarios.ver');
+    Route::post('/newsletter_campaign/vista-previa', [NewsletterCampaignController::class, 'vistaPrevia'])->middleware('permission:usuarios.crear');
+    Route::post('/newsletter_campaign', [NewsletterCampaignController::class, 'store'])->middleware('permission:usuarios.crear');
+    Route::get('/newsletter_campaign/{campaign}', [NewsletterCampaignController::class, 'show'])->middleware('permission:usuarios.ver');
+    Route::put('/newsletter_campaign/{campaign}', [NewsletterCampaignController::class, 'update'])->middleware('permission:usuarios.editar');
+    Route::delete('/newsletter_campaign/{campaign}', [NewsletterCampaignController::class, 'destroy'])->middleware('permission:usuarios.eliminar');
+    Route::post('/newsletter_campaign/{campaign}/enviar', [NewsletterCampaignController::class, 'enviar'])->middleware('permission:usuarios.crear');
+    Route::post('/newsletter_campaign/{campaign}/prueba', [NewsletterCampaignController::class, 'enviarPrueba'])->middleware('permission:usuarios.crear');
+
+    // Trazabilidad de webhooks de pago
+    Route::get('/webhooks/events', [WebhookEventController::class, 'index'])->middleware('permission:pagos.ver');
+    Route::get('/webhooks/events/proveedores', [WebhookEventController::class, 'proveedores'])->middleware('permission:pagos.ver');
+    Route::get('/webhooks/events/{evento}', [WebhookEventController::class, 'show'])->middleware('permission:pagos.ver');
+    Route::post('/webhooks/events/{evento}/reintentar', [WebhookEventController::class, 'reintentar'])->middleware('permission:pagos.gestionar');
 
     // Auditoria
     Route::get('/auditoria', [AuditoriaController::class, 'index']);

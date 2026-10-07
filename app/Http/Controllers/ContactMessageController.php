@@ -16,27 +16,32 @@ class ContactMessageController extends Controller
     public function index(Request $request)
     {
         $filtros = $request->only([
-            'correo',
-            'accion',
+            'busqueda',
+            'estado',
             'fecha',
         ]);
 
-        $messages = ContactMessage::with('user')
-            ->when($filtros['usuario'] ?? null, function ($query, $usuario) {
-                $query->whereHas('usuario', function ($q) use ($usuario) {
-                    $q->where('nombre', 'like', "%{$usuario}%");
+        $messages = ContactMessage::with(['user', 'replies'])
+            ->withCount('replies')
+            ->when($filtros['busqueda'] ?? null, function ($query, $busqueda) {
+                $query->where(function ($q) use ($busqueda) {
+                    $q->where('nombre', 'like', "%{$busqueda}%")
+                        ->orWhere('correo', 'like', "%{$busqueda}%")
+                        ->orWhere('asunto', 'like', "%{$busqueda}%")
+                        ->orWhere('mensaje', 'like', "%{$busqueda}%");
                 });
             })
-            ->when($filtros['accion'] ?? null, function ($query, $accion) {
-                $query->where('accion', 'like', "%{$accion}%");
+            ->when($filtros['estado'] ?? null, function ($query, $estado) {
+                $query->where('estado', $estado);
             })
             ->when($filtros['fecha'] ?? null, function ($query, $fecha) {
                 $query->whereDate('created_at', $fecha);
             })
+            ->latest()
             ->paginate($request->get('per_page', 12));
 
         return ApiResponse::success([
-            'data' => $messages,
+            'items' => $messages->items(),
             'pagination' => [
                 'total' => $messages->total(),
                 'per_page' => $messages->perPage(),

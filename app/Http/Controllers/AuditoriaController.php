@@ -32,7 +32,7 @@ class AuditoriaController extends Controller
             ->paginate($request->get('per_page', 12));
 
         return ApiResponse::success([
-            'data' => $auditlogs,
+            'items' => $auditlogs->items(),
             'pagination' => [
                 'total' => $auditlogs->total(),
                 'per_page' => $auditlogs->perPage(),
