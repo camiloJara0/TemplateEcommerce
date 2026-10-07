@@ -28,6 +28,9 @@ useSeoMeta({
   twitterCard: 'summary_large_image'
 })
 
+// URL canónica + hreflang + og:url globales (sin parámetros de tracking)
+useSeo()
+
 const colorMode = useColorMode()
 colorMode.preference = colorMode.preference || 'system'
 

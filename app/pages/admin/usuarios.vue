@@ -266,7 +266,7 @@ onMounted(async () => {
             <USelect v-model="filters.usuario" placeholder="Usuario" :items="auditFilters?.usuarios" label-key="">
             </USelect>
             <USelect v-model="filters.accion" placeholder="Accion" :items="auditFilters?.acciones"></USelect>
-            <UInputDate v-model="filters.fecha"></UInputDate>
+            <UInput v-model="filters.fecha" type="date" placeholder="Fecha" />
           </div>
         </div>
         <!-- Audit Logs -->

@@ -71,7 +71,7 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 | RF-037 | Etiquetas de envío (PDF) | Baja | 🔴 |
 | RF-038 | Notificaciones (in-app, push, email) | Media | 🟡 |
 | RF-039 | Blog / contenidos | Baja | 🔴 |
-| RF-040 | Newsletter y contacto | Baja | 🟡 |
+| RF-040 | Newsletter y contacto | Baja | ✅ |
 | RF-041 | SEO técnico | Alta | 🟡 |
 | RF-042 | Dashboard y analítica | Alta | 🟡 |
 | RF-043 | Reportes y exportación | Alta | ✅ |
@@ -782,8 +782,9 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 **Reglas de negocio.** Verificación de firma (`WebhookProvider@verificarFirma`) e idempotencia.
 
 **Gaps (🔴).**
-- **No existe la tabla `webhook_events`** → no hay registro de eventos recibidos, ni reintentos, ni re-lectura fallida.
-- El body se guarda en `payments.payload`; no hay *dead letter queue*.
+- **Existe la tabla `webhook_events`** (migración `2026_10_07_090000`, modelo `WebhookEvent`): cada recepción deduplica por `(provider, event_id)` y guarda payload, cabeceras, IP, `http_status`, intentos y `estado` (`recibido` → `procesado` / `error` / `ignorado` / `procesando`).
+- **Reintentos**: `POST /admin/webhooks/events/{evento}/reintentar` reconstruye la petición original y la re-procesa; pantalla de trazabilidad con filtros y resumen (`/admin/webhooks`).
+- El body también se guarda en `payments.payload`; **no hay *dead letter queue*** como tal (el estado `error` + reintento manual cumple el papel).
 - **No hay webhooks salientes** hacia apps de terceros (obligatorio para marketplace, Fase 4).
 
 ---
@@ -879,7 +880,13 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 
 #### RF-040 · Newsletter y contacto
 
-**Estado 🟡 · Prioridad Baja.** Existe la sección `newsletter` (UI) pero **no hay** `POST /newsletter` ni `POST /contacto` registrados en `routes/api.php`, ni tablas `newsletters`/`contact_messages`. El formulario no persiste nada.
+**Estado ✅ · Prioridad Baja.** Implementado de punta a punta:
+
+- `POST /api/v1/newsletter` (alta con **doble confirmación**), `POST /api/v1/confirmarNewsletter`, `GET /api/v1/newsletter/baja/{token}` y `POST /api/v1/newsletter/baja` (cancelación anónima desde el token).
+- `POST /api/v1/contact` y `/api/v1/contacto` persisten en `contact_messages`; respuesta del admin desde `PUT /admin/contact` + `POST /admin/reply_contact`.
+- Tablas `newsletter_subscribers`, `newsletter_campaigns`, `newsletter_campaign_items`, `newsletter_campaign_media`, `newsletter_campaign_recipients`, `contact_messages`, `contact_message_replies`.
+- Panel admin en **Comunidad** (mensajes, suscriptores, campañas y auditoría) y página pública `/baja-newsletter`.
+- La sección de newsletter de la home ahora envía de verdad y muestra confirmación.
 
 ---
 
@@ -892,15 +899,16 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 
 **Implementado.**
 - Metadatos por página con `useSeoMeta` (título, descripción, keywords, OG image) desde `GET /configuracion/publica`.
-- JSON-LD `WebSite` en el home y datos estructurados en la ficha de producto.
-- `robots.txt` presente; `htmlAttrs lang="es"`; `noindex` en rutas de auth, cuenta y carrito.
+- JSON-LD `WebSite` en la home y datos estructurados en la ficha de producto, con **URLs absolutas**.
+- `robots.txt` presente; `htmlAttrs lang="es"`; `noindex` en rutas de auth, cuenta, carrito y `/baja-newsletter` (refuerzo con cabecera `X-Robots-Tag` vía `routeRules`).
 - Slug único por producto, categoría, marca y etiqueta → URLs limpias (`/producto/{slug}`).
+- **`sitemap.xml`** generado en `server/routes/sitemap.xml.ts` (rutas estáticas + categorías + hasta 1.000 productos, `lastmod` y caché 1 h).
+- **`canonical` + `hreflang es`/`x-default`** en todas las páginas vía composable `useSeo()` (llamado globalmente en `app.vue`).
+- **Páginas legales con navbar/footer**: `/ayuda`, `/privacidad` y `/terminos` usan `layout: 'client'`.
 
 **Gaps (🔴).**
-- **No existe `sitemap.xml`** ni generación automática.
-- No hay `canonical`, ni `hreflang`, ni manejo de 404/301.
+- No hay manejo de 404/301 (redirecciones tras cambios de slug).
 - No hay vista previa de SERP en el panel de configuración.
-- Las páginas legales (`/privacidad`, `/terminos`, `/ayuda`) caen al layout `default` **sin navbar ni footer**.
 
 ---
 

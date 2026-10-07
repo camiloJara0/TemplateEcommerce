@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'client' })
+
 useSeoMeta({
   title: 'Política de privacidad',
   description: 'Conoce cómo protegemos y manejamos tus datos personales.'

@@ -9,12 +9,22 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   routeRules: {
-    '/': { prerender: true }
+    '/': { prerender: true },
+    // Zonas privadas: nunca se indexan (refuerzo de robots.txt + meta robots)
+    '/admin/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } },
+    '/auth/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/cuenta/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/checkout/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/carrito': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/baja-newsletter': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/sitemap.xml': { headers: { 'Content-Type': 'application/xml; charset=utf-8' } }
   },
 
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:8000'
+      apiBase: 'http://localhost:8000',
+      // URL pública del front (SEO: canónica, og:url, hreflang, sitemap)
+      siteUrl: 'http://localhost:3000'
     }
   },
 

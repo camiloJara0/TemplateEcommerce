@@ -122,7 +122,7 @@ useHead({
           price: p.price_discount ?? p.price,
           priceCurrency: 'COP',
           availability: p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-          url: `/producto/${p.slug}`
+          url: absoluteUrl(`/producto/${p.slug}`)
         },
         aggregateRating: p.rating_avg ? {
           '@type': 'AggregateRating',

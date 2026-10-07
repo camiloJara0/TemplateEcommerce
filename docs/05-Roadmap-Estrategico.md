@@ -130,8 +130,8 @@ Convertir el MVP en una **operación real**: que un merchant pueda facturar, env
 
 | # | Funcionalidad | Trabajo asociado |
 |---|---|---|
-| 7 | **SEO técnico**: `sitemap.xml`, canonical, hreflang, páginas legales con layout | HU-034, T-028 |
-| 8 | **Newsletter y contacto** con persistencia | HU-033 |
+| 7 | ✅ **SEO técnico**: `sitemap.xml`, canonical, hreflang, páginas legales con layout | HU-034, T-028 |
+| 8 | ✅ **Newsletter y contacto** con persistencia (doble opt-in, campañas con vista previa y baja) | HU-033 |
 | 9 | **Centro de soporte** con tickets y `/ayuda` real | HU-035 |
 | 10 | **Usuarios y roles editables** desde la UI | HU-025, HU-026 |
 | 11 | **Auditoría consultable** en panel | HU-036 |
@@ -143,7 +143,7 @@ Convertir el MVP en una **operación real**: que un merchant pueda facturar, env
 | 12 | Rendimiento: Redis, caché de API, eager loading, índices, imágenes optimizadas | T-019…T-024 |
 | 13 | E2E de compra con Playwright | T-016 |
 | 14 | Consolidación de editores de tienda | T-025 |
-| 15 | `webhook_events` con reintentos y dead-letter | RF-032 |
+| 15 | ✅ `webhook_events` con reintentos (dead-letter manual vía estado `error`) | RF-032 |
 
 ### 4.3 Riesgos
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'client' })
+
 const storeName = computed(() => useStoreConfigStore().storeName)
 
 useSeoMeta({

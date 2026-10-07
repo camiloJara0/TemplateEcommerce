@@ -13,7 +13,6 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   initial: () => ({ nombre: '', estado: '' })
 })
-console.log(props.initial)
 const emit = defineEmits<{
   success: [data: unknown]
   error: [error: unknown]
@@ -23,7 +22,7 @@ const communityStore = useCommunityStore()
 const submitLoading = ref(false)
 const { form, visibleErrors, isValid, touch, submit: validate, setForm } = useFormValidation([
   { key: 'estado', label: 'Estado', required: true },
-  { key: 'respuesta', label: 'Respuesta', maxLength: 1200 },
+  { key: 'respuesta', label: 'Respuesta', maxLength: 1200 }
 ])
 
 setForm({ ...props.initial })
@@ -32,7 +31,7 @@ const estadosOptions = [
   { label: 'Pendiente', value: 'Pendiente' },
   { label: 'Leido', value: 'Leido' },
   { label: 'Respondido', value: 'Respondido' },
-  { label: 'Cerrado', value: 'Cerrado' },
+  { label: 'Cerrado', value: 'Cerrado' }
 ]
 
 async function onSubmit() {
@@ -43,7 +42,7 @@ async function onSubmit() {
       contact_message_id: form.value.id,
       user_id: form.value.user_id,
       estado: String(form.value.estado ?? ''),
-      respuesta: form.value.respuesta || undefined,
+      respuesta: form.value.respuesta || undefined
     }
     const result = props.action ? await props.action(payload) : await communityStore.adminResponse(payload)
     emit('success', result)
@@ -55,13 +54,13 @@ async function onSubmit() {
 }
 
 async function updateFechaLectura() {
-  if(form.value.fecha_lectura) return
+  if (form.value.fecha_lectura) return
 
   await communityStore.adminUpdate(form.value.id, { estado: 'Leido', id: form.value.id })
   form.value.estado = 'Leido'
 }
 
-onMounted(async() => {
+onMounted(async () => {
   await updateFechaLectura()
 })
 
@@ -69,7 +68,11 @@ defineExpose({ form, visibleErrors, isValid })
 </script>
 
 <template>
-  <UForm class="space-y-4" :state="form" @submit.prevent="onSubmit">
+  <UForm
+    class="space-y-4"
+    :state="form"
+    @submit.prevent="onSubmit"
+  >
     <UiBaseInput
       v-model="form.nombre"
       label="Nombre"
@@ -87,7 +90,7 @@ defineExpose({ form, visibleErrors, isValid })
       disabled
     />
 
-    <div class="w-full h-0.5 bg-gray-50 dark:bg-gray-800 my-2"></div>
+    <div class="w-full h-0.5 bg-gray-50 dark:bg-gray-800 my-2" />
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <UiBaseSelect

@@ -1,7 +1,8 @@
 import type { AdminAuditFilters, AuditLog } from '~/types/admin'
-import type { Paginated, UpdateProfilePayload, User } from '~/types/api'
+import type { Pagination, UpdateProfilePayload, User } from '~/types/api'
 
 type ProfileRow = User & Record<string, unknown>
+type AuditFilters = Partial<AdminAuditFilters> & { usuarios?: string[], acciones?: string[] }
 
 export const useProfileStore = defineStore('profile', () => {
   const offlineStore = useOfflineStore()
@@ -11,9 +12,9 @@ export const useProfileStore = defineStore('profile', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const auditLogs = ref<AuditLog | null>(null)
-  const auditPagination = ref()
-  const auditFilters = ref()
+  const auditLogs = ref<AuditLog[]>([])
+  const auditPagination = ref<Pagination | null>(null)
+  const auditFilters = ref<AuditFilters | null>(null)
 
   const isLoaded = computed(() => !!profile.value)
   const initials = computed(() => {
@@ -42,16 +43,16 @@ export const useProfileStore = defineStore('profile', () => {
 
   async function loadAuditoria(filtersArg?: AdminAuditFilters) {
     const { request } = useApi()
-    const res = await request<Paginated<AuditLog>>('/admin/auditoria', { query: filtersArg })
-    auditLogs.value = res.data.data.data
-    auditPagination.value = res.data.pagination
+    const res = await request<{ items: AuditLog[], pagination: Pagination }>('/admin/auditoria', { query: filtersArg })
+    auditLogs.value = res.data?.items ?? []
+    auditPagination.value = res.data?.pagination ?? null
     auditFilters.value = filtersArg ?? {}
   }
 
   async function loadFiltros() {
     const { request } = useApi()
-    const res = await request<Paginated<AuditLog>>('/admin/auditoria/filtros')
-    auditFilters.value = res.data
+    const res = await request<{ usuarios?: string[], acciones?: string[] }>('/admin/auditoria/filtros')
+    auditFilters.value = res.data ?? null
   }
 
   async function update(payload: UpdateProfilePayload) {
@@ -77,12 +78,12 @@ export const useProfileStore = defineStore('profile', () => {
 
   async function deleteUser(id: number) {
     const { request } = useApi()
-    const res = await request(`/admin/eliminar_usuario`, { method: 'POST', body: {id} })
+    await request(`/admin/eliminar_usuario`, { method: 'POST', body: { id } })
   }
 
   async function deleteProfile(id: number) {
     const { request } = useApi()
-    const res = await request(`/perfil`, { method: 'POST', body: {id} })
+    await request(`/perfil`, { method: 'POST', body: { id } })
   }
 
   function reset() {

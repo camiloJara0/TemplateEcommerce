@@ -40,10 +40,10 @@ useHead({
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: storeName.value || 'CommerceOS',
-        url: '/',
+        url: absoluteUrl('/'),
         potentialAction: {
           '@type': 'SearchAction',
-          target: '/catalogo?q={search_term_string}',
+          target: absoluteUrl('/catalogo?q={search_term_string}'),
           'query-input': 'required name=search_term_string'
         }
       })

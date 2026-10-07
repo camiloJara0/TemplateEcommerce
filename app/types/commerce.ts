@@ -243,13 +243,10 @@ export interface TrackingInfo {
   updated_at?: string
 }
 
-export interface AdminContact extends CreateContactPayload {
-  contact?: Contact
-  user?: {
-    id: number
-    nombre: string
-    foto?: string | null
-  }
+export interface AdminContact extends Contact {
+  replies_count?: number
+  replies?: Array<{ id: number, user_id?: number, respuesta: string, correo_enviado?: boolean, created_at?: string }>
+  respuesta?: string
 }
 
 export interface CreateContactPayload {
@@ -290,5 +287,134 @@ export interface Contact {
 
 export interface SubscribeNewsPayload {
   correo: string
+  nombre?: string
   user_id?: number
+}
+
+export type EstadoSuscriptor = 'Activo' | 'Inactivo' | 'Cancelado'
+
+export interface NewsletterSubscriber {
+  id: number
+  correo: string
+  nombre?: string | null
+  user_id?: number | null
+  user?: { id: number, nombre: string, email?: string } | null
+  estado: EstadoSuscriptor
+  origen?: string
+  token_aprobacion?: string
+  fecha_confirmacion?: string | null
+  fecha_baja?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export type EstadoCampana = 'Borrador' | 'Programada' | 'Enviada'
+
+export interface CampanaProducto {
+  id: number
+  name: string
+  slug: string
+  price: number
+  price_discount?: number | null
+  description?: string | null
+  images?: Array<{ url: string }>
+}
+
+export interface CampanaItem {
+  id?: number
+  orden: number
+  product_id?: number
+  product?: CampanaProducto
+}
+
+export interface CampanaMedia {
+  id?: number
+  tipo: 'Imagen' | 'Video'
+  url: string
+  orden: number
+}
+
+export interface CampanaCupon {
+  id: number
+  code: string
+  type: 'percent' | 'fixed' | 'free_shipping'
+  value: number
+  min_subtotal?: number | null
+  expires_at?: string | null
+}
+
+export interface CampanaFiltros {
+  estados: EstadoCampana[]
+  suscriptores_activos: number
+}
+
+export interface NewsletterCampaign {
+  id: number
+  titulo: string
+  asunto: string
+  contenido: string
+  estado: EstadoCampana
+  fecha_programada?: string | null
+  fecha_envio?: string | null
+  created_by?: number | null
+  cupon_id?: number | null
+  cupon?: CampanaCupon | null
+  creador?: { id: number, nombre: string } | null
+  destinatarios: number
+  enviados: number
+  fallidos: number
+  items_count?: number
+  media_count?: number
+  recipients_count?: number
+  items?: CampanaItem[]
+  media?: CampanaMedia[]
+  created_at?: string
+  updated_at?: string
+}
+
+export interface CreateCampaignPayload {
+  titulo: string
+  asunto: string
+  contenido: string
+  estado?: EstadoCampana
+  fecha_programada?: string | null
+  cupon_id?: number | null
+  items?: Array<number | string>
+  existing_image_urls?: string[]
+  media?: string[]
+}
+
+export interface CampaignPreview {
+  html: string
+  asunto: string
+}
+
+export type EstadoWebhook = 'recibido' | 'procesado' | 'duplicado' | 'ignorado' | 'error'
+
+export interface WebhookEvent {
+  id: number
+  provider: string
+  event_id: string | null
+  tipo: string | null
+  estado: EstadoWebhook
+  firma_valida: boolean | null
+  payload: Record<string, unknown>
+  respuesta?: Record<string, unknown> | null
+  error: string | null
+  payment_id: number | null
+  order_id: number | null
+  intentos: number
+  http_status: number | null
+  ip: string | null
+  procesado_en?: string | null
+  created_at?: string
+  payment?: { id: number, order_id: number, provider: string, status: string, amount: number | string } | null
+  order?: { id: number, numero: string, status: string } | null
+}
+
+export interface WebhookEventsResumen {
+  total: number
+  procesados: number | null
+  errores: number | null
+  ignorados: number | null
 }

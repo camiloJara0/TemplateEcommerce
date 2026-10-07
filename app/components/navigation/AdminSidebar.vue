@@ -36,6 +36,7 @@ const groups = [
     items: [
       { label: 'Cupones', icon: 'i-lucide-ticket-percent', to: '/admin/cupones' },
       { label: 'Pagos', icon: 'i-lucide-credit-card', to: '/admin/pagos' },
+      { label: 'Webhooks', icon: 'i-lucide-webhook', to: '/admin/webhooks' },
       { label: 'Envíos', icon: 'i-lucide-truck', to: '/admin/envios' },
       { label: 'Reportes', icon: 'i-lucide-chart-column', to: '/admin/reportes' }
     ]

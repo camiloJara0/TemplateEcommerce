@@ -257,8 +257,8 @@ export interface AdminCatalogGroup {
 
 export interface AdminAuditFilters {
   usuario?: string
-  accion?: number
-  fecha?: number
+  accion?: string
+  fecha?: string
   per_page?: number
   page?: number
 }
@@ -272,4 +272,7 @@ export interface AuditLog {
   ip: string
   objeto_type?: string
   objeto_id?: number
+  usuario?: { id: number, nombre: string, email?: string }
+  created_at?: string
+  updated_at?: string
 }

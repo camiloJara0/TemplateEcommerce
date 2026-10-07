@@ -7,10 +7,15 @@ const submitted = ref(false)
 const communityStore = useCommunityStore()
 
 async function submit() {
-  if (!email.value) return
-  submitted.value = false
-  await communityStore.subscribe({ correo: email.value })
-  setTimeout(() => { submitted.value = false; email.value = '' }, 3000)
+  if (!email.value || submitted.value) return
+  try {
+    await communityStore.subscribe({ correo: email.value })
+    submitted.value = true
+    email.value = ''
+    setTimeout(() => { submitted.value = false }, 8000)
+  } catch {
+    submitted.value = false
+  }
 }
 </script>
 
@@ -51,8 +56,8 @@ async function submit() {
             </button>
           </form>
           <div v-else class="flex items-center gap-2 justify-center">
-            <UIcon name="i-lucide-check-circle" class="size-5" />
-            <span class="font-medium">¡Gracias por suscribirte!</span>
+            <UIcon name="i-lucide-mail-check" class="size-5" />
+            <span class="font-medium">¡Listo! Revisa tu correo para confirmar la suscripción.</span>
           </div>
         </div>
       </div>

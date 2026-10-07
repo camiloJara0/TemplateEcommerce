@@ -280,7 +280,7 @@ Una tarjeta solo pasa a **✅ Hecho** cuando:
 |---|---|
 | **Como** administrador **quiero** elegir la pasarela desde la UI y ofrecer varias al cliente **para** no cambiar el `.env` |
 | **Épica** | Pagos · **Estado** 🟡 |
-| **CA** | 1. 6 adaptadores configurados ✅. 2. UI para Rapyd/Stripe/MP/Wompi ✅. 3. Selector de proveedor 🔴. 4. Flujos PayPal y PayU 🔴. 5. Tabla `webhook_events` 🔴. |
+| **CA** | 1. 6 adaptadores configurados ✅. 2. UI para Rapyd/Stripe/MP/Wompi ✅. 3. Selector de proveedor 🔴. 4. Flujos PayPal y PayU 🔴. 5. Tabla `webhook_events` ✅ (registro, filtros, resumen y reintento en `/admin/webhooks`). |
 
 #### HU-029 · Envíos con tarifas reales
 | | |
@@ -315,22 +315,22 @@ Una tarjeta solo pasa a **✅ Hecho** cuando:
 | | |
 |---|---|
 | **Como** visitante **quiero** suscribirme o enviar un mensaje **para** mantenerme informado |
-| **Épica** | Marketing · **Estado** 🔴 |
-| **CA** | 1. `POST /newsletter` 🔴. 2. `POST /contacto` 🔴. 3. Tablas correspondientes 🔴. 4. La sección UI existe y no persiste nada. |
+| **Épica** | Marketing · **Estado** 🟢 |
+| **CA** | 1. `POST /newsletter` ✅ (doble confirmación). 2. `POST /contacto` ✅. 3. Tablas correspondientes ✅. 4. La sección UI persiste, confirma por correo y permite darse de baja ✅. |
 
 #### HU-034 · SEO técnico completo
 | | |
 |---|---|
 | **Como** administrador **quiero** sitemap, canonical y buenas prácticas SEO **para** posicionar la tienda |
-| **Épica** | Marketing · **Estado** 🟡 |
-| **CA** | 1. Metadatos y JSON-LD ✅. 2. `robots.txt` ✅. 3. Slug único ✅. 4. `sitemap.xml` 🔴. 5. Canonical/hreflang 🔴. 6. Páginas legales con navbar/footer 🔴. |
+| **Épica** | Marketing · **Estado** 🟢 |
+| **CA** | 1. Metadatos y JSON-LD ✅. 2. `robots.txt` ✅. 3. Slug único ✅. 4. `sitemap.xml` ✅. 5. Canonical/hreflang ✅. 6. Páginas legales con navbar/footer ✅. |
 
 #### HU-035 · Centro de soporte
 | | |
 |---|---|
 | **Como** cliente **quiero** abrir un ticket o consultar ayuda **para** resolver dudas |
 | **Épica** | Soporte · **Estado** 🟡 |
-| **CA** | 1. Datos de soporte en footer ✅. 2. Seguimiento de envíos ✅. 3. Tickets/chat 🔴. 4. `/ayuda` con contenido real 🔴 (hoy es un placeholder). |
+| **CA** | 1. Datos de soporte en footer ✅. 2. Seguimiento de envíos ✅. 3. Tickets/chat 🔴. 4. `/ayuda` con contenido real ✅ (FAQ + formulario de contacto con persistencia). |
 
 #### HU-036 · Auditoría consultable
 | | |
