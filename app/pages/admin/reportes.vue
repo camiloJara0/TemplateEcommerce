@@ -88,8 +88,9 @@ async function downloadReport(tipo: string, formato: string, query?: Record<stri
     query: params,
     responseType: 'blob'
   })
-  const blob = res.data instanceof Blob ? res.data : new Blob([res.data])
-  const ext = formato === 'excel' ? 'xlsx' : formato
+
+  const blob = res instanceof Blob ? res : new Blob([res.data])
+  const ext = formato === 'excel' ? 'xls' : formato
   downloadBlob(blob, `reporte-${tipo}.${ext}`)
 }
 

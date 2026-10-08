@@ -260,11 +260,11 @@ onMounted(async () => {
   <div class="space-y-6 animate-fade-up">
     <UTabs
       :items="[
-        { label: 'Mensajes', slot: 'mensajes' },
-        { label: 'Suscriptores', slot: 'suscriptores' },
-        { label: 'Campañas', slot: 'campanas' },
-        { label: 'Auditoría', slot: 'auditoria' }
+        { label: 'Mensajes', slot: 'mensajes', icon: 'i-lucide-message' },
+        { label: 'Suscriptores', slot: 'suscriptores', icon: 'i-lucide-users' },
+        { label: 'Campañas', slot: 'campanas', icon: 'i-lucide-bell' }
       ]"
+      variant="link"
       :ui="{ trigger: 'data-[state=active]:!bg-transparent' }"
       @update:model-value="onTabChange"
     >
@@ -344,7 +344,7 @@ onMounted(async () => {
                 <td class="px-5 py-3.5 text-sm">
                   {{ message.correo }}
                 </td>
-                <td class="px-5 py-3.5 text-sm max-w-[260px] truncate">
+                <td class="px-5 py-3.5 text-sm max-w-65 truncate">
                   {{ message.asunto }}
                 </td>
                 <td class="px-5 py-3.5">
@@ -667,56 +667,6 @@ onMounted(async () => {
         />
       </template>
 
-      <!-- ── Auditoría ─────────────────────────────────────────────── -->
-      <template #auditoria>
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">
-              Auditoría
-            </h1>
-            <p class="page-subtitle">
-              Registros de auditoría del sistema
-            </p>
-          </div>
-        </div>
-
-        <div class="surface p-4 my-4 flex flex-col gap-3">
-          <div class="flex items-center justify-between p-4 rounded-lg bg-theme-alt">
-            <div>
-              <p class="font-medium text-theme">
-                Filtros
-              </p>
-            </div>
-            <UButton
-              label="Aplicar"
-              size="sm"
-              variant="outline"
-              color="neutral"
-              @click="applyFilters"
-            />
-          </div>
-          <div class="flex gap-3">
-            <USelect
-              v-model="filters.usuario"
-              placeholder="Usuario"
-              :items="auditFilters?.usuarios ?? []"
-            />
-            <USelect
-              v-model="filters.accion"
-              placeholder="Acción"
-              :items="auditFilters?.acciones ?? []"
-            />
-            <UInput v-model="filters.fecha" type="date" placeholder="Fecha" />
-          </div>
-        </div>
-
-        <div class="surface rounded-xl border border-theme p-6 space-y-4 my-4">
-          <UTable
-            :columns="columnsAudit"
-            :data="auditLogs ?? []"
-          />
-        </div>
-      </template>
     </UTabs>
 
     <!-- ── Modal: responder mensaje ─────────────────────────────────── -->

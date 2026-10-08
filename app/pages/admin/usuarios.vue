@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { useAuthService } from '~/composables/services/auth'
 import type { RegisterPayload, Role } from '~/types/api'
+import type { AuditLog } from '~/types/admin'
 
 definePageMeta({ layout: 'admin', middleware: ['auth'] })
 
@@ -10,7 +11,7 @@ const profileStore = useProfileStore()
 const { updatePersonal } = useAuthService()
 const { user: currentUser } = storeToRefs(authStore)
 
-const { initials } = useFormat()
+const { initials, relative } = useFormat()
 
 useSeoMeta({ title: 'Usuarios — Admin' })
 
@@ -62,24 +63,18 @@ const filters = reactive({
   fecha: null,
 })
 
-const dias_retencion_auditoria = ref(storeConfig.adminConfig?.dias_retencion_auditoria ?? 30)
+const dias_retencion_auditoria = ref(storeConfig.adminConfig?.general?.dias_retencion_auditoria ?? 30)
 
-const formatDate = (dateString: string | null) => {
-    if (!dateString) return null;
-    return new Date(dateString).toISOString().split('T')[0];
-    // o: return new Date(dateString).toLocaleDateString();
-};
-
-const columnsAudit = [
-  { accessorKey: 'usuario.nombre', header: 'Usuario'},
-  { accessorKey: 'accion', header: 'Acción'},
-  { accessorKey: 'descripcion', header: 'Descripción'},
-  { accessorKey: 'created_at', header: 'Fecha', 
-    cell: ({ row }) => {
-      const texto = row.original.created_at || ''
-      return h('p', formatDate(texto))
-    }
-  },
+const columnsAudit: Array<{ accessorKey: string, header: string, cell?: (ctx: { row: { original: AuditLog } }) => unknown }> = [
+  { accessorKey: 'usuario.nombre', header: 'Usuario' },
+  { accessorKey: 'usuario.email', header: 'Correo' },
+  { accessorKey: 'accion', header: 'Acción' },
+  { accessorKey: 'descripcion', header: 'Descripción' },
+  {
+    accessorKey: 'created_at',
+    header: 'Fecha',
+    cell: ({ row }) => h('p', relative(String(row.original.created_at ?? '')))
+  }
 ]
 
 async function applyFilters() {
@@ -101,8 +96,9 @@ onMounted(async () => {
 <template>
   <div class="space-y-6 animate-fade-up">
 
-    <UTabs :items="[{ label: 'Usuarios', slot: 'usuarios' }, { label: 'Auditoria', slot: 'auditoria' }]"
+    <UTabs :items="[{ label: 'Usuarios', slot: 'usuarios', icon: 'i-lucide-user' }, { label: 'Auditoria', slot: 'auditoria', icon: 'i-lucide-shield' }]" variant="link"
       :ui="{ trigger: 'data-[state=active]:!bg-transparent' }">
+
       <template #usuarios>
         <div class="page-header">
           <div>
@@ -219,6 +215,7 @@ onMounted(async () => {
           </table>
         </div>
       </template>
+
       <template #auditoria>
         <div class="page-header">
           <div>

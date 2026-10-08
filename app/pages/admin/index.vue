@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAdminDashboardService } from '~/composables/services/admin/dashboard'
 import { orderStatusMeta } from '~/utils/orderStatus'
 
 definePageMeta({ layout: 'admin', middleware: ['auth'] })
@@ -6,21 +7,24 @@ definePageMeta({ layout: 'admin', middleware: ['auth'] })
 const adminOrders = useAdminOrderStore()
 const productStore = useProductStore()
 const inventoryStore = useInventoryStore()
+const fechaHoy = new Date()
 
 const { items: recentOrders } = storeToRefs(adminOrders)
 const { items: products } = storeToRefs(productStore)
 
 const { currency, number, relative } = useFormat()
 
+const {salesByDay, summary: summaryData, loadAll} = useAdminDashboardService()
+
 const lowStock = computed(() => (products.value ?? []).filter(p => (p.stock ?? 0) <= 5).length)
 const summary = computed(() => ({
-  ventas_hoy: 0,
+  ventas_hoy: summaryData.value?.ventas_hoy,
   pedidos_mes: recentOrders.value?.length || 0,
-  clientes: 0,
+  clientes: summaryData.value?.clientes,
   stock_bajo: lowStock.value,
-  ventas_mes: 0,
-  ticket_promedio: 0,
-  conversion: 0
+  ventas_mes: summaryData.value?.ventas_mes,
+  ticket_promedio: summaryData.value?.ticket_promedio,
+  conversion: summaryData.value?.conversion
 }))
 
 const activityFeed = computed(() => recentOrders.value?.slice(0, 5).map(o => ({
@@ -31,13 +35,21 @@ const activityFeed = computed(() => recentOrders.value?.slice(0, 5).map(o => ({
   icon: orderStatusMeta(o.status).icon
 })))
 
-const salesByDay = computed(() => {
+const salesByDayArray = computed(() => {
   const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
-  return days.map((d, _i) => ({
-    fecha: d,
-    total: Math.floor(Math.random() * 5_000_000) + 1_000_000,
-    pedidos: Math.floor(Math.random() * 30) + 10
-  }))
+  return days.map((d, _i) => {
+
+    const dayData = salesByDay.value?.find((s) => {
+      const dia = new Date(s.fecha).getDay()
+      return dia === _i
+    })
+
+    return {
+      fecha: d,
+      total: dayData ? dayData.total : 0
+    }
+
+  })
 })
 
 const topProducts = computed(() => products.value.slice(0, 5).map((p, i) => ({
@@ -51,7 +63,8 @@ onMounted(async () => {
   await Promise.all([
     adminOrders.loadList(),
     productStore.loadList(),
-    inventoryStore.loadAlerts()
+    inventoryStore.loadAlerts(),
+    loadAll()
   ])
 })
 
@@ -137,7 +150,7 @@ useSeoMeta({ title: 'Dashboard — Admin' })
             variant="subtle"
           />
         </template>
-        <DashboardSalesChart :data="salesByDay" />
+        <DashboardSalesChart :data="salesByDayArray" />
       </DashboardMetricsCard>
 
       <DashboardMetricsCard

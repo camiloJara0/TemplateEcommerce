@@ -18,7 +18,7 @@ const { getOrderedSections, updateSectionVariant } = usePageSections()
 useSeoMeta({ title: 'Editor de tienda — Admin' })
 
 const config = ref<TiendaConfig>(JSON.parse(JSON.stringify(DEFAULT_TIENDA_CONFIG)))
-  console.log('config.value', config.value)
+
 const selectedSection = ref<string>('hero-1')
 const selectedAboutSection = ref<AboutSectionKey>('hero')
 const activeTab = ref<'home' | 'producto' | 'about' | 'styles' | 'plantillas'>('home')

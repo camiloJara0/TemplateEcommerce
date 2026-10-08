@@ -2,14 +2,10 @@
 import { storeToRefs } from 'pinia'
 import type { EstadoWebhook, WebhookEvent } from '~/types/commerce'
 
-definePageMeta({ layout: 'admin', middleware: ['auth'] })
-
 const communityStore = useCommunityStore()
 const { webhookEvents, webhookPagination, webhookResumen, loading } = storeToRefs(communityStore)
 
 const { date, relative } = useFormat()
-
-useSeoMeta({ title: 'Webhooks de pago — Admin' })
 
 const filters = reactive({
   provider: 'all',

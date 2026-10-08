@@ -20,18 +20,18 @@ export function useAdminDashboardService() {
     loading.value = true
     try {
       const { request } = useApi()
-      const [resumenRes, diasRes, catRes, topRes, usersRes] = await Promise.all([
+      const [resumenRes, diasRes] = await Promise.all([
         request<DashboardSummary>('/admin/dashboard/resumen'),
         request<SalesByDay[]>('/admin/dashboard/ventas-por-dia', { query: { dias } }),
-        request<SalesByCategory[]>('/admin/dashboard/ventas-por-categoria'),
-        request<TopProduct[]>('/admin/dashboard/top-productos', { query: { limite } }),
-        request<UsersRegistered[]>('/admin/dashboard/usuarios-registrados')
+        // request<SalesByCategory[]>('/admin/dashboard/ventas-por-categoria'),
+        // request<TopProduct[]>('/admin/dashboard/top-productos', { query: { limite } }),
+        // request<UsersRegistered[]>('/admin/dashboard/usuarios-registrados')
       ])
       summary.value = resumenRes.data
       salesByDay.value = diasRes.data
-      salesByCategory.value = catRes.data
-      topProducts.value = topRes.data
-      usersRegistered.value = usersRes.data
+      // salesByCategory.value = catRes.data
+      // topProducts.value = topRes.data
+      // usersRegistered.value = usersRes.data
     } finally {
       loading.value = false
     }

@@ -2,6 +2,7 @@
 import type { Payment, Refund } from '~/types/commerce'
 import type { PaymentConfig, PaymentConfigProvider, PaymentFilters } from '~/composables/services/admin/pagos'
 import { useAdminPagosService } from '~/composables/services/admin/pagos'
+import Webhook from '~/components/admin/Webhook.vue'
 
 definePageMeta({ layout: 'admin', middleware: ['auth'] })
 
@@ -47,6 +48,7 @@ const cancelLoading = ref(false)
 const tabs = [
   { key: 'historial', label: 'Historial', icon: 'i-lucide-history' },
   { key: 'proveedores', label: 'Proveedores', icon: 'i-lucide-credit-card' },
+  { key: 'webhook', label: 'Webhook', icon: 'i-lucide-webhook' },
 ]
 
 const providerLabels: Record<string, string> = {
@@ -535,6 +537,11 @@ useSeoMeta({ title: 'Pagos — Admin' })
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- ===== PROVEEDORES ===== -->
+        <div v-else-if="item.key === 'webhook'" class="space-y-6 mt-6">
+          <AdminWebhook />
         </div>
       </template>
     </UTabs>
