@@ -2,16 +2,18 @@ import type { AuthData, LoginPayload, Role, User } from '~/types/api'
 
 const ROLE_HIERARCHY: Record<string, number> = {
   'Super Administrador': 200,
-  Administrador: 100,
-  Vendedor: 50,
-  Cliente: 10,
+  'Administrador': 100,
+  'Operador de logística': 60,
+  'Vendedor': 50,
+  'Cliente': 10
 }
 
 const ROLE_DEFAULT_ROUTE: Record<string, string> = {
   'Super Administrador': '/admin',
-  Administrador: '/admin',
-  Vendedor: '/admin/pedidos',
-  Cliente: '/',
+  'Administrador': '/admin',
+  'Operador de logística': '/admin/envios',
+  'Vendedor': '/admin/pedidos',
+  'Cliente': '/'
 }
 
 const USER_STORAGE_KEY = 'auth_user'
@@ -90,9 +92,36 @@ export const useAuthStore = defineStore('auth', () => {
     const roles = user.value?.rol
     if (!roles?.length) return null
     const sorted = [...roles].sort(
-      (a, b) => (ROLE_HIERARCHY[b.name] ?? 0) - (ROLE_HIERARCHY[a.name] ?? 0),
+      (a, b) => (ROLE_HIERARCHY[b.name] ?? 0) - (ROLE_HIERARCHY[a.name] ?? 0)
     )
     return sorted[0] ?? null
+  }
+
+  function can(permission: string): boolean {
+    const permisos = user.value?.permisos
+    if (!permisos?.length) return false
+    if (permisos.includes('*')) return true
+    return permisos.some((p) => {
+      if (p === permission) return true
+      if (p.endsWith('.*')) return permission.startsWith(p.slice(0, -1))
+      return false
+    })
+  }
+
+  function hasAdminAccess(): boolean {
+    return (user.value?.permisos?.length ?? 0) > 0
+  }
+
+  async function ensurePermissions() {
+    if (typeof window === 'undefined') return
+    if (!user.value || user.value.permisos) return
+    try {
+      const { request } = useApi()
+      const res = await request<{ permisos: string[] }>('/auth/permisos')
+      if (res.data?.permisos) {
+        updateUser({ permisos: res.data.permisos })
+      }
+    } catch { /* sin sesión válida o endpoint no disponible */ }
   }
 
   function getDefaultRoute(): string {
@@ -100,7 +129,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (!role) return '/'
     return ROLE_DEFAULT_ROUTE[role.name] ?? '/'
-
   }
 
   async function login(payload: LoginPayload) {
@@ -108,7 +136,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const res = await request<AuthData>(
       '/login',
-      { method: 'POST', body: payload },
+      { method: 'POST', body: payload }
     )
     // El backend retorna user en el nivel raíz, no dentro de data
     const accessToken = res.data.access_token
@@ -141,7 +169,10 @@ export const useAuthStore = defineStore('auth', () => {
     clearSession,
     getHighestRole,
     getDefaultRoute,
+    can,
+    hasAdminAccess,
+    ensurePermissions,
     login,
-    logout,
+    logout
   }
 })

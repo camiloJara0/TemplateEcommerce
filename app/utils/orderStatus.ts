@@ -30,7 +30,8 @@ const shippingMap: Record<ShippingStatus, StatusMeta> = {
   en_preparacion: { label: 'En preparación', color: 'warning', icon: 'i-lucide-package' },
   despachado: { label: 'Despachado', color: 'info', icon: 'i-lucide-send' },
   en_transito: { label: 'En tránsito', color: 'primary', icon: 'i-lucide-truck' },
-  entregado: { label: 'Entregado', color: 'success', icon: 'i-lucide-circle-check' }
+  entregado: { label: 'Entregado', color: 'success', icon: 'i-lucide-circle-check' },
+  cancelado: { label: 'Cancelado', color: 'error', icon: 'i-lucide-circle-x' }
 }
 
 export function orderStatusMeta(status: OrderStatus): StatusMeta {

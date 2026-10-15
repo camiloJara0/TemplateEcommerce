@@ -57,8 +57,8 @@ const respuestaJson = computed(() => {
 function load(page = 1) {
   void communityStore.loadWebhookEvents({
     page,
-    provider: filters.provider || undefined,
-    estado: filters.estado || undefined,
+    provider: filters.provider !== 'all' ? filters.provider : undefined,
+    estado: filters.estado !== 'all' ? filters.provider : undefined,
     fecha: filters.fecha || undefined,
     busqueda: filters.busqueda.trim() || undefined
   })
@@ -84,7 +84,7 @@ onMounted(async () => {
       ...(res.data?.providers ?? []).map(p => ({ label: p, value: p }))
     ]
   } catch {
-    providerOptions.value = [{ label: 'Todos', value: '' }]
+    providerOptions.value = [{ label: 'Todos', value: 'all' }]
   }
 })
 </script>

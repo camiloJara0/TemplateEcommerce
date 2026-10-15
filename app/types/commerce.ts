@@ -123,7 +123,7 @@ export interface Payment {
   amount: number
   currency?: string
   status: PaymentStatus
-  payload?: Record<string, any> | null
+  payload?: Record<string, unknown> | null
   paid_at?: string | null
   created_at?: string
   updated_at?: string
@@ -145,6 +145,10 @@ export interface Order {
   id: number
   numero?: string
   order_number?: string
+  numero_factura?: string | null
+  fecha_emision?: string | null
+  billing_nit?: string | null
+  billing_razon_social?: string | null
   user_id?: number
   status: OrderStatus
   payment_status: PaymentStatus
@@ -163,7 +167,15 @@ export interface Order {
   items?: OrderItem[]
   history?: OrderHistory[]
   payments?: Payment[]
-  user?: { id: number; nombre?: string; name?: string; email?: string }
+  user?: { id: number, nombre?: string, name?: string, email?: string }
+  shipment?: {
+    id: number
+    carrier: string
+    tracking_number: string
+    status: ShippingStatus
+    estimated_delivery?: string | null
+    delivered_at?: string | null
+  } | null
   created_at?: string
   updated_at?: string
 }
@@ -226,6 +238,10 @@ export interface Favorite {
 }
 
 export interface TrackingEvent {
+  status?: string
+  description?: string
+  location?: string | null
+  date?: string
   fecha?: string
   estado?: string
   descripcion?: string
@@ -235,12 +251,17 @@ export interface TrackingInfo {
   id?: number
   order_id?: number
   tracking_number?: string
-  carrier?: Carrier
+  carrier?: Carrier | string
   status: ShippingStatus
   events?: TrackingEvent[]
+  order_numero?: string
+  destinatario?: string
+  ciudad?: string
   ciudad_destino?: string
-  created_at?: string
+  estimated_delivery?: string | null
+  delivered_at?: string | null
   updated_at?: string
+  created_at?: string
 }
 
 export interface AdminContact extends Contact {

@@ -11,19 +11,42 @@ const orderStore = useOrderStore()
 const shipmentStore = useShipmentStore()
 const { current } = storeToRefs(orderStore)
 const { tracking } = storeToRefs(shipmentStore)
+const { request } = useApi()
 const { currency, date, relative } = useFormat()
+const toast = useToast()
 
 const orderHistory = computed(() => current.value?.history ?? [])
 const orderPayments = computed(() => current.value?.payments ?? [])
+const orderShipment = computed(() => current.value?.shipment ?? null)
+const canInvoice = computed(() =>
+  !!current.value && ['aprobado', 'pagado'].includes(current.value.payment_status)
+)
+
+const downloading = ref(false)
+
+async function downloadInvoice() {
+  if (!current.value) return
+  downloading.value = true
+  try {
+    const blob = await request<Blob>(`/pedidos/${current.value.id}/factura`, { responseType: 'blob' })
+    const url = URL.createObjectURL(blob as unknown as Blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `factura-${current.value.numero_factura || current.value.numero || current.value.id}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    toast.add({ title: 'Error', description: 'No se pudo descargar la factura', color: 'error', icon: 'i-lucide-alert-circle' })
+  } finally {
+    downloading.value = false
+  }
+}
 
 onMounted(async () => {
   if (orderId) {
     await orderStore.loadOne(orderId)
-    if (current.value?.id) {
-      // Si el envío tiene tracking público, intentar cargar
-      const shippingId = (current.value as unknown as { shipment?: { tracking_number?: string } }).shipment?.tracking_number
-      if (shippingId) await shipmentStore.track(shippingId)
-    }
+    const trackingNumber = current.value?.shipment?.tracking_number
+    if (trackingNumber) await shipmentStore.track(trackingNumber)
   }
 })
 
@@ -81,6 +104,17 @@ useSeoMeta({ title: () => current.value ? `Pedido ${current.value.order_number ?
             :label="shippingStatusMeta(current.shipping_status).label"
             :color="shippingStatusMeta(current.shipping_status).color"
             variant="outline"
+          />
+          <UButton
+            v-if="canInvoice"
+            label="Descargar factura"
+            icon="i-lucide-file-text"
+            color="primary"
+            variant="soft"
+            size="sm"
+            class="rounded-xl"
+            :loading="downloading"
+            @click="downloadInvoice"
           />
         </div>
       </header>
@@ -149,37 +183,81 @@ useSeoMeta({ title: () => current.value ? `Pedido ${current.value.order_number ?
         </div>
       </section>
 
-      <!-- Tracking -->
+      <!-- Envío y tracking -->
       <section
-        v-if="tracking"
+        v-if="orderShipment || tracking"
         class="surface p-5 sm:p-6 space-y-3"
       >
-        <h2 class="font-semibold">
-          Seguimiento
-        </h2>
-        <UBadge
-          :label="shippingStatusMeta(tracking.status).label"
-          :color="shippingStatusMeta(tracking.status).color"
-          variant="subtle"
-        />
-        <ul class="space-y-2 text-sm">
-          <li
-            v-for="(event, i) in tracking.events ?? []"
-            :key="i"
-            class="flex items-start gap-3"
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="font-semibold">
+            Envío
+          </h2>
+          <NuxtLink
+            v-if="orderShipment?.tracking_number"
+            to="/seguimiento"
+            class="text-sm text-theme-brand hover:underline inline-flex items-center gap-1"
           >
             <UIcon
-              name="i-lucide-circle-dot"
-              class="size-4 text-theme-brand mt-0.5 shrink-0"
+              name="i-lucide-external-link"
+              class="size-4"
             />
-            <div>
-              <p>{{ event.descripcion ?? event.estado }}</p>
-              <p class="text-xs text-slate-400">
-                {{ event.fecha ? date(event.fecha) : '' }}
-              </p>
-            </div>
-          </li>
-        </ul>
+            Rastrear en seguimiento
+          </NuxtLink>
+        </div>
+        <div
+          v-if="orderShipment"
+          class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm"
+        >
+          <div>
+            <p class="text-xs text-slate-400">
+              Transportadora
+            </p>
+            <p class="font-medium capitalize">
+              {{ orderShipment.carrier.replace(/_/g, ' ') }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400">
+              Guía
+            </p>
+            <p class="font-mono text-xs">
+              {{ orderShipment.tracking_number }}
+            </p>
+          </div>
+          <div v-if="orderShipment.estimated_delivery">
+            <p class="text-xs text-slate-400">
+              Entrega estimada
+            </p>
+            <p class="font-medium">
+              {{ date(orderShipment.estimated_delivery) }}
+            </p>
+          </div>
+        </div>
+        <template v-if="tracking">
+          <UBadge
+            :label="shippingStatusMeta(tracking.status).label"
+            :color="shippingStatusMeta(tracking.status).color"
+            variant="subtle"
+          />
+          <ul class="space-y-2 text-sm">
+            <li
+              v-for="(event, i) in tracking.events ?? []"
+              :key="i"
+              class="flex items-start gap-3"
+            >
+              <UIcon
+                name="i-lucide-circle-dot"
+                class="size-4 text-theme-brand mt-0.5 shrink-0"
+              />
+              <div>
+                <p>{{ event.description ?? event.descripcion ?? event.status ?? event.estado }}</p>
+                <p class="text-xs text-slate-400">
+                  {{ (event.date ?? event.fecha) ? date(event.date ?? event.fecha!) : '' }}
+                </p>
+              </div>
+            </li>
+          </ul>
+        </template>
       </section>
 
       <!-- Historial -->

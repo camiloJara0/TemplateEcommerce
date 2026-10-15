@@ -81,9 +81,33 @@ export const useShipmentStore = defineStore('shipment', () => {
     }
   }
 
+  async function adminCancel(id: number) {
+    const { request } = useApi()
+    return runMutation<AdminShipment>({
+      request: () => request<AdminShipment>(`/admin/envios/${id}`, { method: 'DELETE' }),
+      successMessage: 'Envío cancelado',
+      onSuccess: (data) => {
+        const idx = adminList.value.findIndex(s => s.id === id)
+        if (idx >= 0) adminList.value[idx] = data
+        if (current.value?.id === id) current.value = data
+      }
+    })
+  }
+
+  async function adminDownloadLabel(id: number, trackingNumber?: string) {
+    const { request } = useApi()
+    const blob = await request<Blob>(`/admin/envios/${id}/etiqueta`, { responseType: 'blob' })
+    const url = URL.createObjectURL(blob as unknown as Blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `etiqueta-${trackingNumber || id}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return {
     adminList, adminPagination, current, tracking,
     loading, loadingTrack,
-    loadAdminList, loadAdminOne, quote, adminCreate, adminChangeStatus, track
+    loadAdminList, loadAdminOne, quote, adminCreate, adminChangeStatus, adminCancel, adminDownloadLabel, track
   }
 })

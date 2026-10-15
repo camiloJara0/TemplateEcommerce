@@ -1,46 +1,61 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+
 const route = useRoute()
 const collapsed = defineModel<boolean>('collapsed', { default: false })
 const storePedidos = useOrderStore()
+const auth = useAuthStore()
 
-const {count} = storeToRefs(storePedidos)
-const groups = [
+const { count } = storeToRefs(storePedidos)
+
+const allGroups = [
   {
     label: 'Principal',
     items: [
-      { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/admin' },
-      { label: 'Pedidos', icon: 'i-lucide-shopping-bag', to: '/admin/pedidos', badge: count.value },
-      { label: 'Usuarios', icon: 'i-lucide-users', to: '/admin/usuarios' }
+      { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/admin', perm: 'reportes.ver' },
+      { label: 'Pedidos', icon: 'i-lucide-shopping-bag', to: '/admin/pedidos', perm: 'pedidos.ver', badge: 'count' },
+      { label: 'Usuarios', icon: 'i-lucide-users', to: '/admin/usuarios', perm: 'usuarios.ver' }
     ]
   },
   {
     label: 'Catálogo',
     items: [
-      { label: 'Productos', icon: 'i-lucide-package', to: '/admin/productos' },
-      { label: 'Categorías', icon: 'i-lucide-layers', to: '/admin/categorias' },
-      { label: 'Inventario', icon: 'i-lucide-warehouse', to: '/admin/inventario' }
+      { label: 'Productos', icon: 'i-lucide-package', to: '/admin/productos', perm: 'productos.ver' },
+      { label: 'Categorías', icon: 'i-lucide-layers', to: '/admin/categorias', perm: 'productos.categorias.ver' },
+      { label: 'Inventario', icon: 'i-lucide-warehouse', to: '/admin/inventario', perm: 'inventario.ver' }
     ]
   },
   {
     label: 'Tienda',
     items: [
-      { label: 'Editor de tienda', icon: 'i-lucide-layout-template', to: '/admin/tienda' },
-      { label: 'Plantillas', icon: 'i-lucide-layout-grid', to: '/admin/plantillas' },
-      { label: 'Configuración', icon: 'i-lucide-settings', to: '/admin/configuracion' },
-      { label: 'Comunidad', icon: 'i-lucide-user-group', to: '/admin/comunidad' },
+      { label: 'Editor de tienda', icon: 'i-lucide-layout-template', to: '/admin/tienda', perm: 'configuracion.editar' },
+      { label: 'Plantillas', icon: 'i-lucide-layout-grid', to: '/admin/plantillas', perm: 'configuracion.editar' },
+      { label: 'Configuración', icon: 'i-lucide-settings', to: '/admin/configuracion', perm: 'configuracion.ver' },
+      { label: 'Comunidad', icon: 'i-lucide-user-round-group', to: '/admin/comunidad', perm: 'usuarios.ver' }
     ]
   },
   {
     label: 'Operaciones',
     items: [
-      { label: 'Cupones', icon: 'i-lucide-ticket-percent', to: '/admin/cupones' },
-      { label: 'Pagos', icon: 'i-lucide-credit-card', to: '/admin/pagos' },
-      { label: 'Envíos', icon: 'i-lucide-truck', to: '/admin/envios' },
-      { label: 'Reportes', icon: 'i-lucide-chart-column', to: '/admin/reportes' }
+      { label: 'Cupones', icon: 'i-lucide-ticket-percent', to: '/admin/cupones', perm: 'cupones.ver' },
+      { label: 'Pagos', icon: 'i-lucide-credit-card', to: '/admin/pagos', perm: 'pagos.ver' },
+      { label: 'Envíos', icon: 'i-lucide-truck', to: '/admin/envios', perm: 'envios.ver' },
+      { label: 'Integraciones', icon: 'i-lucide-plug-zap', to: '/admin/integraciones', perm: 'integraciones.ver' },
+      { label: 'Reportes', icon: 'i-lucide-chart-column', to: '/admin/reportes', perm: 'reportes.ver' }
     ]
   }
 ]
+
+const groups = computed(() =>
+  allGroups
+    .map(group => ({
+      ...group,
+      items: group.items
+        .filter(item => auth.can(item.perm))
+        .map(item => item.badge === 'count' ? { ...item, badge: count.value as number | undefined } : item)
+    }))
+    .filter(group => group.items.length > 0)
+)
 
 function isActive(to: string) {
   if (to === '/admin') return route.path === '/admin'

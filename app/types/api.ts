@@ -45,6 +45,7 @@ export interface User {
   telefono: string | null
   estado: 'activo' | 'inactivo'
   rol?: Role[]
+  permisos?: string[]
   idioma?: string
   tema?: string
   zona_horaria?: string
@@ -56,6 +57,10 @@ export interface User {
 
 export interface AuthData {
   user: User
+  access_token?: string
+  token_type?: string
+  expires_in?: number
+  permisos?: string[]
 }
 
 export interface LoginData {
@@ -95,7 +100,7 @@ export interface UpdateProfilePayload {
 export type ProductStatus = 'activo' | 'inactivo'
 export type OrderStatus = 'nuevo' | 'pagado' | 'preparando' | 'enviado' | 'entregado' | 'cancelado' | 'devuelto' | 'all'
 export type PaymentStatus = 'pendiente' | 'aprobado' | 'pagado' | 'fallido' | 'rechazado' | 'reembolsado'
-export type ShippingStatus = 'pendiente' | 'en_preparacion' | 'despachado' | 'en_transito' | 'entregado'
+export type ShippingStatus = 'pendiente' | 'en_preparacion' | 'despachado' | 'en_transito' | 'entregado' | 'cancelado'
 export type CouponType = 'percent' | 'fixed' | 'free_shipping'
 export type PaymentProvider = 'rapyd' | 'stripe' | 'mercadopago' | 'paypal' | 'wompi' | 'payu'
 export type Carrier = 'servientrega' | 'coordinadora' | 'dhl' | 'fedex' | 'interrapidisimo'

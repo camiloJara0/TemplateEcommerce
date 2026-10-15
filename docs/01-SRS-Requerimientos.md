@@ -85,6 +85,8 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 | RF-051 | Suscripciones y facturación SaaS | Baja | 🔴 |
 | RF-052 | Seguridad de la plataforma | Alta | 🟡 |
 | RF-053 | Offline / PWA | Media | ✅ |
+| RF-054 | Integración con sistemas de facturación / ERP | Alta | 🟡 |
+| RF-055 | Autenticación federada con el sistema externo | Media | 🔴 |
 
 ---
 
@@ -1076,6 +1078,44 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 
 ---
 
+#### RF-054 · Integración con sistemas de facturación / ERP
+
+| Campo | Valor |
+|---|---|
+| **Prioridad** | Alta |
+| **Estado** | 🟡 Parcial — base + proveedor demo (F0–F2) |
+| **Actores** | A3 (admin) |
+| **HU** | HU-038 → HU-051, HU-053, HU-054 |
+| **Docs** | `docs/06-Integraciones-ERP.md` |
+
+**Implementado (tanda F0 + F2, proveedores `erp_demo` y `erp_prueba`).**
+- 6 tablas: `integrations`, `integration_sync_runs`, `integration_events`, `integration_records`, `integration_external_docs`, `integration_field_maps`.
+- Pluggable: `config/integrations.php` (providers + fields + class_map + sync) + `App\Services\Integration\{IntegrationProvider, AbstractIntegrationProvider, ErpDemoProvider, ErpPruebaProvider, IntegrationException}` + normalizadores de producto/inventario.
+- **ERP de prueba externo** (`erp_prueba`): app Laravel aparte en `127.0.0.1:8001`; la URL y la API key vienen del backend (`.env` → `ERP_PRUEBA_URL`/`ERP_PRUEBA_API_KEY`, header `X-API-KEY`), nunca del panel ni del frontend.
+- Credenciales cifradas (`IntegrationCredentialService`, `Crypt`); la API solo expone booleans `configurado`/`credenciales_configuradas`.
+- CRUD admin + probar conexión + activar/desactivar + ejecuciones (`IntegrationController`, rutas `permission:integraciones.*`; admin `*` las cubre).
+- Sincronización: `SyncService` + comando `integrations:sync` (lock, backoff, pausa tras errores, idempotencia por hash + `integration_records`) + cron `everyFifteenMinutes` en `Kernel`; importación inicial con preview dry-run.
+- Panel: `/admin/integraciones` (+ detalle), sección en Configuración, ítem de sidebar.
+- Tests: `IntegrationTest` (11) + `IntegrationSyncTest` (5); suite backend 98/98.
+
+**Pendiente (fases posteriores).**
+- HU-044/045 (compras entrantes y ventas salientes), webhooks entrantes (F4), multi-integración avanzada UI (F5), mapeo de campos desde UI (HU-053 UI), eventos/auditoría UI (HU-048/054), proveedores reales (OdooSaaS, Siigo, Alegra…).
+
+---
+
+#### RF-055 · Autenticación federada con el sistema externo
+
+| Campo | Valor |
+|---|---|
+| **Prioridad** | Media |
+| **Estado** | 🔴 Pendiente (fuera de alcance F0–F2) |
+| **Actores** | A2 (cliente), A3 (admin) |
+| **HU** | HU-052 |
+
+**Descripción.** Login federado (OAuth2 / SAML) contra el sistema externo. El modelo `integrations.soporta_login`/`rol_login_federado` ya existe pero la lógica de login **no se tocó** para evitar regresiones en `AuthTest`. Ver `docs/06-Integraciones-ERP.md` §7.7.
+
+---
+
 ## 2. Requerimientos no funcionales
 
 | ID | Categoría | Requerimiento | Prioridad | Estado |
@@ -1097,7 +1137,7 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 | RNF-15 | **Cumplimiento normativo** | Adecuación a LGPD/Ley 1581 (Colombia): consentimiento, aviso de privacidad, tratamiento de datos. | Alta | 🟡 Textos de `privacidad`/`terminos` estáticos; sin consentimiento explícito en registro. |
 | RNF-16 | **Arquitectura distribuida** | Separación en bounded contexts con API Gateway y comunicación sincrónica/asincrónica. | Baja | 🔴 Monolito actual; diseño objetivo en `microservicios_plan.md` (9 servicios). |
 | RNF-17 | **Tolerancia a fallos** | Reintentos idempotentes en webhooks, colas con reintentos, circuit breakers en integraciones. | Alta | 🔴 Sin tabla de eventos de webhook ni dead-letter; colas `sync`. |
-| RNF-18 | **Pruebas** | Cobertura mínima 70% en backend; E2E críticos de compra; CI que bloquee merges. | Alta | 🟡 78 tests feature (70 ✅ / 8 ❌); `tests/Unit` vacío; sin E2E; CI de frontend solo lint+typecheck, backend sin CI. |
+| RNF-18 | **Pruebas** | Cobertura mínima 70% en backend; E2E críticos de compra; CI que bloquee merges. | Alta | 🟡 98 tests feature (100% ✅); `tests/Unit` vacío; sin E2E; CI de frontend solo lint+typecheck, backend sin CI. |
 
 ---
 

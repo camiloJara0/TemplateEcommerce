@@ -733,6 +733,26 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])
 | In-app | `GET /notificaciones` (lectura local, sin endpoint de "marcar leída") |
 | Log | `notification_logs` (`channel`: mail/push/database/log) |
 
+### 9.4 Integraciones ERP / facturación (RF-054)
+
+`config/integrations.php` → `providers` (metadatos + `fields` de credenciales + `capabilities`) + `class_map` (adaptador). Arquitectura plugable: `App\Services\Integration\{IntegrationProvider, AbstractIntegrationProvider, IntegrationException}` + normalizadores (`ProductNormalizer`, `InventoryNormalizer`).
+
+| Proveedor | Adaptador | Estado |
+|---|---|---|
+| `erp_demo` | `ErpDemoProvider` | ✅ Fixtures locales en `resources/fixtures/erp_demo/` (productos + inventario), sin credenciales externas |
+| `erp_prueba` | `ErpPruebaProvider` | ✅ **ERP externo real** (127.0.0.1:8001): `GET /api/productsERP` y `GET /api/inventarioERP` con header `X-API-KEY`. URL/rutas/API key **desde el backend** (`.env` → `ERP_PRUEBA_URL`, `ERP_PRUEBA_API_KEY`, `ERP_PRUEBA_RUTA_*` vía `config/integrations.php`); proveedor con `credenciales_desde_backend = true` (no pide nada en el panel, `sistemas` jamás expone la key) |
+| Odoo SaaS / Siigo / Alegra / HubSpot / Shopify / VTEX | — | 🔴 Reservados (HU de fases posteriores) |
+
+**Modelo:** 6 tablas (`integrations`, `integration_sync_runs`, `integration_events`, `integration_records`, `integration_external_docs`, `integration_field_maps`). Credenciales cifradas con `Crypt` (`IntegrationCredentialService`); la API solo expone `configurado`.
+
+**Flujo de sincronización:** `SyncService@vence` (frecuencia por integración, default 60 min) → `integrations:sync` (o endpoint manual) con `Cache::lock` → `run` con estados (`iniciando/en_curso/exitosa/parcial/fallida`) → apply idempotente por hash + `integration_records` → backoff exponencial y pausa tras N fallos. Inventario entra vía `InventoryService@ajustar` con referencia morph al run (RN-25).
+
+**Cron del servidor:** `* * * * * php artisan schedule:run` (el `Kernel` registra `integrations:sync` cada 15 min con `withoutOverlapping`).
+
+**Endpoints admin** (`permission:integraciones.*`): CRUD `/admin/integraciones*`, `POST …/probar|activar|desactivar|sincronizar|importacion-inicial|ejecuciones`.
+
+**Tests:** `IntegrationTest` (11) + `IntegrationSyncTest` (5).
+
 ---
 
 ## 10. DevOps

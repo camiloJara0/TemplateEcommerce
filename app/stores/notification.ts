@@ -1,4 +1,4 @@
-import type { AppNotification, PushSubscriptionPayload, AppNotificationResponse } from '~/types/notifications'
+import type { AppNotification, PushSubscriptionPayload } from '~/types/notifications'
 
 export const useNotificationStore = defineStore('notification', () => {
   const offlineStore = useOfflineStore()
@@ -43,12 +43,25 @@ export const useNotificationStore = defineStore('notification', () => {
     })
   }
 
-  function markRead(id: number) {
+  async function markRead(id: number) {
     const idx = items.value.findIndex(n => n.id === id)
-    if (idx >= 0) {
-      items.value[idx] = { ...items.value[idx]!, read_at: new Date().toISOString() }
-    }
+    if (idx < 0 || items.value[idx]!.read_at) return
+
+    items.value[idx] = { ...items.value[idx]!, read_at: new Date().toISOString() }
+    try {
+      const { request } = useApi()
+      await request(`/notificaciones/${id}/leer`, { method: 'PUT' })
+    } catch { /* optimista; el próximo load() sincroniza */ }
   }
 
-  return { items, loading, unreadCount, load, subscribePush, unsubscribePush, markRead }
+  async function markAllRead() {
+    const now = new Date().toISOString()
+    items.value = items.value.map(n => n.read_at ? n : { ...n, read_at: now })
+    try {
+      const { request } = useApi()
+      await request('/notificaciones/leer-todo', { method: 'POST' })
+    } catch { /* optimista; el próximo load() sincroniza */ }
+  }
+
+  return { items, loading, unreadCount, load, subscribePush, unsubscribePush, markRead, markAllRead }
 })

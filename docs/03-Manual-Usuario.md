@@ -273,6 +273,23 @@ Cada cambio escribe un registro en el **historial** con usuario, fecha y comenta
 
 Edita nombre, teléfono, foto e idioma. Aquí también se cierra la sesión.
 
+### 3.14 Integraciones (`/admin/integraciones`)
+
+Conecta sistemas externos (ERP, CRM, marketplace) para sincronizar catálogo e inventario. Requiere permiso de administrador.
+
+**Listado.** Cada tarjeta muestra el sistema conectado, su estado (activa, inactiva, sin credenciales, con errores…), las capacidades que ofrece (productos, inventario…), la última sincronización y un resumen de la última ejecución. Desde ahí puedes **probar** la conexión, **activar/desactivar**, **sincronizar ahora**, **configurar** o **eliminar**.
+
+**Nueva integración.** Pulsa **Nueva integración**, elige el sistema (por ejemplo *ERP Demo*), ponle un nombre y guarda sus credenciales (si el sistema las pide).
+
+**Configurar (detalle).** Dentro de la integración puedes:
+
+1. **Credenciales** — se guardan cifradas; los campos ya guardados nunca se muestran completos.
+2. **Sincronización** — frecuencia en minutos y si sincroniza productos y/o inventario; botón **Sincronizar ahora** con alcance completo, parcial o importación inicial.
+3. **Importación inicial** — **Previsualizar** muestra cuántos registros externos hay, cuántos ya existen y cuántos se crearían/actualizarían (sin escribir nada); **Ejecutar importación** aplica los cambios.
+4. **Historial de ejecuciones** — cada sincronización con su estado y conteo de procesados, creados, actualizados, omitidos y errores.
+
+> También hay un acceso rápido en **Configuración → Integración de API**. La sincronización automática corre sola cada cierto tiempo; si falla varias veces la integración se pausa y puedes reactivarla desde la lista.
+
 ---
 
 ## 4. Constructor de tienda (`/admin/tienda`)

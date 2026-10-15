@@ -348,6 +348,129 @@ Una tarjeta solo pasa a **✅ Hecho** cuando:
 
 ---
 
+## 3.1 Historias de usuario · Integraciones con sistemas externos (RF-054 / RF-055)
+
+> Tanda F0–F2 implementada con el proveedor demo `erp_demo` (fixtures locales). Detalle en `docs/06-Integraciones-ERP.md`.
+
+#### HU-038 · Registrar una integración con mi sistema de facturación
+| | |
+|---|---|
+| **Como** administrador **quiero** registrar una conexión a mi ERP **para** sincronizar datos |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Lista de sistemas disponibles ✅. 2. Alta con nombre y proveedor ✅ (`/admin/integraciones` + modal). 3. Multi-integración ✅ (`integration_id` en todas las tablas). |
+
+#### HU-039 · Configurar las credenciales de conexión
+| | |
+|---|---|
+| **Como** administrador **quiero** guardar API key/token/client secret **para** autenticarme con el sistema externo |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Campos definidos por proveedor (`config/integrations.php`) ✅. 2. Cifrado en reposo (`Crypt`) ✅. 3. Nunca exponer secretos en API/UI (solo `configurado`) ✅. |
+
+#### HU-040 · Validar el acceso antes de activar
+| | |
+|---|---|
+| **Como** administrador **quiero** probar la conexión **para** verificar credenciales antes de sincronizar |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Botón "Probar" (lista y detalle) ✅. 2. Resultado con mensaje claro ✅. |
+
+#### HU-041 · Importación inicial de datos
+| | |
+|---|---|
+| **Como** administrador **quiero** traer el catálogo completo la primera vez **para** partir de datos reales |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Dry-run con proyección (externos / existentes / a crear) ✅. 2. Ejecución real con resumen ✅. 3. Idempotente por `external_id` ✅. |
+
+#### HU-042 · Sincronizar productos
+| | |
+|---|---|
+| **Como** administrador **quiero** que los productos del ERP se reflejen en la tienda **para** no duplicar trabajo |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Mapeo SKU/nombre/precio/categoría/marca/variantes ✅ (`ProductNormalizer`). 2. Alta/actualización idempotente por hash ✅. 3. Resumen creados/actualizados/omitidos ✅. |
+
+#### HU-043 · Sincronizar inventario
+| | |
+|---|---|
+| **Como** administrador **quiero** que el stock venga del ERP **para** vender solo lo disponible |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Override por SKU/variante ✅ (`InventoryNormalizer`). 2. Movimiento de inventario con referencia morph al run (RN-25) ✅. |
+
+#### HU-044 · Recibir compras y entradas de mercancía desde el sistema externo
+| | |
+|---|---|
+| **Como** administrador **quiero** que las compras del ERP generen entradas de stock **para** mantener el inventario al día |
+| **Épica** | Integraciones · **Estado** 🔴 |
+
+#### HU-045 · Enviar ventas de la tienda al sistema de facturación
+| | |
+|---|---|
+| **Como** administrador **quiero** que cada venta se facture en el ERP **para** cumplir la normativa |
+| **Épica** | Integraciones · **Estado** 🔴 |
+
+#### HU-046 · Sincronización automática programada
+| | |
+|---|---|
+| **Como** administrador **quiero** que la sincronización corra sola **para** no depender de recordatorios |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Comando `integrations:sync` con `Cache::lock` ✅. 2. Cron `everyFifteenMinutes` + `withoutOverlapping` ✅ (requiere `schedule:run` cada minuto). 3. Frecuencia configurable por integración ✅. |
+
+#### HU-047 · Visualizar el estado de sincronización
+| | |
+|---|---|
+| **Como** administrador **quiero** ver cuándo se sincronizó y si salió bien **para** confiar en los datos |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Badge de estado (activa, con errores, pausada…) ✅. 2. Última sync + resumen en tarjeta y detalle ✅. 3. Ejecutar sync manual con resumen ✅. |
+
+#### HU-048 · Consultar el historial de errores y eventos
+| | |
+|---|---|
+| **Como** administrador **quiero** ver qué falló y por qué **para** corregirlo |
+| **Épica** | Integraciones · **Estado** 🟡 |
+| **CA** | 1. Tabla `integration_events` + registro en `SyncService` ✅. 2. Historial de ejecuciones en UI ✅. 3. Pantalla de eventos/errores detallados 🔴. |
+
+#### HU-049 · Reintentos automáticos y aviso de fallos
+| | |
+|---|---|
+| **Como** administrador **quiero** reintentos con backoff y aviso de fallos **para** que un error puntual no detenga el negocio |
+| **Épica** | Integraciones · **Estado** 🟡 |
+| **CA** | 1. Backoff exponencial + pausa tras N fallos ✅ (`SyncService`). 2. Aviso por email/notificación 🔴. |
+
+#### HU-050 · Gestionar múltiples integraciones
+| | |
+|---|---|
+| **Como** administrador **quiero** varias integraciones activas **para** conectar ERP y marketplace a la vez |
+| **Épica** | Integraciones · **Estado** 🟡 |
+| **CA** | 1. Modelo multi-integración completo ✅. 2. UI de listado admite varias ✅. 3. Asignación de alcance por integración avanzada (F5) 🔴. |
+
+#### HU-051 · Activar o desactivar una integración
+| | |
+|---|---|
+| **Como** administrador **quiero** pausar una integración **para** detener sincronizaciones sin borrarla |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Activar/desactivar desde lista y detalle ✅. 2. Inactiva ignora el cron ✅. |
+
+#### HU-052 · Iniciar sesión con las credenciales de mi sistema externo
+| | |
+|---|---|
+| **Como** cliente **quiero** usar las credenciales de mi ERP **para** no crear otra cuenta |
+| **Épica** | Integraciones · **Estado** 🔴 |
+| **CA** | Fuera de alcance F0–F2 (regresión cero de `AuthTest`); columnas `soporta_login`/`rol_login_federado` reservadas. Ver RF-055. |
+
+#### HU-053 · Ajustar la traducción de campos y categorías entre sistemas
+| | |
+|---|---|
+| **Como** administrador **quiero** mapear categorías/estados externos a los locales **para** que el catálogo quede bien clasificado |
+| **Épica** | Integraciones · **Estado** 🟡 |
+| **CA** | 1. Tabla `integration_field_maps` + consulta en normalizadores ✅. 2. Mapeo por defecto en `erp_demo` ✅. 3. UI de mapeo 🔴. |
+
+#### HU-054 · Ver quién cambió qué y cuándo (trazabilidad)
+| | |
+|---|---|
+| **Como** administrador **quiero** trazabilidad de sincronizaciones **para** auditar cambios |
+| **Épica** | Integraciones · **Estado** 🟡 |
+| **CA** | 1. Runs con origen, conteos y timestamps ✅. 2. `integration_records` con hash por entidad ✅. 3. UI de trazabilidad por registro 🔴. |
+
+---
+
 ## 4. Épicas y asignación
 
 | Épica | HUs | Responsable sugerido |
@@ -369,6 +492,7 @@ Una tarjeta solo pasa a **✅ Hecho** cuando:
 | Usuarios | 025, 026 | Full-stack |
 | Marketing | 033, 034 | Frontend |
 | Soporte | 035 | Frontend |
+| Integraciones | 038–054 | Full-stack |
 
 ---
 
