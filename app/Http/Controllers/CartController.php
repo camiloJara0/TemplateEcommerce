@@ -21,17 +21,20 @@ class CartController extends Controller
     public function agregar(Request $request)
     {
         $validated = $request->validate([
-            'id' => 'required|exists:products,id',
+            'id' => 'required_without:product_id|nullable|integer|exists:products,id',
+            'product_id' => 'nullable|integer|exists:products,id',
             'product_variant_id' => 'nullable|exists:product_variants,id',
             'quantity' => 'nullable|integer|min:1',
         ]);
+
+        $productId = (int) ($validated['id'] ?? $validated['product_id']);
 
         $cart = $this->obtenerCarrito($request);
 
         try {
             $item = app(CartService::class)->agregar(
                 $cart,
-                $validated['id'],
+                $productId,
                 $validated['product_variant_id'] ?? null,
                 $validated['quantity'] ?? 1
             );
@@ -123,7 +126,7 @@ class CartController extends Controller
                 'quantity' => $item->quantity,
                 'subtotal' => (float) round($item->precioEfectivo() * $item->quantity, 2),
                 'image' => $item->product?->images->first()?->url,
-                'brand' => $item->product?->brand->first()?->name,
+                'brand' => $item->product?->brand?->name,
                 'variant' => $item->variant ? [
                     'id' => $item->variant->id,
                     'combinacion' => $item->variant->combinacion(),

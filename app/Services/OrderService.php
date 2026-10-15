@@ -81,11 +81,7 @@ class OrderService
             if ($order->user_id) {
                 $usuario = User::find($order->user_id);
                 if ($usuario) {
-                    app(NotificationService::class)->pedidoCreado(
-                        $usuario,
-                        $order->numero,
-                        (float) $order->total
-                    );
+                    app(NotificationService::class)->pedidoCreado($usuario, $order);
                 }
             }
 
@@ -132,8 +128,32 @@ class OrderService
 
         $order->update(['status' => $nuevoEstado->value]);
         $this->registrarHistorial($order, $nuevoEstado, $comentario, $usuario);
+        $this->notificarTransicion($order, $nuevoEstado);
 
         return $order;
+    }
+
+    protected function notificarTransicion(Order $order, OrderStatusEnum $estado): void
+    {
+        $usuario = $order->user;
+
+        if (!$usuario) {
+            return;
+        }
+
+        $servicio = app(NotificationService::class);
+
+        match ($estado) {
+            OrderStatusEnum::PAGADO => $servicio->pedidoPagado($usuario, $order),
+            OrderStatusEnum::ENVIADO => $servicio->pedidoEnviado(
+                $usuario,
+                $order,
+                $order->shipments()->latest('id')->first()
+            ),
+            OrderStatusEnum::ENTREGADO => $servicio->pedidoEntregado($usuario, $order),
+            OrderStatusEnum::CANCELADO => $servicio->pedidoCancelado($usuario, $order),
+            default => null,
+        };
     }
 
     public function registrarHistorial(

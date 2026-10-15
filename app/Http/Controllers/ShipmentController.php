@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shipment;
+use App\Services\LabelService;
 use App\Services\ShippingService;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
@@ -48,7 +49,7 @@ class ShipmentController extends Controller
 
     public function show(Shipment $shipment)
     {
-        return ApiResponse::success($shipment->load('order', 'shippingMethod'));
+        return ApiResponse::success($shipment->load('order', 'shippingMethod', 'events'));
     }
 
     public function actualizarEstado(Request $request, Shipment $shipment)
@@ -66,17 +67,48 @@ class ShipmentController extends Controller
         return ApiResponse::success($shipment->load('order'), 'Estado de envío actualizado');
     }
 
+    public function cancelar(Shipment $shipment)
+    {
+        try {
+            $shipment = app(ShippingService::class)->cancelar($shipment);
+        } catch (\App\Services\Shipping\ShippingException $e) {
+            return ApiResponse::error($e->getMessage(), 422, 'SHIPPING_ERROR');
+        }
+
+        return ApiResponse::success($shipment->load('order'), 'Envío cancelado');
+    }
+
     public function cotizar(Request $request)
     {
         $validated = $request->validate([
+            'order_id' => 'nullable|exists:orders,id',
             'carrier' => 'nullable|in:' . implode(',', array_keys(config('shipping.class_map', []))),
             'weight' => 'nullable|numeric|min:0',
+            'largo' => 'nullable|numeric|min:0|max:500',
+            'ancho' => 'nullable|numeric|min:0|max:500',
+            'alto' => 'nullable|numeric|min:0|max:500',
+            'ciudad' => 'nullable|string|max:120',
+            'pais' => 'nullable|string|max:80',
         ]);
 
-        $cotizacion = app(ShippingService::class)->cotizar(
-            $validated,
-            $validated['carrier'] ?? null
-        );
+        try {
+            if (!empty($validated['order_id'])) {
+                $order = \App\Models\Order::with('address')->findOrFail($validated['order_id']);
+
+                $esDueno = auth()->check() && $order->user_id === auth()->id();
+                $tienePermiso = auth()->check() && auth()->user()->tienePermiso('envios.ver');
+
+                if (!$esDueno && !$tienePermiso) {
+                    return ApiResponse::error('No autorizado', 403, 'FORBIDDEN');
+                }
+
+                $cotizacion = app(ShippingService::class)->cotizarParaPedido($order, $validated['carrier'] ?? null);
+            } else {
+                $cotizacion = app(ShippingService::class)->cotizar($validated, $validated['carrier'] ?? null);
+            }
+        } catch (\App\Services\Shipping\ShippingException $e) {
+            return ApiResponse::error($e->getMessage(), 422, 'SHIPPING_ERROR');
+        }
 
         return ApiResponse::success($cotizacion, 'Cotización de envío');
     }
@@ -90,5 +122,14 @@ class ShipmentController extends Controller
         }
 
         return ApiResponse::success($resultado);
+    }
+
+    public function etiqueta(Shipment $shipment)
+    {
+        try {
+            return app(LabelService::class)->etiqueta($shipment);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), 422, 'LABEL_ERROR');
+        }
     }
 }

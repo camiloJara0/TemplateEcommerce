@@ -26,6 +26,28 @@ class NotificationController extends Controller
         ]);
     }
 
+    public function marcarLeida(NotificationLog $notificacion)
+    {
+        if ($notificacion->user_id !== auth()->id()) {
+            return ApiResponse::error('No autorizado', 403, 'FORBIDDEN');
+        }
+
+        if (!$notificacion->read_at) {
+            $notificacion->update(['read_at' => now()]);
+        }
+
+        return ApiResponse::success($notificacion->fresh(), 'Notificación marcada como leída');
+    }
+
+    public function marcarTodasLeidas()
+    {
+        NotificationLog::mias(auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
+        return ApiResponse::success(null, 'Todas las notificaciones marcadas como leídas');
+    }
+
     public function subscribe(Request $request)
     {
         $validated = $request->validate([

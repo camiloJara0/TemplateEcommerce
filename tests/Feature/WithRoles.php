@@ -37,6 +37,16 @@ trait WithRoles
         return $user;
     }
 
+    protected function vendedorUser(): User
+    {
+        $this->seedRoles();
+
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::where('slug', RoleEnum::VENDEDOR->value)->first());
+
+        return $user;
+    }
+
     protected function actingAsSanctum(User $user)
     {
         return $this->actingAs($user, 'sanctum');

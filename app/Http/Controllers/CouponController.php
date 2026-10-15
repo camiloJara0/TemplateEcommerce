@@ -104,7 +104,7 @@ class CouponController extends Controller
             'code' => 'required|string|max:50',
             'subtotal' => 'required|numeric|min:0',
             'shipping' => 'nullable|numeric|min:0',
-            'session_id' => 'required|string',
+            'session_id' => 'nullable|string',
         ]);
 
         try {
@@ -114,7 +114,7 @@ class CouponController extends Controller
                 (float) $validated['subtotal'],
                 (float) ($validated['shipping'] ?? 0),
                 $request->user(),
-                $validated['session_id']
+                $validated['session_id'] ?? null
             );
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage(), 422, 'COUPON_ERROR');

@@ -87,6 +87,12 @@ class ContactMessageController extends Controller
             'user_id' => $validated['user_id'] ?? null,
         ]);
 
+        try {
+            app(\App\Services\NotificationService::class)->contactoRecibido($contact_message);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Error notificando contacto: ' . $e->getMessage());
+        }
+
         return ApiResponse::success($contact_message, 'Mensaje creado', 201);
     }
 

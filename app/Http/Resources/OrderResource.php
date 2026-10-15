@@ -11,6 +11,10 @@ class OrderResource extends JsonResource
         return [
             'id' => $this->id,
             'numero' => $this->numero,
+            'numero_factura' => $this->numero_factura,
+            'fecha_emision' => $this->fecha_emision,
+            'billing_nit' => $this->billing_nit,
+            'billing_razon_social' => $this->billing_razon_social,
             'status' => $this->status,
             'payment_status' => $this->payment_status,
             'shipping_status' => $this->shipping_status,
@@ -50,6 +54,14 @@ class OrderResource extends JsonResource
                 'amount' => (float) $p->amount,
                 'created_at' => $p->created_at,
             ])),
+            'shipment' => $this->whenLoaded('shipment', fn () => $this->shipment ? [
+                'id' => $this->shipment->id,
+                'carrier' => $this->shipment->carrier,
+                'tracking_number' => $this->shipment->tracking_number,
+                'status' => $this->shipment->status,
+                'estimated_delivery' => $this->shipment->estimated_delivery?->toDateString(),
+                'delivered_at' => $this->shipment->delivered_at,
+            ] : null),
         ];
     }
 }

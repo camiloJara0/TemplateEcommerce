@@ -65,6 +65,50 @@ La API queda en `http://localhost:8000/api`.
 5. **Promociones**: crea cupones (`%`, fijo o envío gratis) desde el panel.
 6. **Reportes**: consulta ventas/inventario/clientes/productos y exporta a
    CSV/PDF/Excel desde `/api/v1/admin/reportes/*`.
+7. **Integraciones (ERP)**: crea una integración desde el panel
+   (`/admin/integraciones`) o `POST /api/v1/admin/integraciones`. Proveedores:
+   - `erp_demo` — fixtures locales (`resources/fixtures/erp_demo/`), sin red.
+   - `erp_prueba` — **ERP de prueba externo** (p. ej. `C:\Proyectos\PruebaAPI\ERP`
+     en `http://127.0.0.1:8001`). Su URL y API key **no se piden en el panel**:
+     vienen del backend vía `.env` (ver abajo).
+   - Los reales (Odoo, Siigo…) se registran en `config/integrations.php`.
+     Las credenciales de panel se cifran con `Crypt` y la API solo expone
+     `configurado`.
+
+   Configuración del ERP de prueba en `.env` del backend:
+
+   ```
+   ERP_PRUEBA_URL=http://127.0.0.1:8001
+   ERP_PRUEBA_API_KEY=sk_prod_...
+   # Opcionales (rutas por defecto):
+   ERP_PRUEBA_RUTA_PRODUCTOS=/api/productsERP
+   ERP_PRUEBA_RUTA_INVENTARIO=/api/inventarioERP
+   ```
+
+   El proveedor llama con header `X-API-KEY` a esos endpoints
+   (`{success, data:[…]}`) y normaliza precios (`precios[].minorista`) e
+   inventario (`product_id → producto_id`).
+
+### Sincronización automática (integraciones)
+
+El comando `integrations:sync` evalúa las integraciones activas vencidas
+(frecuencia por integración, default 60 min) y sincroniza catálogo/inventario
+con lock, idempotencia por hash y backoff + pausa tras errores:
+
+```bash
+php artisan integrations:sync                      # todas las vencidas
+php artisan integrations:sync --integration=1      # una integración
+php artisan integrations:sync --tipo=inicial       # lectura completa
+```
+
+Para que el cron del servidor lo ejecute cada minuto:
+
+```bash
+* * * * * cd /ruta/al/backend && php artisan schedule:run >> /dev/null 2>&1
+```
+
+(`Kernel::schedule` ya registra `integrations:sync` cada 15 minutos con
+`withoutOverlapping`.)
 
 ## Roles y permisos
 
@@ -82,6 +126,10 @@ Se gestionan en `config/permissions.php` (sin tablas extra). Patrones: `*`
 | reportes.ver             |  ✓    |          |                    |
 | configuracion.*          |  ✓    |          |                    |
 | pagos.gestionar          |  ✓    |          |                    |
+| integraciones.*          |  ✓    |          |                    |
+
+(admin tiene `*`, que cubre `integraciones.ver`, `integraciones.editar`,
+`integraciones.sincronizar` e `integraciones.historial`).
 
 ## Estructura clave
 
@@ -108,6 +156,7 @@ Se gestionan en `config/permissions.php` (sin tablas extra). Patrones: `*`
 php artisan test
 ```
 
-Suite completa (72 tests): autenticación, catálogo, carrito, checkout, pagos,
+Suite completa (98 tests): autenticación, catálogo, carrito, checkout, pagos,
 envíos, cupones, reviews, wishlist, notificaciones, inventario, dashboard,
-reportes, configuración y auditoría.
+reportes, configuración, auditoría e integraciones ERP (CRUD, credenciales,
+sincronización e idempotencia).

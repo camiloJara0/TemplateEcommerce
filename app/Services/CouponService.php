@@ -37,6 +37,9 @@ class CouponService
 
 
         if ($coupon->category_id !== null) {
+            if (!$cart) {
+                throw new \DomainException('El cupón requiere productos en el carrito');
+            }
             $aplica = $cart->items->contains(function ($item) use ($coupon) {
                 return $item->product->category_id == $coupon->category_id;
             });
@@ -46,6 +49,9 @@ class CouponService
         }
     
         if ($coupon->brand_id !== null) {
+            if (!$cart) {
+                throw new \DomainException('El cupón requiere productos en el carrito');
+            }
             $aplica = $cart->items->contains(function ($item) use ($coupon) {
                 return $item->product->brand_id == $coupon->brand_id;
             });
@@ -55,6 +61,9 @@ class CouponService
         }
     
         if ($coupon->product_id !== null) {
+            if (!$cart) {
+                throw new \DomainException('El cupón requiere productos en el carrito');
+            }
             $aplica = $cart->items->contains(function ($item) use ($coupon) {
                 return $item->product->id == $coupon->product_id;
             });
@@ -110,14 +119,16 @@ class CouponService
         ]);
     }
 
-    public function aplicarACarrito(string $code, float $subtotal, float $shipping = 0.0, ?User $user = null, string $session_id): array {
-        $cart = Cart::where('session_id', $session_id)->with(['items','items.product'])->first();
+    public function aplicarACarrito(string $code, float $subtotal, float $shipping = 0.0, ?User $user = null, ?string $session_id = null): array {
+        $cart = $this->resolverCarrito($session_id);
         $coupon = $this->validar($code, $subtotal, $user, $cart);
-        $itemsElegibles = $this->obtenerItemsElegibles($coupon, $cart);
+        $itemsElegibles = $cart ? $this->obtenerItemsElegibles($coupon, $cart) : collect();
 
-        $subtotalElegible = $itemsElegibles->sum(function ($item) {
-            return $item->product->price * $item->quantity;
-        });
+        $subtotalElegible = $itemsElegibles->isEmpty()
+            ? $subtotal
+            : $itemsElegibles->sum(function ($item) {
+                return $item->product->price * $item->quantity;
+            });
 
         $resultado = $this->calcularDescuento($coupon,$subtotalElegible,$shipping);
 
@@ -129,6 +140,19 @@ class CouponService
                 'value' => (float) $coupon->value,
             ]
         ]);
+    }
+
+    private function resolverCarrito(?string $session_id): ?Cart
+    {
+        if (auth()->check()) {
+            return Cart::where('user_id', auth()->id())->with(['items', 'items.product'])->first();
+        }
+
+        if ($session_id) {
+            return Cart::where('session_id', $session_id)->with(['items', 'items.product'])->first();
+        }
+
+        return null;
     }
 
     private function obtenerItemsElegibles(Coupon $coupon, Cart $cart)

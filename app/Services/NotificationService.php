@@ -2,9 +2,22 @@
 
 namespace App\Services;
 
+use App\Mail\ContactoAdminMail;
+use App\Mail\PagoAprobadoMail;
+use App\Mail\PagoReembolsadoMail;
+use App\Mail\PedidoCanceladoMail;
+use App\Mail\PedidoCreadoMail;
+use App\Mail\PedidoEntregadoMail;
+use App\Mail\PedidoEnviadoMail;
+use App\Mail\ResenaAprobadaMail;
 use App\Mail\NotificacionMail;
+use App\Models\ContactMessage;
 use App\Models\NotificationLog;
+use App\Models\Order;
+use App\Models\Review;
+use App\Models\Shipment;
 use App\Models\User;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -23,7 +36,8 @@ class NotificationService
         string $asunto,
         string $cuerpo,
         array $detalles = [],
-        array $canales = []
+        array $canales = [],
+        ?Mailable $mailable = null
     ): array {
         $canales = $canales ?: $this->canales;
 
@@ -32,7 +46,7 @@ class NotificationService
         foreach ($canales as $canal) {
             try {
                 $ok = match ($canal) {
-                    'mail' => $this->enviarMail($user, $asunto, $cuerpo, $detalles),
+                    'mail' => $this->enviarMail($user, $asunto, $cuerpo, $detalles, $mailable),
                     'push' => app(PushService::class)->enviar($user, $asunto, $cuerpo, $detalles),
                     'database', 'log' => true,
                     default => false,
@@ -61,9 +75,14 @@ class NotificationService
         return $resultados;
     }
 
-    public function enviarMail(User $user, string $asunto, string $cuerpo, array $detalles = []): bool
-    {
-        Mail::to($user->email)->send(new NotificacionMail($asunto, $cuerpo, $detalles));
+    public function enviarMail(
+        User $user,
+        string $asunto,
+        string $cuerpo,
+        array $detalles = [],
+        ?Mailable $mailable = null
+    ): bool {
+        Mail::to($user->email)->send($mailable ?: new NotificacionMail($asunto, $cuerpo, $detalles));
 
         return true;
     }
@@ -81,26 +100,119 @@ class NotificationService
         );
     }
 
-    public function pedidoCreado(User $user, string $numero, float $total): array
+    public function pedidoCreado(User $user, Order $order): array
     {
         return $this->notificar(
             $user,
             'pedido_creado',
-            'Pedido ' . $numero . ' confirmado',
-            'Tu pedido fue confirmado y estamos preparando tu envío.',
-            ['Número' => $numero, 'Total' => '$' . number_format($total, 0, ',', '.')]
+            'Pedido ' . $order->numero . ' confirmado',
+            'Recibimos tu pedido y estamos preparando tu envío.',
+            $this->detallesPedido($order),
+            [],
+            new PedidoCreadoMail($order)
         );
     }
 
-    public function pedidoEnviado(User $user, string $numero, string $tracking): array
+    public function pedidoPagado(User $user, Order $order): array
     {
         return $this->notificar(
             $user,
-            'pedido_enviado',
-            'Tu pedido ' . $numero . ' está en camino',
-            'Tu pedido fue despachado. Sigue su recorrido con el número de guía.',
-            ['Número' => $numero, 'Guía' => $tracking]
+            'pedido_pagado',
+            'Pago aprobado — Pedido ' . $order->numero,
+            'Tu pago fue aprobado. Prepararemos tu envío a la brevedad.',
+            $this->detallesPedido($order),
+            [],
+            new PagoAprobadoMail($order)
         );
+    }
+
+    public function pedidoEnviado(User $user, Order $order, ?Shipment $shipment = null): array
+    {
+        $guia = $shipment?->tracking_number ?? '';
+
+        return $this->notificar(
+            $user,
+            'pedido_enviado',
+            'Tu pedido ' . $order->numero . ' está en camino',
+            'Tu pedido fue despachado. Sigue su recorrido con el número de guía.',
+            array_merge($this->detallesPedido($order), $guia ? ['Guía' => $guia] : []),
+            [],
+            new PedidoEnviadoMail($order, $shipment)
+        );
+    }
+
+    public function pedidoEntregado(User $user, Order $order): array
+    {
+        return $this->notificar(
+            $user,
+            'pedido_entregado',
+            'Pedido ' . $order->numero . ' entregado',
+            'Tu pedido fue entregado. ¡Gracias por comprar con nosotros!',
+            $this->detallesPedido($order),
+            [],
+            new PedidoEntregadoMail($order)
+        );
+    }
+
+    public function pedidoCancelado(User $user, Order $order): array
+    {
+        return $this->notificar(
+            $user,
+            'pedido_cancelado',
+            'Pedido ' . $order->numero . ' cancelado',
+            'Tu pedido fue cancelado. Si tienes dudas contáctanos.',
+            $this->detallesPedido($order),
+            [],
+            new PedidoCanceladoMail($order)
+        );
+    }
+
+    public function pagoReembolsado(User $user, Order $order, float $monto): array
+    {
+        return $this->notificar(
+            $user,
+            'pago_reembolsado',
+            'Reembolso procesado — Pedido ' . $order->numero,
+            'Se procesó el reembolso de tu pago.',
+            array_merge(
+                $this->detallesPedido($order),
+                ['Reembolso' => '$' . number_format($monto, 0, ',', '.')]
+            ),
+            [],
+            new PagoReembolsadoMail($order, $monto)
+        );
+    }
+
+    public function resenaAprobada(Review $review): array
+    {
+        $user = $review->user;
+
+        if (!$user) {
+            return [];
+        }
+
+        return $this->notificar(
+            $user,
+            'resena_aprobada',
+            'Tu reseña fue publicada',
+            'Tu reseña sobre "' . ($review->product?->name ?? 'un producto') . '" ya es visible en la tienda.',
+            ['Producto' => $review->product?->name ?? '—', 'Calificación' => $review->rating . '/5'],
+            [],
+            new ResenaAprobadaMail($review)
+        );
+    }
+
+    public function contactoRecibido(ContactMessage $mensaje): void
+    {
+        $admins = User::whereHas('roles', fn ($q) => $q->where('slug', 'admin'))->get();
+
+        foreach ($admins as $admin) {
+            try {
+                Mail::to($admin->email)->send(new ContactoAdminMail($mensaje));
+            } catch (\Exception $e) {
+                Log::error('Error avisando contacto a admin: ' . $e->getMessage());
+            }
+        }
     }
 
     public function recuperacion(User $user): array
@@ -131,5 +243,13 @@ class NotificationService
         }
 
         return $resultados;
+    }
+
+    protected function detallesPedido(Order $order): array
+    {
+        return [
+            'Número' => $order->numero,
+            'Total' => '$' . number_format((float) $order->total, 0, ',', '.'),
+        ];
     }
 }

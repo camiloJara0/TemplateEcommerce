@@ -12,6 +12,9 @@ class Order extends Model
 
     protected $fillable = [
         'numero',
+        'numero_factura',
+        'fecha_emision',
+        'paid_at',
         'user_id',
         'address_id',
         'shipping_method_id',
@@ -26,6 +29,10 @@ class Order extends Model
         'payment_status',
         'shipping_status',
         'notes',
+        'billing_nombre',
+        'billing_nit',
+        'billing_razon_social',
+        'billing_direccion',
     ];
 
     protected $casts = [
@@ -34,6 +41,8 @@ class Order extends Model
         'shipping_cost' => 'decimal:2',
         'tax' => 'decimal:2',
         'total' => 'decimal:2',
+        'fecha_emision' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     public function user()
@@ -69,6 +78,16 @@ class Order extends Model
     public function payment()
     {
         return $this->hasOne(Payment::class)->latestOfMany();
+    }
+
+    public function shipments()
+    {
+        return $this->hasMany(Shipment::class);
+    }
+
+    public function shipment()
+    {
+        return $this->hasOne(Shipment::class)->latestOfMany();
     }
 
     public function scopeMios($query, $userId)

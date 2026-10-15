@@ -18,11 +18,13 @@ class NotificationLog extends Model
         'status',
         'payload',
         'sent_at',
+        'read_at',
     ];
 
     protected $casts = [
         'payload' => 'array',
         'sent_at' => 'datetime',
+        'read_at' => 'datetime',
     ];
 
     public function user()

@@ -108,7 +108,7 @@ class CatalogTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('data.pagination.total', 1)
-            ->assertJsonPath('data.items.0.name', 'Audífonos Bluetooth');
+            ->assertJsonPath('data.data.0.name', 'Audífonos Bluetooth');
     }
 
     public function test_producto_por_slug(): void

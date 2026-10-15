@@ -14,7 +14,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $pedidos = Order::with(['items', 'address'])
+        $pedidos = Order::with(['items', 'address', 'shipment'])
             ->mios(auth()->id())
             ->latest()
             ->paginate($request->get('per_page', 15));
@@ -69,14 +69,14 @@ class OrderController extends Controller
             return ApiResponse::error('No autorizado', 403, 'FORBIDDEN');
         }
 
-        $order->load(['items', 'address', 'statusHistories', 'payments']);
+        $order->load(['items', 'address', 'statusHistories', 'payments', 'shipment']);
 
         return ApiResponse::success(new OrderResource($order));
     }
 
     public function adminIndex(Request $request)
     {
-        $pedidos = Order::with(['items', 'address', 'payments', 'user:id,nombre,email'])
+        $pedidos = Order::with(['items', 'address', 'payments', 'user:id,nombre,email', 'shipment'])
             ->when($request->status, fn ($q, $v) => $q->where('status', $v))
             ->when($request->payment_status, fn ($q, $v) => $q->where('payment_status', $v))
             ->when($request->busqueda, fn ($q, $v) => $q->where('numero', 'like', "%{$v}%"))
@@ -113,8 +113,50 @@ class OrderController extends Controller
         }
 
         return ApiResponse::success(
-            new OrderResource($order->load(['items', 'statusHistories'])),
+            new OrderResource($order->load(['items', 'statusHistories', 'shipment'])),
             'Estado actualizado'
         );
+    }
+
+    public function factura(Request $request, Order $order)
+    {
+        $puedeVer = $order->user_id === auth()->id()
+            || auth()->user()->tienePermiso('pedidos.ver');
+
+        if (!$puedeVer) {
+            return ApiResponse::error('No autorizado', 403, 'FORBIDDEN');
+        }
+
+        if ($order->payment_status !== \App\Enums\PaymentStatusEnum::APROBADO->value) {
+            return ApiResponse::error('La factura se genera una vez aprobado el pago', 422, 'INVOICE_NOT_READY');
+        }
+
+        try {
+            return app(\App\Services\InvoiceService::class)->pdf($order);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), 422, 'INVOICE_ERROR');
+        }
+    }
+
+    public function etiquetaEnvio(Request $request, Order $order)
+    {
+        $puedeVer = $order->user_id === auth()->id()
+            || auth()->user()->tienePermiso('pedidos.ver');
+
+        if (!$puedeVer) {
+            return ApiResponse::error('No autorizado', 403, 'FORBIDDEN');
+        }
+
+        $shipment = $order->shipments()->latest('id')->first();
+
+        if (!$shipment) {
+            return ApiResponse::error('El pedido aún no tiene envío', 404, 'NOT_FOUND');
+        }
+
+        try {
+            return app(\App\Services\LabelService::class)->etiqueta($shipment);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), 422, 'LABEL_ERROR');
+        }
     }
 }

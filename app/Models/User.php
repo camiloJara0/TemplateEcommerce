@@ -80,4 +80,14 @@ class User extends Authenticatable
 
         return false;
     }
+
+    public function permisos(): array
+    {
+        return $this->roles()
+            ->pluck('slug')
+            ->flatMap(fn ($slug) => config("permissions.roles.{$slug}", []))
+            ->values()
+            ->unique()
+            ->all();
+    }
 }

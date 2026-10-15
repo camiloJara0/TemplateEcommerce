@@ -73,6 +73,10 @@ class ReviewController extends Controller
     {
         app(ReviewService::class)->aprobar($review);
 
+        if ($review->user_id) {
+            app(\App\Services\NotificationService::class)->resenaAprobada($review->fresh(['product', 'user']));
+        }
+
         return ApiResponse::success($review->fresh(), 'Reseña aprobada');
     }
 

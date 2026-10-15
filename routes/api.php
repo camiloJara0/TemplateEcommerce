@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
@@ -91,6 +92,9 @@ Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
     // Seguimiento público de envíos
     Route::get('/envios/tracking/{trackingNumber}', [ShipmentController::class, 'tracking']);
 
+    // Cotización pública de envíos (checkout)
+    Route::post('/envios/cotizar', [ShipmentController::class, 'cotizar'])->middleware('throttle:30,1');
+
     // Contacto y newsletter (público)
     Route::post('/contact', [ContactMessageController::class, 'store']);
     Route::post('/contacto', [ContactMessageController::class, 'store']);
@@ -128,8 +132,13 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1')->gro
     Route::post('/pedidos', [OrderController::class, 'store']);
     Route::get('/pedidos', [OrderController::class, 'index']);
     Route::get('/pedidos/{order}', [OrderController::class, 'show']);
+    Route::get('/pedidos/{order}/factura', [OrderController::class, 'factura']);
+    Route::get('/pedidos/{order}/envio/etiqueta', [OrderController::class, 'etiquetaEnvio']);
 
     Route::post('/pedidos/{order}/pagar', [PaymentController::class, 'iniciar']);
+
+    // Permisos del usuario autenticado (para guards del panel)
+    Route::get('/auth/permisos', [UserController::class, 'permisos']);
 
     // Cupones (cliente puede validar y aplicar)
     Route::post('/cupones/aplicar', [CouponController::class, 'aplicar']);
@@ -145,6 +154,8 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1')->gro
 
     // Notificaciones
     Route::get('/notificaciones', [NotificationController::class, 'index']);
+    Route::put('/notificaciones/{notificacion}/leer', [NotificationController::class, 'marcarLeida']);
+    Route::post('/notificaciones/leer-todo', [NotificationController::class, 'marcarTodasLeidas']);
     Route::post('/notificaciones/push/subscribir', [NotificationController::class, 'subscribe']);
     Route::post('/notificaciones/push/desuscribir', [NotificationController::class, 'unsubscribe']);
 });
@@ -230,6 +241,8 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
 
     // Pedidos
     Route::get('/pedidos', [OrderController::class, 'adminIndex'])->middleware('permission:pedidos.ver');
+    Route::get('/pedidos/{order}/factura', [OrderController::class, 'factura'])->middleware('permission:pedidos.ver');
+    Route::get('/pedidos/{order}/envio/etiqueta', [OrderController::class, 'etiquetaEnvio'])->middleware('permission:pedidos.ver');
     Route::post('/pedidos/{order}/estado', [OrderController::class, 'cambiarEstado'])->middleware('permission:pedidos.gestionar');
 
     // Pagos
@@ -243,13 +256,29 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
     Route::post('/envios', [ShipmentController::class, 'crear'])->middleware('permission:envios.crear');
     Route::get('/envios/cotizar', [ShipmentController::class, 'cotizar'])->middleware('permission:envios.ver');
     Route::get('/envios/{shipment}', [ShipmentController::class, 'show'])->middleware('permission:envios.ver');
+    Route::get('/envios/{shipment}/etiqueta', [ShipmentController::class, 'etiqueta'])->middleware('permission:envios.ver');
     Route::put('/envios/{shipment}/estado', [ShipmentController::class, 'actualizarEstado'])->middleware('permission:envios.gestionar');
+    Route::delete('/envios/{shipment}', [ShipmentController::class, 'cancelar'])->middleware('permission:envios.gestionar');
 
     // Cupones
     Route::get('/cupones', [CouponController::class, 'index'])->middleware('permission:cupones.ver');
     Route::post('/cupones', [CouponController::class, 'store'])->middleware('permission:cupones.crear');
     Route::put('/cupones/{cupon}', [CouponController::class, 'update'])->middleware('permission:cupones.editar');
     Route::delete('/cupones/{cupon}', [CouponController::class, 'destroy'])->middleware('permission:cupones.eliminar');
+
+    // Integraciones (ERP / contabilidad / CRM)
+    Route::get('/integraciones/sistemas', [IntegrationController::class, 'sistemas'])->middleware('permission:integraciones.ver');
+    Route::get('/integraciones', [IntegrationController::class, 'index'])->middleware('permission:integraciones.ver');
+    Route::post('/integraciones', [IntegrationController::class, 'store'])->middleware('permission:integraciones.editar');
+    Route::get('/integraciones/{integration}', [IntegrationController::class, 'show'])->middleware('permission:integraciones.ver');
+    Route::put('/integraciones/{integration}', [IntegrationController::class, 'update'])->middleware('permission:integraciones.editar');
+    Route::delete('/integraciones/{integration}', [IntegrationController::class, 'destroy'])->middleware('permission:integraciones.editar');
+    Route::post('/integraciones/{integration}/probar', [IntegrationController::class, 'probar'])->middleware('permission:integraciones.editar');
+    Route::post('/integraciones/{integration}/activar', [IntegrationController::class, 'activar'])->middleware('permission:integraciones.editar');
+    Route::post('/integraciones/{integration}/desactivar', [IntegrationController::class, 'desactivar'])->middleware('permission:integraciones.editar');
+    Route::post('/integraciones/{integration}/sincronizar', [IntegrationController::class, 'sincronizar'])->middleware('permission:integraciones.sincronizar');
+    Route::post('/integraciones/{integration}/importacion-inicial', [IntegrationController::class, 'importacionInicial'])->middleware('permission:integraciones.sincronizar');
+    Route::get('/integraciones/{integration}/ejecuciones', [IntegrationController::class, 'ejecuciones'])->middleware('permission:integraciones.ver');
 
     // Reseñas (moderación)
     Route::get('/resenas', [ReviewController::class, 'adminIndex'])->middleware('permission:reviews.moderar');

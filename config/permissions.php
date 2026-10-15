@@ -13,7 +13,11 @@ return [
     |
     | Módulos disponibles (fases del template):
     |   productos, inventario, pedidos, pagos, envios, cupones,
-    |   reviews, clientes, usuarios, reportes, config
+    |   reviews, clientes, usuarios, reportes, configuracion,
+    |   integraciones (ver, editar, sincronizar, historial)
+    |
+    | Nota: integraciones.* solo lo usa el rol admin ('*' lo cubre);
+    | vendedor y operador_logistica quedan fuera de este módulo.
     |
     */
 

@@ -167,8 +167,21 @@ class UserController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'expires_in' => 16 * 3600,
-            'user' => $user->only(['id', 'nombre', 'email', 'foto', 'estado', 'idioma', 'rol']),
+            'user' => array_merge(
+                $user->only(['id', 'nombre', 'email', 'foto', 'estado', 'idioma', 'rol']),
+                ['permisos' => $user->permisos()]
+            ),
         ], 'Login exitoso');
+    }
+
+    public function permisos()
+    {
+        $user = Auth::user();
+
+        return ApiResponse::success([
+            'permisos' => $user->permisos(),
+            'roles' => $user->rol,
+        ]);
     }
 
     public function enviarCodigo(Request $request)
@@ -229,9 +242,14 @@ class UserController extends Controller
     public function perfil()
     {
         $user = Auth::user();
-        return ApiResponse::success(
-            $user->only(['id', 'nombre', 'email', 'foto', 'estado', 'ultimo_login', 'idioma'])
-        );
+
+        return ApiResponse::success(array_merge(
+            $user->only(['id', 'nombre', 'email', 'foto', 'estado', 'ultimo_login', 'idioma']),
+            [
+                'rol' => $user->rol,
+                'permisos' => $user->permisos(),
+            ]
+        ));
     }
 
     public function actualizarPerfil(Request $request)

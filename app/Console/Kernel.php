@@ -18,6 +18,13 @@ class Kernel extends ConsoleKernel
         // Comandos programados del ecommerce (stock, reportes, etc.)
         $schedule->command('audit:purge')
             ->daily();
+
+        // Sincronización de integraciones (ERP). El comando evalúa por
+        // integración si vence su frecuencia configurada.
+        // Requiere cron de servidor: * * * * * php artisan schedule:run
+        $schedule->command('integrations:sync')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping();
     }
 
     /**

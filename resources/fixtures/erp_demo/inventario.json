@@ -1,0 +1,7 @@
+[
+  { "producto_id": "ERP-P-001", "sku": "CAF-250", "stock": 12, "actualizado_en": "2026-10-10T08:05:00Z" },
+  { "producto_id": "ERP-P-002", "sku": "TZA-1L", "stock": 28, "actualizado_en": "2026-10-11T10:00:00Z" },
+  { "producto_id": "ERP-P-003", "sku": "MUG-NEG", "stock": 8, "actualizado_en": "2026-10-12T14:10:00Z" },
+  { "producto_id": "ERP-P-004", "sku": "CAF-500-OLD", "stock": 0, "actualizado_en": "2026-10-09T17:00:00Z" },
+  { "producto_id": "ERP-P-005", "sku": "FIL-V60", "stock": 57, "actualizado_en": "2026-10-13T07:20:00Z" }
+]

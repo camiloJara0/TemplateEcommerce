@@ -47,7 +47,7 @@ class DashboardController extends Controller
 
     public function ventasPorDia(Request $request)
     {
-        $dias = (int) $request->get('dias', 30);
+        $dias = (int) $request->get('dias', 7);
 
         $ventas = Order::where('status', '!=', 'cancelado')
             ->where('created_at', '>=', now()->subDays($dias))

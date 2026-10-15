@@ -176,7 +176,20 @@ class ProductController extends Controller
             'estado' => 'nullable|in:activo,inactivo',
             'stock' => 'nullable|integer|min:0',
             'images' => 'nullable|array',
-            'images.*' => 'file|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'images.*' => function ($attribute, $value, $fail) {
+                if ($value instanceof UploadedFile) {
+                    $validator = \Validator::make(['imagen' => $value], [
+                        'imagen' => 'file|image|mimes:jpg,jpeg,png,webp|max:2048',
+                    ]);
+                    if ($validator->fails()) {
+                        $fail('The ' . $attribute . ' must be a jpg, jpeg, png or webp image up to 2048KB.');
+                    }
+                    return;
+                }
+                if (!is_string($value) || !filter_var($value, FILTER_VALIDATE_URL)) {
+                    $fail('The ' . $attribute . ' must be an uploaded file or a valid URL.');
+                }
+            },
             'existing_image_urls' => 'nullable|array',
             'existing_image_urls.*' => 'string',
             'tags' => 'nullable|array',

@@ -1,0 +1,87 @@
+[
+  {
+    "id": "ERP-P-001",
+    "sku": "CAF-250",
+    "nombre": "Café Especial 250g",
+    "descripcion": "Café de origen, tueste medio",
+    "precio": 25000,
+    "precio_lista": 28000,
+    "peso_kg": 0.25,
+    "stock": 12,
+    "categoria": "Bebidas",
+    "marca": "Montaña",
+    "imagenes": ["https://cdn.example.com/cafe-250.jpg"],
+    "estado": "activo",
+    "actualizado_en": "2026-10-10T08:00:00Z"
+  },
+  {
+    "id": "ERP-P-002",
+    "sku": "TZA-1L",
+    "nombre": "Té Azul Premium 1L",
+    "descripcion": "Infusión natural sin cafeína",
+    "precio": 18000,
+    "peso_kg": 1,
+    "stock": 30,
+    "categoria": "Bebidas",
+    "marca": "Montaña",
+    "imagenes": ["https://cdn.example.com/te-azul.jpg"],
+    "estado": "activo",
+    "actualizado_en": "2026-10-11T09:30:00Z"
+  },
+  {
+    "id": "ERP-P-003",
+    "sku": "MUG-NEG",
+    "nombre": "Termo Café 350ml",
+    "descripcion": "Termo de acero inoxidable",
+    "precio": 45000,
+    "peso_kg": 0.4,
+    "stock": 8,
+    "categoria": "Accesorios",
+    "marca": "Urban",
+    "imagenes": ["https://cdn.example.com/termo-negro.jpg"],
+    "estado": "activo",
+    "actualizado_en": "2026-10-12T14:00:00Z",
+    "variantes": [
+      {
+        "id": "ERP-V-010",
+        "sku": "MUG-NEG-M",
+        "precio": 45000,
+        "stock": 5,
+        "atributos": { "Talla": "M" }
+      },
+      {
+        "id": "ERP-V-011",
+        "sku": "MUG-NEG-G",
+        "precio": 48000,
+        "stock": 3,
+        "atributos": { "Talla": "G" }
+      }
+    ]
+  },
+  {
+    "id": "ERP-P-004",
+    "sku": "CAF-500-OLD",
+    "nombre": "Café Especial 500g (descontinuado)",
+    "descripcion": "Presentación anterior",
+    "precio": 40000,
+    "peso_kg": 0.5,
+    "stock": 0,
+    "categoria": "Bebidas",
+    "marca": "Montaña",
+    "estado": "inactivo",
+    "actualizado_en": "2026-10-09T16:45:00Z"
+  },
+  {
+    "id": "ERP-P-005",
+    "sku": "FIL-V60",
+    "nombre": "Filtros V60 (x40)",
+    "descripcion": "Filtros de papel para prensa",
+    "precio": 12000,
+    "peso_kg": 0.1,
+    "stock": 60,
+    "categoria": "Accesorios",
+    "marca": "Urban",
+    "estado": "activo",
+    "actualizado_en": "2026-10-13T07:15:00Z"
+  }
+]

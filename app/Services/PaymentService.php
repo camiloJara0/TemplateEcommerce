@@ -117,6 +117,11 @@ class PaymentService
         if ($reembolso->status === 'completado') {
             $pago->update(['status' => PaymentStatusEnum::REEMBOLSADO->value]);
             $this->sincronizarEstadoPedido($pago->order, PaymentStatusEnum::REEMBOLSADO->value);
+
+            $usuario = $pago->order->user;
+            if ($usuario) {
+                app(NotificationService::class)->pagoReembolsado($usuario, $pago->order, $monto);
+            }
         }
 
         return $reembolso;
@@ -124,12 +129,25 @@ class PaymentService
 
     public function sincronizarEstadoPedido(Order $order, string $estadoPago): void
     {
-        $order->update(['payment_status' => $estadoPago]);
+        $order->update([
+            'payment_status' => $estadoPago,
+            'paid_at' => $estadoPago === PaymentStatusEnum::APROBADO->value
+                ? ($order->paid_at ?? now())
+                : $order->paid_at,
+        ]);
 
         if ($estadoPago === PaymentStatusEnum::APROBADO->value && $order->status === OrderStatusEnum::NUEVO->value) {
             app(OrderService::class)->transicionar($order, OrderStatusEnum::PAGADO, 'Pago aprobado');
 
             $this->crearEnvioAutomatico($order);
+
+            try {
+                app(InvoiceService::class)->emitir($order->fresh());
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error(
+                    "No se pudo emitir la factura del pedido {$order->numero}: " . $e->getMessage()
+                );
+            }
         }
     }
 
@@ -143,21 +161,26 @@ class PaymentService
             return;
         }
 
-        $address = $order->address;
-        $shippingMethod = $order->shippingMethod;
+        try {
+            app(ShippingService::class)->crearEnvio($order, $this->resolverCarrier($order));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error(
+                "No se pudo crear el envío automático del pedido {$order->numero}: " . $e->getMessage()
+            );
+        }
+    }
 
-        \App\Models\Shipment::create([
-            'order_id' => $order->id,
-            'shipping_method_id' => $order->shipping_method_id,
-            'carrier' => $shippingMethod?->name ?? 'default',
-            'status' => 'pendiente',
-            'destinatario' => $order->user->nombre ?? $order->user->name ?? '',
-            'direccion' => $address?->direccion ?? $address?->address ?? '',
-            'ciudad' => $address?->ciudad ?? $address?->city ?? '',
-            'departamento' => $address?->departamento ?? $address?->state ?? '',
-            'codigo_postal' => $address?->codigo_postal ?? $address?->zip ?? '',
-        ]);
+    protected function resolverCarrier(Order $order): string
+    {
+        $disponibles = array_keys(config('shipping.class_map', []));
+        $nombre = mb_strtolower(trim((string) ($order->shippingMethod?->name ?? '')));
 
-        $order->update(['shipping_status' => \App\Enums\ShippingStatusEnum::EN_PREPARACION->value]);
+        foreach ($disponibles as $clave) {
+            if ($nombre !== '' && (str_contains($nombre, $clave) || str_contains($clave, $nombre))) {
+                return $clave;
+            }
+        }
+
+        return config('shipping.default', $disponibles[0] ?? 'servientrega');
     }
 }

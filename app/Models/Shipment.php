@@ -22,6 +22,7 @@ class Shipment extends Model
         'departamento',
         'codigo_postal',
         'weight',
+        'cost',
         'estimated_delivery',
         'delivered_at',
         'payload',
@@ -29,6 +30,7 @@ class Shipment extends Model
 
     protected $casts = [
         'weight' => 'decimal:2',
+        'cost' => 'decimal:2',
         'estimated_delivery' => 'date',
         'delivered_at' => 'datetime',
         'payload' => 'array',
@@ -42,5 +44,10 @@ class Shipment extends Model
     public function shippingMethod()
     {
         return $this->belongsTo(ShippingMethod::class);
+    }
+
+    public function events()
+    {
+        return $this->hasMany(ShipmentEvent::class);
     }
 }
