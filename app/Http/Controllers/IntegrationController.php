@@ -6,6 +6,7 @@ use App\Enums\IntegrationEstadoEnum;
 use App\Models\Auditoria;
 use App\Models\Integration;
 use App\Models\IntegrationSyncRun;
+use App\Models\Order;
 use App\Services\Integration\IntegrationException;
 use App\Services\IntegrationCredentialService;
 use App\Services\SyncService;
@@ -61,6 +62,7 @@ class IntegrationController extends Controller
             'provider' => 'required|string|in:' . implode(',', $proveedores),
             'soporta_login' => 'nullable|boolean',
             'rol_login_federado' => 'nullable|string|max:50',
+            'login_fallback_local' => 'nullable|boolean',
             'config_sincronizacion' => 'nullable|array',
             'credenciales' => 'nullable|array',
         ]);
@@ -71,6 +73,7 @@ class IntegrationController extends Controller
             'estado' => IntegrationEstadoEnum::SIN_CREDENCIALES->value,
             'soporta_login' => (bool) ($validated['soporta_login'] ?? false),
             'rol_login_federado' => $validated['rol_login_federado'] ?? null,
+            'login_fallback_local' => (bool) ($validated['login_fallback_local'] ?? true),
             'config_sincronizacion' => $this->configSyncDefault($validated['config_sincronizacion'] ?? null, $validated['provider']),
             'activa' => true,
         ]);
@@ -79,8 +82,8 @@ class IntegrationController extends Controller
             $this->credentialService->guardar($integration, $validated['credenciales']);
         }
 
-        // Estado inicial según configuración real (los proveedores con
-        // credenciales en el backend ya pueden quedar listos sin panel).
+        // Estado inicial según configuración real: con credenciales
+        // requeridas guardadas queda lista para activar.
         $integration->update([
             'estado' => $this->credentialService->estaConfigurado($integration)
                 ? IntegrationEstadoEnum::INACTIVA->value
@@ -106,12 +109,13 @@ class IntegrationController extends Controller
             'provider' => 'sometimes|string|in:' . implode(',', $proveedores),
             'soporta_login' => 'nullable|boolean',
             'rol_login_federado' => 'nullable|string|max:50',
+            'login_fallback_local' => 'nullable|boolean',
             'config_sincronizacion' => 'nullable|array',
             'credenciales' => 'nullable|array',
         ]);
 
         $datos = array_intersect_key($validated, array_flip([
-            'nombre', 'provider', 'soporta_login', 'rol_login_federado',
+            'nombre', 'provider', 'soporta_login', 'rol_login_federado', 'login_fallback_local',
         ]));
         $datos['rol_login_federado'] = $validated['rol_login_federado'] ?? $integration->rol_login_federado;
 
@@ -224,7 +228,7 @@ class IntegrationController extends Controller
     public function sincronizar(Request $request, Integration $integration, SyncService $syncService)
     {
         $validated = $request->validate([
-            'tipo' => 'sometimes|in:productos,inventario,inicial,todo',
+            'tipo' => 'sometimes|in:productos,inventario,compras,ventas,inicial,todo',
         ]);
 
         if (!$this->credentialService->estaConfigurado($integration)) {
@@ -235,10 +239,21 @@ class IntegrationController extends Controller
             return ApiResponse::error('La integración ya tiene una ejecución en curso.', 422, 'EN_CURSO');
         }
 
+        $tipo = $validated['tipo'] ?? 'todo';
+        $capacidades = config("integrations.providers.{$integration->provider}.capabilities", []);
+
+        if (in_array($tipo, ['compras', 'ventas'], true) && !in_array($tipo, $capacidades, true)) {
+            return ApiResponse::error(
+                "El proveedor '{$integration->provider}' no soporta la sincronización de {$tipo}.",
+                422,
+                'CAPABILIDAD_NO_SOPORTADA'
+            );
+        }
+
         try {
             $run = $syncService->sincronizar(
                 $integration,
-                $validated['tipo'] ?? 'todo',
+                $tipo,
                 'manual',
                 $request->user()->id
             );
@@ -311,23 +326,111 @@ class IntegrationController extends Controller
             'direccion' => 'externo_manda',
             'productos' => true,
             'inventario' => true,
+            'compras' => true,
+            'ventas' => true,
         ];
 
         if (!is_array($config)) {
-            return $defaults;
+            $config = [];
         }
 
         $meta = config("integrations.providers.{$provider}", []);
         $capabilities = $meta['capabilities'] ?? [];
 
-        if (!in_array('productos', $capabilities, true)) {
-            unset($defaults['productos']);
-        }
-        if (!in_array('inventario', $capabilities, true)) {
-            unset($defaults['inventario']);
+        foreach (['productos', 'inventario', 'compras', 'ventas'] as $clave) {
+            if (!in_array($clave, $capabilities, true)) {
+                unset($defaults[$clave]);
+            }
         }
 
         return array_merge($defaults, array_intersect_key($config, $defaults));
+    }
+
+    /**
+     * Documentos externos de compras (entrada) de la integración.
+     */
+    public function compras(Request $request, Integration $integration)
+    {
+        $docs = $integration->externalDocs()
+            ->where('tipo', 'compra')
+            ->when($request->estado, fn ($q, $v) => $q->where('estado', $v))
+            ->latest('id')
+            ->paginate($request->get('per_page', 10));
+
+        $items = collect($docs->items())->map(fn ($doc) => [
+            'id' => $doc->id,
+            'external_id' => $doc->external_id,
+            'estado' => $doc->estado,
+            'fecha' => $doc->payload['fecha'] ?? null,
+            'proveedor' => $doc->payload['proveedor'] ?? null,
+            'skus_pendientes' => $doc->payload['skus_pendientes'] ?? [],
+            'lineas' => count($doc->payload['lineas'] ?? []),
+            'created_at' => optional($doc->created_at)->toIso8601String(),
+        ]);
+
+        return ApiResponse::success([
+            'items' => $items,
+            'pagination' => [
+                'total' => $docs->total(),
+                'per_page' => $docs->perPage(),
+                'current_page' => $docs->currentPage(),
+                'last_page' => $docs->lastPage(),
+            ],
+        ]);
+    }
+
+    /**
+     * Cola de ventas (salida) hacia el ERP: pedidos de la integración con
+     * su estado de envío.
+     */
+    public function ventas(Request $request, Integration $integration)
+    {
+        $query = Order::query()
+            ->whereNotNull('integration_erp_estado')
+            ->when(
+                $request->queue === 'cola',
+                fn ($q) => $q->where(function ($q2) use ($integration) {
+                    $q2->whereIn('integration_erp_estado', ['pendiente_envio'])
+                        ->orWhere(function ($q3) {
+                            $q3->where('integration_erp_estado', 'error')
+                                ->where('integration_erp_error_transitorio', true);
+                        });
+                })
+            )
+            ->when($request->estado, fn ($q, $v) => $q->where('integration_erp_estado', $v))
+            ->when(
+                $request->queue === 'cola',
+                fn ($q) => $q->where(function ($q2) use ($integration) {
+                    $q2->whereNull('integration_erp_id')->orWhere('integration_erp_id', $integration->id);
+                }),
+                fn ($q) => $q->where('integration_erp_id', $integration->id)
+            )
+            ->latest('id');
+
+        $pedidos = $query->paginate($request->get('per_page', 10));
+
+        return ApiResponse::success([
+            'items' => collect($pedidos->items())->map(fn ($order) => [
+                'order_id' => $order->id,
+                'numero' => $order->numero,
+                'estado' => $order->integration_erp_estado,
+                'estado_label' => \App\Enums\OrderErpEstadoEnum::tryFrom($order->integration_erp_estado)?->label()
+                    ?? $order->integration_erp_estado,
+                'error' => $order->integration_erp_error,
+                'error_transitorio' => (bool) $order->integration_erp_error_transitorio,
+                'externo_id' => $order->integration_erp_externo_id,
+                'enviado_en' => optional($order->integration_erp_enviado_en)->toIso8601String(),
+                'total' => (float) $order->total,
+                'currency' => $order->currency,
+                'created_at' => optional($order->created_at)->toIso8601String(),
+            ]),
+            'pagination' => [
+                'total' => $pedidos->total(),
+                'per_page' => $pedidos->perPage(),
+                'current_page' => $pedidos->currentPage(),
+                'last_page' => $pedidos->lastPage(),
+            ],
+        ]);
     }
 
     private function serializar(Integration $integration): array
@@ -359,6 +462,7 @@ class IntegrationController extends Controller
             'credenciales_configuradas' => $campos,
             'soporta_login' => $integration->soporta_login,
             'rol_login_federado' => $integration->rol_login_federado,
+            'login_fallback_local' => (bool) $integration->login_fallback_local,
             'config_sincronizacion' => $integration->config_sincronizacion,
             'ultimo_sincronizado' => optional($integration->ultimo_sincronizado)->toIso8601String(),
             'ultimo_estado' => $integration->ultimo_estado,

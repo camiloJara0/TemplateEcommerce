@@ -33,6 +33,12 @@ class Order extends Model
         'billing_nit',
         'billing_razon_social',
         'billing_direccion',
+        'integration_erp_estado',
+        'integration_erp_externo_id',
+        'integration_erp_error',
+        'integration_erp_error_transitorio',
+        'integration_erp_enviado_en',
+        'integration_erp_id',
     ];
 
     protected $casts = [
@@ -43,6 +49,8 @@ class Order extends Model
         'total' => 'decimal:2',
         'fecha_emision' => 'datetime',
         'paid_at' => 'datetime',
+        'integration_erp_error_transitorio' => 'boolean',
+        'integration_erp_enviado_en' => 'datetime',
     ];
 
     public function user()

@@ -6,6 +6,8 @@ enum SyncRunTipoEnum: string
 {
     case PRODUCTOS = 'productos';
     case INVENTARIO = 'inventario';
+    case COMPRAS = 'compras';
+    case VENTAS = 'ventas';
     case INICIAL = 'inicial';
     case TODO = 'todo';
 
@@ -14,8 +16,10 @@ enum SyncRunTipoEnum: string
         return match ($this) {
             self::PRODUCTOS => 'Productos',
             self::INVENTARIO => 'Inventario',
-            self::INICIAL => 'Importación inicial',
-            self::TODO => 'Todo',
+            self::COMPRAS => 'Compras',
+            self::VENTAS => 'Ventas',
+            self::INICIAL => 'Importaci��n inicial',
+            self::TODO => 'Completa',
         };
     }
 }

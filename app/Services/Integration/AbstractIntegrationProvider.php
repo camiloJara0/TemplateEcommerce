@@ -83,4 +83,19 @@ abstract class AbstractIntegrationProvider implements IntegrationProvider
     {
         throw new IntegrationException("El proveedor '{$this->name()}' no soporta login federado.");
     }
+
+    public function obtenerCompras(array $credenciales, ?string $desde = null, int $pagina = 1): array
+    {
+        throw new IntegrationException("El proveedor '{$this->name()}' no soporta la sincronización de compras.");
+    }
+
+    public function normalizarCompra(array $registro): array
+    {
+        throw new IntegrationException("El proveedor '{$this->name()}' no soporta la sincronización de compras.");
+    }
+
+    public function crearVenta(array $credenciales, array $documento): array
+    {
+        throw new IntegrationException("El proveedor '{$this->name()}' no soporta el envío de ventas.");
+    }
 }

@@ -138,6 +138,39 @@ class UserController extends Controller
             'password' => 'required|string',
         ]);
 
+        // Login federado (REQ-15): si hay integración activa con
+        // soporta_login, validar primero contra el sistema externo.
+        $federacion = app(\App\Services\AuthFederationService::class);
+        $integracion = $federacion->integracionFederada();
+
+        if ($integracion) {
+            $resultado = $federacion->intentar($integracion, $validated['email'], $validated['password']);
+
+            if ($resultado['estado'] === 'invalido') {
+                // RN-14 desviada: el externo rechazó → nunca login local.
+                return ApiResponse::error('Credenciales inválidas', 401, 'INVALID_CREDENTIALS');
+            }
+
+            if ($resultado['estado'] === 'inactivo') {
+                return ApiResponse::error('Usuario deshabilitado', 403, 'USER_INACTIVE');
+            }
+
+            if ($resultado['estado'] === 'federado') {
+                return $this->emitirSesion($resultado['user'], true);
+            }
+
+            // Externo caído: contingencia configurable por integración.
+            if (!($integracion->login_fallback_local ?? true)) {
+                return ApiResponse::error(
+                    'Servicio de autenticación temporalmente no disponible',
+                    503,
+                    'AUTH_SERVICE_UNAVAILABLE'
+                );
+            }
+            // fallback_local → continuar con el login local de respaldo.
+        }
+
+        // Flujo local original (regresión cero: AuthTest intacto).
         $user = User::where('email', $validated['email'])->first();
 
         if (!$user) {
@@ -152,6 +185,15 @@ class UserController extends Controller
             return ApiResponse::error('Contraseña incorrecta', 403, 'INVALID_PASSWORD');
         }
 
+        return $this->emitirSesion($user, false);
+    }
+
+    /**
+     * Emite la sesión Sanctum local (token 16 h, auditoría). `federado` es
+     * aditivo en la respuesta (HU-052 CA6).
+     */
+    private function emitirSesion(User $user, bool $federado = false)
+    {
         $tokenResult = $user->createToken('auth_token');
         $accessToken = $tokenResult->accessToken;
         $accessToken->expires_at = now()->addHours(16);
@@ -161,17 +203,39 @@ class UserController extends Controller
         $user->ultimo_login = now();
         $user->save();
 
-        Auditoria::registrar($user, 'login', 'Inició sesión');
+        if (!$federado) {
+            Auditoria::registrar($user, 'login', 'Inició sesión');
+        }
 
         return ApiResponse::success([
             'access_token' => $token,
             'token_type' => 'Bearer',
             'expires_in' => 16 * 3600,
+            'federado' => $federado,
             'user' => array_merge(
                 $user->only(['id', 'nombre', 'email', 'foto', 'estado', 'idioma', 'rol']),
                 ['permisos' => $user->permisos()]
             ),
-        ], 'Login exitoso');
+        ], $federado ? 'Login exitoso (acceso validado con tu sistema)' : 'Login exitoso');
+    }
+
+    /**
+     * Info pública para el formulario de acceso (REQ-15): ¿la tienda usa
+     * federación y con qué contingencia está configurada?
+     */
+    public function loginIntegracion()
+    {
+        $integracion = app(\App\Services\AuthFederationService::class)->integracionFederada();
+
+        if (!$integracion) {
+            return ApiResponse::success(['federado' => false]);
+        }
+
+        return ApiResponse::success([
+            'federado' => true,
+            'sistema' => $integracion->nombre,
+            'fallback_local' => (bool) $integracion->login_fallback_local,
+        ]);
     }
 
     public function permisos()

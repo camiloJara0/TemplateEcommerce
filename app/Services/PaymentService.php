@@ -149,6 +149,18 @@ class PaymentService
                 );
             }
         }
+
+        // Cola hacia el ERP de facturación (HU-045): el pedido queda
+        // pendiente de envío y lo envía la siguiente sincronización.
+        if ($estadoPago === PaymentStatusEnum::APROBADO->value) {
+            try {
+                app(VentaErpService::class)->encolar($order->fresh());
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning(
+                    "No se pudo encolar el pedido {$order->numero} hacia el ERP: " . $e->getMessage()
+                );
+            }
+        }
     }
 
     protected function crearEnvioAutomatico(Order $order): void

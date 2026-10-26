@@ -69,36 +69,47 @@ La API queda en `http://localhost:8000/api`.
    (`/admin/integraciones`) o `POST /api/v1/admin/integraciones`. Proveedores:
    - `erp_demo` — fixtures locales (`resources/fixtures/erp_demo/`), sin red.
    - `erp_prueba` — **ERP de prueba externo** (p. ej. `C:\Proyectos\PruebaAPI\ERP`
-     en `http://127.0.0.1:8001`). Su URL y API key **no se piden en el panel**:
-     vienen del backend vía `.env` (ver abajo).
+     en `http://127.0.0.1:8001`). Su URL base y API key se **registran desde el
+     panel** (formulario de credenciales) y se guardan cifradas en la tabla
+     `integrations` — no hay nada que configurar en `.env`.
    - Los reales (Odoo, Siigo…) se registran en `config/integrations.php`.
-     Las credenciales de panel se cifran con `Crypt` y la API solo expone
-     `configurado`.
+     Las credenciales se cifran con `Crypt` y la API solo expone `configurado`.
 
-   Configuración del ERP de prueba en `.env` del backend:
+   El proveedor llama con header `X-API-KEY` a `GET /api/productsERP`,
+   `GET /api/inventarioERP`, `GET /api/comprasERP` (compras de entrada) y
+   `POST /api/ventasERP` (ventas de salida, con `id_externo` determinístico)
+   (`{success, data:[…]}`) y normaliza precios (`precios[].minorista`),
+   inventario (`product_id → producto_id`), documentos de compra y ventas.
 
-   ```
-   ERP_PRUEBA_URL=http://127.0.0.1:8001
-   ERP_PRUEBA_API_KEY=sk_prod_...
-   # Opcionales (rutas por defecto):
-   ERP_PRUEBA_RUTA_PRODUCTOS=/api/productsERP
-   ERP_PRUEBA_RUTA_INVENTARIO=/api/inventarioERP
-   ```
+   **Compras (entrada):** cada documento se aplica una sola vez
+   (`integration_external_docs`, tipo `compra`); si un SKU no existe en la
+   tienda, el documento queda `pendiente_resolucion` sin tocar stock.
 
-   El proveedor llama con header `X-API-KEY` a esos endpoints
-   (`{success, data:[…]}`) y normaliza precios (`precios[].minorista`) e
-   inventario (`product_id → producto_id`).
+   **Ventas (salida):** al aprobarse un pago el pedido queda `pendiente_envio`
+   en `orders.integration_erp_estado`; la sincronización lo envía y conserva
+   el id devuelto por el ERP. Errores 5xx vuelven a la cola solos; los 4xx
+   solo se reenvían a mano con `POST /api/v1/admin/pedidos/{id}/erp-reintentar`.
+
+   **Login federado (F6):** si una integración activa tiene `soporta_login`,
+   `POST /api/v1/login` valida primero en el externo (`POST {base}/api/loginERP`
+   con `X-API-KEY`): éxito → usuario local creado con `rol_login_federado`
+   (default `cliente`) + sesión normal + flag `federado`; rechazo → 401 sin
+   fallback; externo caído → contingencia `integrations.login_fallback_local`
+   (default sí) o 503. `GET /api/v1/login/integracion` (público) alimenta el
+   aviso del formulario. Ver `docs/02-Manual-Tecnico.md` §9.5.
 
 ### Sincronización automática (integraciones)
 
 El comando `integrations:sync` evalúa las integraciones activas vencidas
-(frecuencia por integración, default 60 min) y sincroniza catálogo/inventario
-con lock, idempotencia por hash y backoff + pausa tras errores:
+(frecuencia por integración, default 60 min) y sincroniza catálogo/inventario/
+compras/ventas con lock, idempotencia por hash y backoff + pausa tras errores:
 
 ```bash
 php artisan integrations:sync                      # todas las vencidas
 php artisan integrations:sync --integration=1      # una integración
 php artisan integrations:sync --tipo=inicial       # lectura completa
+php artisan integrations:sync --tipo=compras       # solo compras (entrada)
+php artisan integrations:sync --tipo=ventas        # solo ventas (salida)
 ```
 
 Para que el cron del servidor lo ejecute cada minuto:

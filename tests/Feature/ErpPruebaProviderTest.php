@@ -12,17 +12,8 @@ class ErpPruebaProviderTest extends TestCase
 {
     use WithRoles;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // La URL y la API key del ERP de prueba VIVEN EN EL BACKEND (.env);
-        // se pisan aquí para que el test no dependa del entorno del dev.
-        config([
-            'integrations.providers.erp_prueba.base_url' => 'http://127.0.0.1:8001',
-            'integrations.providers.erp_prueba.api_key' => 'test-key-123',
-        ]);
-    }
+    private const URL_BASE = 'http://127.0.0.1:8001';
+    private const API_KEY = 'test-key-123';
 
     private function payloadProductos(): array
     {
@@ -70,9 +61,13 @@ class ErpPruebaProviderTest extends TestCase
         ];
     }
 
-    private function integracionErpPrueba(string $estado = 'activa'): Integration
+    /**
+     * Integración del proveedor; con $credenciales=true guarda la URL base
+     * y la API key en la BD (cifradas), igual que el panel.
+     */
+    private function integracionErpPrueba(string $estado = 'activa', bool $credenciales = true): Integration
     {
-        return Integration::create([
+        $integration = Integration::create([
             'nombre' => 'ERP Prueba Externo',
             'provider' => 'erp_prueba',
             'estado' => $estado,
@@ -84,43 +79,95 @@ class ErpPruebaProviderTest extends TestCase
                 'inventario' => true,
             ],
         ]);
+
+        if ($credenciales) {
+            app(IntegrationCredentialService::class)->guardar($integration, [
+                'base_url' => self::URL_BASE,
+                'api_key' => self::API_KEY,
+            ]);
+        }
+
+        return $integration;
     }
 
-    public function test_se_configura_desde_el_backend_sin_credenciales_en_el_panel(): void
+    public function test_alta_desde_el_panel_registra_url_y_api_key_cifradas_en_bd(): void
     {
         $this->actingAsSanctum($this->adminUser());
 
-        // Sin credenciales en el panel: la config viene del backend (.env).
+        // El formulario del panel envía nombre + credenciales en una sola alta.
         $response = $this->postJson('/api/v1/admin/integraciones', [
             'nombre' => 'ERP Prueba',
             'provider' => 'erp_prueba',
+            'credenciales' => [
+                'base_url' => self::URL_BASE,
+                'api_key' => self::API_KEY,
+            ],
         ]);
 
         $response->assertStatus(201)
             ->assertJsonPath('data.estado', 'inactiva')
             ->assertJsonPath('data.configurado', true);
 
-        // Se puede activar sin guardar nada en el panel.
-        $this->postJson('/api/v1/admin/integraciones/' . $response->json('data.id') . '/activar')
+        $integration = Integration::findOrFail($response->json('data.id'));
+
+        // Cifradas en BD: el valor plano jamás aparece almacenado ni expuesto.
+        $this->assertStringNotContainsString(self::API_KEY, (string) $integration->credenciales);
+
+        $credenciales = app(IntegrationCredentialService::class)->obtener($integration);
+        $this->assertSame(self::URL_BASE, $credenciales['base_url']);
+        $this->assertSame(self::API_KEY, $credenciales['api_key']);
+
+        $this->postJson('/api/v1/admin/integraciones/' . $integration->id . '/activar')
             ->assertStatus(200)
             ->assertJsonPath('data.estado', 'activa');
     }
 
-    public function test_sistemas_no_expone_la_api_key_del_backend(): void
+    public function test_alta_sin_credenciales_queda_sin_credenciales_y_no_se_activa(): void
     {
         $this->actingAsSanctum($this->adminUser());
 
-        $response = $this->getJson('/api/v1/admin/integraciones/sistemas');
+        $response = $this->postJson('/api/v1/admin/integraciones', [
+            'nombre' => 'ERP Prueba',
+            'provider' => 'erp_prueba',
+        ]);
 
-        $response->assertStatus(200)
+        $response->assertStatus(201)
+            ->assertJsonPath('data.estado', 'sin_credenciales')
+            ->assertJsonPath('data.configurado', false);
+
+        $this->postJson('/api/v1/admin/integraciones/' . $response->json('data.id') . '/activar')
+            ->assertStatus(422)
+            ->assertJson(['type' => 'SIN_CREDENCIALES']);
+
+        $this->postJson('/api/v1/admin/integraciones/' . $response->json('data.id') . '/probar')
+            ->assertStatus(422)
+            ->assertJson(['type' => 'SIN_CREDENCIALES']);
+    }
+
+    public function test_sistemas_y_no_expone_la_api_key_guardada(): void
+    {
+        $this->actingAsSanctum($this->adminUser());
+        $integration = $this->integracionErpPrueba('activa');
+
+        $sistemas = $this->getJson('/api/v1/admin/integraciones/sistemas');
+        $sistemas->assertStatus(200)
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('data.1.key', 'erp_prueba');
 
-        $this->assertStringNotContainsString('test-key-123', $response->getContent());
-        $this->assertStringNotContainsString('api_key', $response->getContent());
+        // El formulario del proveedor pide base_url y api_key…
+        $this->assertArrayHasKey('base_url', $sistemas->json('data.1.fields'));
+        $this->assertArrayHasKey('api_key', $sistemas->json('data.1.fields'));
+
+        // …pero el VALOR guardado nunca aparece en ninguna respuesta.
+        $detalle = $this->getJson('/api/v1/admin/integraciones/' . $integration->id);
+        $detalle->assertStatus(200);
+
+        foreach ([$sistemas, $detalle] as $response) {
+            $this->assertStringNotContainsString(self::API_KEY, $response->getContent());
+        }
     }
 
-    public function test_probar_conexion_envia_url_y_x_api_key_del_backend(): void
+    public function test_probar_conexion_envia_url_y_x_api_key_guardadas_en_bd(): void
     {
         $this->actingAsSanctum($this->adminUser());
         $integration = $this->integracionErpPrueba('inactiva');
@@ -134,12 +181,12 @@ class ErpPruebaProviderTest extends TestCase
             ->assertJsonPath('data.success', true);
 
         Http::assertSent(function ($request) {
-            return $request->url() === 'http://127.0.0.1:8001/api/productsERP'
-                && $request->hasHeader('X-API-KEY', 'test-key-123');
+            return $request->url() === self::URL_BASE . '/api/productsERP'
+                && $request->hasHeader('X-API-KEY', self::API_KEY);
         });
     }
 
-    public function test_probar_conexion_falla_con_401(): void
+    public function test_probar_conexion_falla_con_403(): void
     {
         $this->actingAsSanctum($this->adminUser());
         $integration = $this->integracionErpPrueba('inactiva');
@@ -160,6 +207,8 @@ class ErpPruebaProviderTest extends TestCase
         Http::fake([
             '*/productsERP' => Http::response($this->payloadProductos(), 200),
             '*/inventarioERP' => Http::response($this->payloadInventario(), 200),
+            '*/comprasERP' => Http::response(['success' => true, 'data' => []], 200),
+            '*/ventasERP' => Http::response(['success' => true, 'data' => []], 200),
         ]);
 
         $this->artisan('integrations:sync', ['--integration' => $integration->id])
@@ -193,24 +242,5 @@ class ErpPruebaProviderTest extends TestCase
         $segundoRun = $integration->syncRuns()->orderByDesc('id')->first();
         $this->assertSame(0, $segundoRun->creados);
         $this->assertSame(2, $segundoRun->omitidos);
-    }
-
-    public function test_sin_url_o_api_key_en_el_backend_no_esta_configurado(): void
-    {
-        config([
-            'integrations.providers.erp_prueba.base_url' => null,
-            'integrations.providers.erp_prueba.api_key' => null,
-        ]);
-
-        $integration = $this->integracionErpPrueba('sin_credenciales');
-
-        $this->assertFalse(
-            app(IntegrationCredentialService::class)->estaConfigurado($integration)
-        );
-
-        $this->actingAsSanctum($this->adminUser());
-        $this->postJson('/api/v1/admin/integraciones/' . $integration->id . '/activar')
-            ->assertStatus(422)
-            ->assertJson(['type' => 'SIN_CREDENCIALES']);
     }
 }

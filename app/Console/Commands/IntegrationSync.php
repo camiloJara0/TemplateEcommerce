@@ -9,8 +9,8 @@ use Illuminate\Console\Command;
 class IntegrationSync extends Command
 {
     protected $signature = 'integrations:sync
-        {--integration= : ID de una integración específica}
-        {--tipo=todo : productos|inventario|inicial|todo}';
+        {--integration= : ID de una integraci��n espec��fica}
+        {--tipo=todo : productos|inventario|compras|ventas|inicial|todo}';
 
     protected $description = 'Sincroniza integraciones activas (ERP) con sus sistemas externos';
 

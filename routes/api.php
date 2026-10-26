@@ -34,6 +34,8 @@ use Illuminate\Support\Facades\Route;
 // ===== Rutas públicas de autenticación =====
 Route::post('/v1/register', [UserController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/v1/login', [UserController::class, 'login'])->middleware('throttle:10,1');
+// Info pública: ¿la tienda usa login federado? (REQ-15, para el aviso del form)
+Route::get('/v1/login/integracion', [UserController::class, 'loginIntegracion'])->middleware('throttle:30,1');
 Route::post('/v1/enviar-codigo', [UserController::class, 'enviarCodigo'])->middleware('throttle:3,5');
 Route::post('/v1/verificar-codigo-cambio', [UserController::class, 'verificarCodigoCambio'])->middleware('throttle:5,1');
 
@@ -244,6 +246,7 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
     Route::get('/pedidos/{order}/factura', [OrderController::class, 'factura'])->middleware('permission:pedidos.ver');
     Route::get('/pedidos/{order}/envio/etiqueta', [OrderController::class, 'etiquetaEnvio'])->middleware('permission:pedidos.ver');
     Route::post('/pedidos/{order}/estado', [OrderController::class, 'cambiarEstado'])->middleware('permission:pedidos.gestionar');
+    Route::post('/pedidos/{order}/erp-reintentar', [OrderController::class, 'erpReintentar'])->middleware('permission:pedidos.gestionar');
 
     // Pagos
     Route::get('/pagos', [PaymentController::class, 'adminIndex'])->middleware('permission:pagos.ver');
@@ -279,6 +282,8 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->prefix('v1/admin'
     Route::post('/integraciones/{integration}/sincronizar', [IntegrationController::class, 'sincronizar'])->middleware('permission:integraciones.sincronizar');
     Route::post('/integraciones/{integration}/importacion-inicial', [IntegrationController::class, 'importacionInicial'])->middleware('permission:integraciones.sincronizar');
     Route::get('/integraciones/{integration}/ejecuciones', [IntegrationController::class, 'ejecuciones'])->middleware('permission:integraciones.ver');
+    Route::get('/integraciones/{integration}/compras', [IntegrationController::class, 'compras'])->middleware('permission:integraciones.ver');
+    Route::get('/integraciones/{integration}/ventas', [IntegrationController::class, 'ventas'])->middleware('permission:integraciones.ver');
 
     // Reseñas (moderación)
     Route::get('/resenas', [ReviewController::class, 'adminIndex'])->middleware('permission:reviews.moderar');

@@ -16,6 +16,7 @@ class Integration extends Model
         'credenciales',
         'soporta_login',
         'rol_login_federado',
+        'login_fallback_local',
         'config_sincronizacion',
         'ultimo_sincronizado',
         'ultimo_estado',
@@ -25,6 +26,7 @@ class Integration extends Model
 
     protected $casts = [
         'soporta_login' => 'boolean',
+        'login_fallback_local' => 'boolean',
         'activa' => 'boolean',
         'config_sincronizacion' => 'array',
         'ultimo_sincronizado' => 'datetime',

@@ -11,9 +11,7 @@ return [
     | declara sus capabilities, campos de credenciales (para generar el form
     | del panel) y su adaptador en class_map. Las credenciales reales se
     | guardan cifradas en la tabla `integrations` (nunca en .env ni en esta
-    | configuración), salvo que el proveedor declare
-    | `credenciales_desde_backend = true` (url/api key leídas de .env vía
-    | esta configuración; ver ErpPruebaProvider).
+    | configuración) y se registran desde el panel de administración.
     |
     */
 
@@ -47,19 +45,33 @@ return [
         ],
         'erp_prueba' => [
             'label' => 'ERP Prueba (externo)',
-            'description' => 'ERP de prueba externo (127.0.0.1:8001). La URL y la API key se configuran en el backend: .env → ERP_PRUEBA_URL y ERP_PRUEBA_API_KEY.',
+            'description' => 'ERP de prueba externo (p. ej. http://127.0.0.1:8001). Registra su URL base y su API key en las credenciales de la integración.',
             'version' => '1.0.0',
-            'capabilities' => ['productos', 'inventario'],
-            'supports_login' => false,
-            // La URL base y la API key NO se piden en el panel: vienen del .env.
-            'credenciales_desde_backend' => true,
-            'base_url' => env('ERP_PRUEBA_URL', 'http://127.0.0.1:8001'),
-            'api_key' => env('ERP_PRUEBA_API_KEY'),
-            'rutas' => [
-                'productos' => env('ERP_PRUEBA_RUTA_PRODUCTOS', '/api/productsERP'),
-                'inventario' => env('ERP_PRUEBA_RUTA_INVENTARIO', '/api/inventarioERP'),
+            'capabilities' => ['productos', 'inventario', 'compras', 'ventas'],
+            'supports_login' => true,
+            'fields' => [
+                'base_url' => [
+                    'label' => 'URL base',
+                    'type' => 'url',
+                    'required' => true,
+                    'placeholder' => 'http://127.0.0.1:8001',
+                ],
+                'api_key' => [
+                    'label' => 'API key',
+                    'type' => 'password',
+                    'required' => true,
+                    'placeholder' => '••••••••',
+                ],
             ],
-            'fields' => [],
+            // Rutas fijas del contrato HTTP del ERP de prueba (no son
+            // secretas ni configurables desde el panel).
+            'rutas' => [
+                'productos' => '/api/productsERP',
+                'inventario' => '/api/inventarioERP',
+                'compras' => '/api/comprasERP',
+                'ventas' => '/api/ventasERP',
+                'login' => '/api/loginERP',
+            ],
         ],
     ],
 

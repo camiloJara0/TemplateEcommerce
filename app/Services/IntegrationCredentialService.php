@@ -65,19 +65,10 @@ class IntegrationCredentialService
 
     /**
      * ¿Tiene al menos los campos requeridos por el proveedor?
-     *
-     * Los proveedores con `credenciales_desde_backend` (url/api key en .env)
-     * no piden nada en el panel: se consideran configurados si el backend
-     * trae sus valores de configuración.
+     * Las credenciales viven cifradas en la fila de la integración (panel).
      */
     public function estaConfigurado(Integration $integration): bool
     {
-        $meta = config("integrations.providers.{$integration->provider}", []);
-
-        if (!empty($meta['credenciales_desde_backend'])) {
-            return !empty($meta['base_url']) && !empty($meta['api_key']);
-        }
-
         $credenciales = $this->obtener($integration);
         $requeridos = $this->camposRequeridos($integration->provider);
 

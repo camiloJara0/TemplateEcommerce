@@ -6,7 +6,9 @@ use App\Enums\OrderStatusEnum;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\CartService;
+use App\Services\Integration\IntegrationException;
 use App\Services\OrderService;
+use App\Services\VentaErpService;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 
@@ -116,6 +118,23 @@ class OrderController extends Controller
             new OrderResource($order->load(['items', 'statusHistories', 'shipment'])),
             'Estado actualizado'
         );
+    }
+
+    /**
+     * Reintento manual del envío de la venta al ERP (HU-045 CA5).
+     */
+    public function erpReintentar(Order $order)
+    {
+        try {
+            $resultado = app(VentaErpService::class)->reintentar($order);
+        } catch (IntegrationException $e) {
+            return ApiResponse::error($e->getMessage(), 422, 'ERP_REINTENTO_FALLIDO');
+        }
+
+        return ApiResponse::success([
+            ...$resultado,
+            'order' => new OrderResource($order->fresh()),
+        ], $resultado['mensaje']);
     }
 
     public function factura(Request $request, Order $order)

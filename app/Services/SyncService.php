@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Integration;
 use App\Models\IntegrationEvent;
+use App\Models\IntegrationExternalDoc;
 use App\Models\IntegrationRecord;
 use App\Models\IntegrationSyncRun;
 use App\Models\Product;
@@ -14,6 +15,7 @@ use App\Models\VariantAttribute;
 use App\Services\Integration\IntegrationException;
 use App\Services\Integration\IntegrationProvider;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SyncService
@@ -81,28 +83,50 @@ class SyncService
 
             $run->update(['estado' => 'en_curso']);
 
-            if (in_array($tipo, ['productos', 'inicial', 'todo'], true)) {
+            $capacidad = fn (string $clave): bool => in_array(
+                $clave,
+                config("integrations.providers.{$integration->provider}.capabilities", []),
+                true
+            );
+            $habilitado = fn (string $clave): bool => (bool) ($integration->config_sincronizacion[$clave] ?? true);
+
+            if (in_array($tipo, ['productos', 'inicial', 'todo'], true)
+                && ($tipo !== 'todo' || ($habilitado('productos') && $capacidad('productos')))) {
                 $this->sincronizarProductos($integration, $provider, $credenciales, $run, $tipo === 'inicial');
             }
 
-            if (in_array($tipo, ['inventario', 'todo'], true)) {
+            if (in_array($tipo, ['inventario', 'todo'], true)
+                && ($tipo !== 'todo' || ($habilitado('inventario') && $capacidad('inventario')))) {
                 $this->sincronizarInventario($integration, $provider, $credenciales, $run);
             }
 
+            if (in_array($tipo, ['compras', 'todo'], true)
+                && ($tipo === 'compras' || ($habilitado('compras') && $capacidad('compras')))) {
+                $this->sincronizarCompras($integration, $provider, $credenciales, $run);
+            }
+
+            if (in_array($tipo, ['ventas', 'todo'], true)
+                && ($tipo === 'ventas' || ($habilitado('ventas') && $capacidad('ventas')))) {
+                $this->sincronizarVentas($integration, $run);
+            }
+
             $exitosa = $run->errores === 0;
-            $fallida = $run->errores > 0 && ($run->creados + $run->actualizados) === 0;
+            $trabajos = $run->creados + $run->actualizados
+                + (int) ($run->resumen['compras_aplicadas'] ?? 0)
+                + (int) ($run->resumen['ventas_enviadas'] ?? 0);
+            $fallida = $run->errores > 0 && $trabajos === 0;
             $estadoFinal = $exitosa ? 'exitosa' : ($fallida ? 'fallida' : 'parcial');
 
             $run->update([
                 'estado' => $estadoFinal,
                 'finalizado_en' => now(),
-                'resumen' => [
+                'resumen' => array_merge($run->resumen ?? [], [
                     'procesados' => $run->procesados,
                     'creados' => $run->creados,
                     'actualizados' => $run->actualizados,
                     'omitidos' => $run->omitidos,
                     'errores' => $run->errores,
-                ],
+                ]),
             ]);
 
             $intentos = $estadoFinal === 'fallida' ? $integration->intentos_fallo + 1 : 0;
@@ -227,6 +251,225 @@ class SyncService
             if ($pagina > 500) {
                 break;
             }
+        }
+    }
+
+    /**
+     * Compras/entradas del ERP → inventario de la tienda (HU-044).
+     *
+     * Idempotencia por número de compra externo (integration_external_docs):
+     * una compra ya aplicada se omite; si alguna línea apunta a un producto
+     * inexistente, la compra queda como pendiente de resolver (no crea
+     * productos huérfanos ni aplica stock parcial).
+     */
+    private function sincronizarCompras(
+        Integration $integration,
+        IntegrationProvider $provider,
+        array $credenciales,
+        IntegrationSyncRun $run
+    ): void {
+        $desde = $this->desdeIncremental($integration);
+        $pagina = 1;
+        $aplicadas = 0;
+        $pendientes = 0;
+
+        try {
+            while (true) {
+                $respuesta = $provider->obtenerCompras($credenciales, $desde, $pagina);
+
+                if (empty($respuesta['items'])) {
+                    break;
+                }
+
+                foreach ($respuesta['items'] as $registro) {
+                    if ($run->procesados >= $this->maxPorRun()) {
+                        return;
+                    }
+
+                    try {
+                        $compra = $provider->normalizarCompra($registro);
+                        $resultado = $this->aplicarCompra($integration, $compra, $run);
+
+                        if ($resultado === 'aplicada') {
+                            $aplicadas++;
+                        } elseif ($resultado === 'pendiente') {
+                            $pendientes++;
+                        }
+                    } catch (\Throwable $e) {
+                        $run->increment('errores');
+                        $this->registrarEvento(
+                            $integration,
+                            $run,
+                            'compra.error',
+                            $e,
+                            ['external_id' => $registro['numero'] ?? $registro['id'] ?? null],
+                            'error'
+                        );
+                    }
+
+                    $run->increment('procesados');
+                }
+
+                $pagina++;
+
+                if ($pagina > 500) {
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {
+            $run->increment('errores');
+            $this->registrarEvento(
+                $integration,
+                $run,
+                'compras.error',
+                $e,
+                null,
+                'error'
+            );
+        } finally {
+            $run->update([
+                'resumen' => array_merge($run->resumen ?? [], [
+                    'compras_aplicadas' => $aplicadas,
+                    'compras_pendientes' => $pendientes,
+                ]),
+            ]);
+        }
+    }
+
+    /**
+     * @return string 'aplicada' | 'pendiente' | 'omitida'
+     */
+    private function aplicarCompra(Integration $integration, array $compra, IntegrationSyncRun $run): string
+    {
+        return DB::transaction(function () use ($integration, $compra, $run) {
+            $doc = IntegrationExternalDoc::where('integration_id', $integration->id)
+                ->where('tipo', 'compra')
+                ->where('external_id', $compra['external_id'])
+                ->lockForUpdate()
+                ->first();
+
+            if ($doc && $doc->estado === 'aplicada') {
+                $run->increment('omitidos');
+
+                return 'omitida';
+            }
+
+            // Resolver líneas contra el catálogo local por SKU.
+            $lineas = [];
+            $pendientes = [];
+            foreach ($compra['lineas'] as $linea) {
+                $producto = Product::where('sku', $linea['sku'])->first();
+                if ($producto) {
+                    $lineas[] = ['producto' => $producto, 'linea' => $linea];
+                } else {
+                    $pendientes[] = $linea['sku'];
+                }
+            }
+
+            $datos = [
+                'local_type' => null,
+                'local_id' => null,
+                'payload' => [
+                    'numero' => $compra['external_id'],
+                    'fecha' => $compra['fecha'],
+                    'proveedor' => $compra['proveedor'],
+                    'lineas' => $compra['lineas'],
+                    'skus_pendientes' => $pendientes,
+                ],
+            ];
+
+            if ($pendientes !== []) {
+                $datos['estado'] = 'pendiente_resolucion';
+                $doc = $doc ?: new IntegrationExternalDoc([
+                    'integration_id' => $integration->id,
+                    'tipo' => 'compra',
+                    'external_id' => $compra['external_id'],
+                ]);
+                $doc->fill($datos);
+                $doc->save();
+
+                $this->registrarEvento(
+                    $integration,
+                    $run,
+                    'compra.pendiente_resolucion',
+                    new IntegrationException(
+                        "Compra {$compra['external_id']} pendiente de resolver: sin producto para SKU "
+                        . implode(', ', $pendientes) . '.',
+                        false
+                    ),
+                    [
+                        'external_id' => $compra['external_id'],
+                        'skus_pendientes' => $pendientes,
+                    ],
+                    'info'
+                );
+
+                return 'pendiente';
+            }
+
+            $doc = $doc ?: new IntegrationExternalDoc([
+                'integration_id' => $integration->id,
+                'tipo' => 'compra',
+                'external_id' => $compra['external_id'],
+            ]);
+            $datos['estado'] = 'aplicada';
+            $doc->fill($datos);
+            $doc->save();
+
+            $inventory = app(InventoryService::class);
+            foreach ($lineas as $item) {
+                $inventory->entrada(
+                    $item['producto'],
+                    (int) $item['linea']['cantidad'],
+                    'compra_externa',
+                    $doc
+                );
+            }
+
+            return 'aplicada';
+        });
+    }
+
+    /**
+     * Ventas de la tienda en cola → ERP (HU-045). La cola persistente vive
+     * en VentaErpService (pendientes + errores transitorios).
+     */
+    private function sincronizarVentas(Integration $integration, IntegrationSyncRun $run): void
+    {
+        $service = app(VentaErpService::class);
+        $enviadas = 0;
+
+        try {
+            foreach ($service->cola($integration)->get() as $order) {
+                if ($run->procesados >= $this->maxPorRun()) {
+                    return;
+                }
+
+                try {
+                    $service->enviar($integration, $order, $run);
+                    $enviadas++;
+                } catch (\Throwable $e) {
+                    $run->increment('errores');
+                }
+
+                $run->increment('procesados');
+            }
+        } catch (\Throwable $e) {
+            $run->increment('errores');
+            $this->registrarEvento(
+                $integration,
+                $run,
+                'ventas.error',
+                $e,
+                null,
+                'error'
+            );
+        } finally {
+            $run->update([
+                'resumen' => array_merge($run->resumen ?? [], [
+                    'ventas_enviadas' => $enviadas,
+                ]),
+            ]);
         }
     }
 
