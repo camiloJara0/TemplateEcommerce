@@ -168,6 +168,11 @@ export interface Order {
   history?: OrderHistory[]
   payments?: Payment[]
   user?: { id: number, nombre?: string, name?: string, email?: string }
+  integration_erp_estado?: string | null
+  integration_erp_externo_id?: string | null
+  integration_erp_error?: string | null
+  integration_erp_error_transitorio?: boolean
+  integration_erp_enviado_en?: string | null
   shipment?: {
     id: number
     carrier: string

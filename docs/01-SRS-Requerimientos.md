@@ -86,7 +86,7 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 | RF-052 | Seguridad de la plataforma | Alta | 🟡 |
 | RF-053 | Offline / PWA | Media | ✅ |
 | RF-054 | Integración con sistemas de facturación / ERP | Alta | 🟡 |
-| RF-055 | Autenticación federada con el sistema externo | Media | 🔴 |
+| RF-055 | Autenticación federada con el sistema externo | Media | 🟢 |
 
 ---
 
@@ -1083,23 +1083,25 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 | Campo | Valor |
 |---|---|
 | **Prioridad** | Alta |
-| **Estado** | 🟡 Parcial — base + proveedor demo (F0–F2) |
+| **Estado** | 🟡 Parcial — F0–F3 (base, `erp_demo`/`erp_prueba`, catálogo, compras y ventas) |
 | **Actores** | A3 (admin) |
 | **HU** | HU-038 → HU-051, HU-053, HU-054 |
 | **Docs** | `docs/06-Integraciones-ERP.md` |
 
-**Implementado (tanda F0 + F2, proveedores `erp_demo` y `erp_prueba`).**
+**Implementado (tandas F0–F3, proveedores `erp_demo` y `erp_prueba`).**
 - 6 tablas: `integrations`, `integration_sync_runs`, `integration_events`, `integration_records`, `integration_external_docs`, `integration_field_maps`.
 - Pluggable: `config/integrations.php` (providers + fields + class_map + sync) + `App\Services\Integration\{IntegrationProvider, AbstractIntegrationProvider, ErpDemoProvider, ErpPruebaProvider, IntegrationException}` + normalizadores de producto/inventario.
-- **ERP de prueba externo** (`erp_prueba`): app Laravel aparte en `127.0.0.1:8001`; la URL y la API key vienen del backend (`.env` → `ERP_PRUEBA_URL`/`ERP_PRUEBA_API_KEY`, header `X-API-KEY`), nunca del panel ni del frontend.
+- **ERP de prueba externo** (`erp_prueba`): app Laravel aparte en `127.0.0.1:8001`; la URL base y la API key **se registran desde el panel** (credenciales cifradas con `Crypt` en `integrations`, nunca en `.env` ni en respuestas API) y el proveedor las usa con header `X-API-KEY`. Contrato: `productsERP`, `inventarioERP`, `comprasERP` (entrada) y `ventasERP` (salida).
 - Credenciales cifradas (`IntegrationCredentialService`, `Crypt`); la API solo expone booleans `configurado`/`credenciales_configuradas`.
 - CRUD admin + probar conexión + activar/desactivar + ejecuciones (`IntegrationController`, rutas `permission:integraciones.*`; admin `*` las cubre).
 - Sincronización: `SyncService` + comando `integrations:sync` (lock, backoff, pausa tras errores, idempotencia por hash + `integration_records`) + cron `everyFifteenMinutes` en `Kernel`; importación inicial con preview dry-run.
-- Panel: `/admin/integraciones` (+ detalle), sección en Configuración, ítem de sidebar.
-- Tests: `IntegrationTest` (11) + `IntegrationSyncTest` (5); suite backend 98/98.
+- **F3 · Compras (HU-044):** `SyncService@sincronizarCompras` aplica documentos externos idempotentes (`integration_external_docs`, tipo `compra`) con entradas de stock en transacción; SKUs sin resolver → `pendiente_resolucion` sin aplicación parcial; resumen `compras_aplicadas`/`compras_pendientes`; aislamiento de errores por dimensión (un fallo de compras no aborta el resto del run).
+- **F3 · Ventas (HU-045):** `VentaErpService` encola al aprobar el pago (`orders.integration_erp_estado`), envía en cada sincronización, conserva `integration_erp_externo_id` + doc tipo `venta` (sin duplicados), clasifica errores (transitorios → cola automática; permanentes → solo manual) y expone reintento `POST /admin/pedidos/{id}/erp-reintentar`.
+- Panel: `/admin/integraciones` (+ detalle con secciones **Compras (entrada)** y **Ventas (salida)**), sección en Configuración, ítem de sidebar; ficha del pedido muestra chip de estado ERP y botón **Reenviar a ERP**.
+- Tests: `IntegrationTest` (11) + `IntegrationSyncTest` (5) + `ErpPruebaProviderTest` (6) + `ComprasSyncTest` (3) + `VentasErpTest` (7) + `AuthFederationTest` (10); suite backend **124/124**.
 
 **Pendiente (fases posteriores).**
-- HU-044/045 (compras entrantes y ventas salientes), webhooks entrantes (F4), multi-integración avanzada UI (F5), mapeo de campos desde UI (HU-053 UI), eventos/auditoría UI (HU-048/054), proveedores reales (OdooSaaS, Siigo, Alegra…).
+- Webhooks entrantes (F4), multi-integración avanzada UI (F5), mapeo de campos desde UI (HU-053 UI), eventos/auditoría UI (HU-048/054), proveedores reales (OdooSaaS, Siigo, Alegra…).
 
 ---
 
@@ -1108,11 +1110,11 @@ El objetivo de negocio es ofrecer una base reutilizable que permita poner en mar
 | Campo | Valor |
 |---|---|
 | **Prioridad** | Media |
-| **Estado** | 🔴 Pendiente (fuera de alcance F0–F2) |
+| **Estado** | 🟢 F6 — login federado implementado (F0–F6) |
 | **Actores** | A2 (cliente), A3 (admin) |
 | **HU** | HU-052 |
 
-**Descripción.** Login federado (OAuth2 / SAML) contra el sistema externo. El modelo `integrations.soporta_login`/`rol_login_federado` ya existe pero la lógica de login **no se tocó** para evitar regresiones en `AuthTest`. Ver `docs/06-Integraciones-ERP.md` §7.7.
+**Descripción.** Login federado contra el sistema externo cuando hay una integración activa con `soporta_login` (REQ-15). `AuthFederationService` valida primero en el externo (proveedor `login()`), crea/mapea el usuario local con `rol_login_federado` (default `cliente`), y emite la sesión Sanctum normal con flag `federado`. Credenciales rechazadas → 401 sin fallback (evita bypass); externo caído → contingencia configurable `integrations.login_fallback_local` (default sí, con evento) o 503. Endpoint público `GET /api/v1/login/integracion` pinta el aviso del formulario. Regresión cero: `AuthTest` intacto y `AuthFederationTest` (10 casos) en la suite (124/124). Ver `docs/06-Integraciones-ERP.md` REQ-15/§7.6.
 
 ---
 

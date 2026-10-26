@@ -72,6 +72,13 @@ export interface LoginPayload {
   password: string
 }
 
+/** Info pública GET /login/integracion (REQ-15): ¿hay federación activa? */
+export interface LoginIntegracionInfo {
+  federado: boolean
+  sistema?: string
+  fallback_local?: boolean
+}
+
 export interface RegisterPayload {
   nombre: string
   email: string

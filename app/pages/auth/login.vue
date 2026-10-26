@@ -1,30 +1,41 @@
 <script setup lang="ts">
+import { useAuthService } from '~/composables/services/auth'
+
 definePageMeta({ layout: 'auth' })
 
 const toast = useToast()
 const route = useRoute()
 const communityStore = useCommunityStore()
+const { infoLoginFederado } = useAuthService()
 const token = route.query.token
 
 useSeoMeta({ title: 'Iniciar sesión', robots: 'noindex, nofollow' })
 
-function handleSuccess() {
+const federado = ref<{ federado: boolean, sistema?: string } | null>(null)
+
+async function handleSuccess() {
   toast.add({
     title: 'Bienvenido',
     description: 'Has iniciado sesión correctamente.',
     color: 'info',
-    icon: 'i-lucide-info',
+    icon: 'i-lucide-info'
   })
 }
 
 onMounted(async () => {
-  if(!token) return
+  // Aviso opcional de acceso federado (HU-052 CA6).
+  try {
+    const info = await infoLoginFederado()
+    if (info?.federado) federado.value = info
+  } catch { /* sin federación o endpoint no disponible: sin aviso */ }
+
+  if (typeof token !== 'string' || !token) return
   await communityStore.confirmSubscribe(token)
   toast.add({
     title: 'Subscrito',
     description: 'Te mandaremos ofertas y novedades!.',
     color: 'info',
-    icon: 'i-lucide-info',
+    icon: 'i-lucide-info'
   })
 })
 </script>
@@ -37,6 +48,16 @@ onMounted(async () => {
     <p class="mt-2 text-sm text-theme-muted">
       Ingresa a tu cuenta para continuar
     </p>
+
+    <UAlert
+      v-if="federado?.federado"
+      class="mt-4"
+      icon="i-lucide-shield-check"
+      color="info"
+      variant="subtle"
+      title="Acceso validado con tu sistema"
+      :description="`Usa las mismas credenciales de ${federado.sistema || 'tu sistema externo'} para entrar.`"
+    />
 
     <FormsAuthLoginForm
       class="mt-8"

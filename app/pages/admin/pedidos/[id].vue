@@ -15,6 +15,36 @@ const order = computed(() => items.value.find(o => o.id === orderId) ?? null)
 const orderHistory = computed(() => order.value?.history ?? [])
 const orderPayments = computed(() => (order.value as unknown as { payments?: Array<{ id: number, provider: string, amount: number, reference?: string, status: string }> })?.payments ?? [])
 
+const erpMeta = computed(() => {
+  const estado = order.value?.integration_erp_estado
+  if (!estado) return null
+
+  const map: Record<string, { label: string, color: 'success' | 'warning' | 'error' | 'info' | 'neutral' }> = {
+    pendiente_envio: { label: 'Pendiente envío ERP', color: 'warning' },
+    enviado: { label: 'Enviado al ERP', color: 'info' },
+    aceptado: { label: 'Aceptado por ERP', color: 'success' },
+    error: { label: 'Error en ERP', color: 'error' }
+  }
+  return map[estado] ?? { label: estado, color: 'neutral' as const }
+})
+
+const erpReenviable = computed(() => {
+  const estado = order.value?.integration_erp_estado
+  return estado === 'error' || estado === 'pendiente_envio'
+})
+
+const reintentando = ref(false)
+
+async function reenviarERP() {
+  if (!order.value) return
+  reintentando.value = true
+  try {
+    await adminOrderStore.reintentarERP(order.value.id)
+  } finally {
+    reintentando.value = false
+  }
+}
+
 onMounted(async () => {
   await adminOrderStore.loadList()
 })
@@ -66,8 +96,65 @@ useSeoMeta({ title: () => order.value ? `Pedido ${order.value.order_number ?? or
             :color="paymentStatusMeta(order.payment_status).color"
             variant="outline"
           />
+          <UBadge
+            v-if="erpMeta"
+            :label="erpMeta.label"
+            :color="erpMeta.color"
+            variant="soft"
+          />
         </div>
       </header>
+
+      <section
+        v-if="erpMeta"
+        class="surface p-5 sm:p-6"
+      >
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <UIcon
+                name="i-lucide-cloud"
+                class="size-4 text-theme-muted"
+              />
+              <h2 class="text-sm font-semibold text-theme">
+                Sincronización con el ERP
+              </h2>
+              <UBadge
+                :label="erpMeta.label"
+                :color="erpMeta.color"
+                variant="subtle"
+                size="sm"
+              />
+            </div>
+            <p class="text-xs text-theme-muted">
+              <template v-if="order.integration_erp_externo_id">
+                ID externo: {{ order.integration_erp_externo_id }} ·
+              </template>
+              <template v-if="order.integration_erp_enviado_en">
+                Último envío: {{ date(order.integration_erp_enviado_en) }}
+              </template>
+              <template v-if="!order.integration_erp_externo_id && !order.integration_erp_enviado_en">
+                Todavía no se ha enviado al ERP.
+              </template>
+            </p>
+            <p
+              v-if="order.integration_erp_error"
+              class="text-xs text-red-500"
+            >
+              {{ order.integration_erp_error }}
+            </p>
+          </div>
+          <UButton
+            v-if="erpReenviable"
+            label="Reenviar a ERP"
+            icon="i-lucide-send"
+            variant="outline"
+            color="primary"
+            :loading="reintentando"
+            @click="reenviarERP"
+          />
+        </div>
+      </section>
 
       <section class="surface p-5 sm:p-6">
         <h2 class="font-semibold mb-3">

@@ -2,10 +2,12 @@ import type { Paginated } from '~/types/api'
 import type {
   ImportacionInicialPreview,
   Integration,
+  IntegrationCompraDoc,
   IntegrationPayload,
   IntegrationSistema,
   IntegrationSyncRun,
-  IntegrationUltimaEjecucion
+  IntegrationUltimaEjecucion,
+  IntegrationVentaItem
 } from '~/types/integrations'
 
 export interface TestConnectionResult {
@@ -96,7 +98,7 @@ export function useAdminIntegracionesService() {
     return res.data
   }
 
-  async function sincronizar(id: number, tipo?: 'productos' | 'inventario' | 'inicial' | 'todo') {
+  async function sincronizar(id: number, tipo?: 'productos' | 'inventario' | 'compras' | 'ventas' | 'inicial' | 'todo') {
     const res = await request<SyncResultado>(`/admin/integraciones/${id}/sincronizar`, {
       method: 'POST',
       body: tipo ? { tipo } : {}
@@ -119,6 +121,20 @@ export function useAdminIntegracionesService() {
     return { items: res.data.items, pagination: res.data.pagination }
   }
 
+  async function listarCompras(id: number, filters?: { estado?: string, page?: number, per_page?: number }) {
+    const res = await request<Paginated<IntegrationCompraDoc>>(`/admin/integraciones/${id}/compras`, {
+      query: filters
+    })
+    return { items: res.data.items, pagination: res.data.pagination }
+  }
+
+  async function listarVentas(id: number, filters?: { estado?: string, queue?: 'cola', page?: number, per_page?: number }) {
+    const res = await request<Paginated<IntegrationVentaItem>>(`/admin/integraciones/${id}/ventas`, {
+      query: filters
+    })
+    return { items: res.data.items, pagination: res.data.pagination }
+  }
+
   return {
     listarSistemas,
     listar,
@@ -131,6 +147,8 @@ export function useAdminIntegracionesService() {
     desactivar,
     sincronizar,
     importacionInicial,
-    listarEjecuciones
+    listarEjecuciones,
+    listarCompras,
+    listarVentas
   }
 }

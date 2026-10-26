@@ -260,7 +260,7 @@ onMounted(async () => {
   <div class="space-y-6 animate-fade-up">
     <UTabs
       :items="[
-        { label: 'Mensajes', slot: 'mensajes', icon: 'i-lucide-message' },
+        { label: 'Mensajes', slot: 'mensajes', icon: 'i-lucide-message-circle' },
         { label: 'Suscriptores', slot: 'suscriptores', icon: 'i-lucide-users' },
         { label: 'Campañas', slot: 'campanas', icon: 'i-lucide-bell' }
       ]"

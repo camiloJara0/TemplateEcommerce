@@ -1,6 +1,7 @@
 import type {
   ApiResponse,
   LoginData,
+  LoginIntegracionInfo,
   LoginPayload,
   RegisterPayload,
   SendCodePayload,
@@ -11,10 +12,16 @@ export function useAuthService() {
   const authStore = useAuthStore()
   const { request } = useApi()
 
+  /** ¿La tienda usa login federado? (para el aviso del formulario) */
+  async function infoLoginFederado() {
+    const res = await request<LoginIntegracionInfo>('/login/integracion')
+    return res.data
+  }
+
   async function login(payload: LoginPayload) {
     return runMutation<LoginData>({
       request: () => authStore.login(payload),
-      successMessage: 'Sesión iniciada correctamente',
+      successMessage: 'Sesión iniciada correctamente'
       // redirectTo: '/admin'
     })
   }
@@ -36,7 +43,7 @@ export function useAuthService() {
         method: 'POST',
         body: payload
       }),
-      successMessage: 'Cuenta creada correctamente',
+      successMessage: 'Cuenta creada correctamente'
     })
   }
 
@@ -46,7 +53,7 @@ export function useAuthService() {
         method: 'PUT',
         body: payload
       }),
-      successMessage: 'Cuenta actualizada correctamente',
+      successMessage: 'Cuenta actualizada correctamente'
     })
   }
 
@@ -85,6 +92,7 @@ export function useAuthService() {
 
   return {
     login,
+    infoLoginFederado,
     register,
     registerPersonal,
     logout,

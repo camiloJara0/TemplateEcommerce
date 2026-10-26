@@ -31,7 +31,7 @@ const allGroups = [
       { label: 'Editor de tienda', icon: 'i-lucide-layout-template', to: '/admin/tienda', perm: 'configuracion.editar' },
       { label: 'Plantillas', icon: 'i-lucide-layout-grid', to: '/admin/plantillas', perm: 'configuracion.editar' },
       { label: 'Configuración', icon: 'i-lucide-settings', to: '/admin/configuracion', perm: 'configuracion.ver' },
-      { label: 'Comunidad', icon: 'i-lucide-user-round-group', to: '/admin/comunidad', perm: 'usuarios.ver' }
+      { label: 'Comunidad', icon: 'i-lucide-user-group', to: '/admin/comunidad', perm: 'usuarios.ver' }
     ]
   },
   {

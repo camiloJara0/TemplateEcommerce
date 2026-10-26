@@ -59,7 +59,7 @@ Una tarjeta solo pasa a **✅ Hecho** cuando:
 
 - [ ] El código está implementado en `template_front` y/o `template_back`.
 - [ ] `pnpm run lint` y `pnpm run typecheck` sin errores nuevos.
-- [ ] `php -l` limpio y `php artisan test` sin regresiones (**objetivo: 78/78**, hoy 70/8).
+- [x] `php -l` limpio y `php artisan test` sin regresiones — **hoy 124/124** (objetivo histórico 78/78 superado; F0–F3 + F6).
 - [ ] Los criterios de aceptación verificados en entorno local.
 - [ ] Comportamiento responsive verificado (≥ 360 px).
 - [ ] Validaciones y manejo de errores de servidor reflejados en la UI.
@@ -398,13 +398,15 @@ Una tarjeta solo pasa a **✅ Hecho** cuando:
 | | |
 |---|---|
 | **Como** administrador **quiero** que las compras del ERP generen entradas de stock **para** mantener el inventario al día |
-| **Épica** | Integraciones · **Estado** 🔴 |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Documento externo idempotente por número (`integration_external_docs`, tipo `compra`) ✅. 2. Entrada de stock vía `InventoryService@entrada` en transacción con referencia morph al doc ✅. 3. SKU sin resolver → documento `pendiente_resolucion` sin aplicación parcial, evento `compra.pendiente_resolucion` ✅. 4. Resumen `compras_aplicadas` / `compras_pendientes` por ejecución ✅. |
 
 #### HU-045 · Enviar ventas de la tienda al sistema de facturación
 | | |
 |---|---|
 | **Como** administrador **quiero** que cada venta se facture en el ERP **para** cumplir la normativa |
-| **Épica** | Integraciones · **Estado** 🔴 |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Al aprobar el pago se encola (`VentaErpService@encolar`) y la sincronización envía ✅. 2. ID externo conservado en `orders.integration_erp_externo_id` + doc tipo `venta` (sin duplicados) ✅. 3. Estados en el pedido: `pendiente_envio` / `enviado` / `aceptado` / `error` (`OrderErpEstadoEnum`) ✅. 4. Errores clasificados (5xx/429/408 transitorios → cola; 4xx permanentes solo manual) con motivo visible ✅. 5. Reintento manual `POST /admin/pedidos/{id}/erp-reintentar` ✅. 6. Cola persistente: nunca se pierde el pedido ✅. |
 
 #### HU-046 · Sincronización automática programada
 | | |
@@ -452,8 +454,8 @@ Una tarjeta solo pasa a **✅ Hecho** cuando:
 | | |
 |---|---|
 | **Como** cliente **quiero** usar las credenciales de mi ERP **para** no crear otra cuenta |
-| **Épica** | Integraciones · **Estado** 🔴 |
-| **CA** | Fuera de alcance F0–F2 (regresión cero de `AuthTest`); columnas `soporta_login`/`rol_login_federado` reservadas. Ver RF-055. |
+| **Épica** | Integraciones · **Estado** 🟢 |
+| **CA** | 1. Federación validada antes que el login local cuando hay integración activa con `soporta_login` ✅ (`AuthFederationService`). 2. Usuario nuevo creado con `rol_login_federado` (default `cliente`, decisión PO) ✅. 3. Credenciales rechazadas por el externo → 401 `INVALID_CREDENTIALS` sin fallback + evento `login.federado_fallo` ✅. 4. Externo caído → contingencia `login_fallback_local` (default sí, con evento `login.federado_indisponible`) o 503 `AUTH_SERVICE_UNAVAILABLE` ✅. 5. Sin integración con login → regresión cero (`AuthTest` intacto) ✅. 6. Aviso "Acceso validado con tu sistema" + flag `federado` en la respuesta ✅. 7. Token 16 h, throttle 10/min y redirección por rol sin cambios ✅. 8. Auditoría + eventos `login.federado*`; logout/recuperación locales documentados como bypass ✅. Tests: `AuthFederationTest` (10 casos), suite 124/124. |
 
 #### HU-053 · Ajustar la traducción de campos y categorías entre sistemas
 | | |

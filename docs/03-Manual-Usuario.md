@@ -197,6 +197,8 @@ Gestiona el catálogo reutilizable de atributos (Color, Talla, Material) y sus v
 
 Cada cambio escribe un registro en el **historial** con usuario, fecha y comentario opcional.
 
+**Sincronización con el ERP** — si hay una integración activa de ventas, el detalle muestra el chip de estado del pedido en el ERP (**Pendiente envío ERP**, **Enviado**, **Aceptado**, **Error**) junto al ID externo y el motivo del error si lo hay. Con estado *Pendiente* o *Error* aparece el botón **Reenviar a ERP** (permiso `pedidos.gestionar`); los errores transitorios también se reenvían solos en la siguiente sincronización.
+
 > ⚠️ El detalle del pedido se construye con los datos del listado (hoy no existe `GET /admin/pedidos/{id}`). Recarga la lista si necesitas la información más reciente.
 
 ### 3.6 Pagos (`/admin/pagos`)
@@ -277,16 +279,21 @@ Edita nombre, teléfono, foto e idioma. Aquí también se cierra la sesión.
 
 Conecta sistemas externos (ERP, CRM, marketplace) para sincronizar catálogo e inventario. Requiere permiso de administrador.
 
-**Listado.** Cada tarjeta muestra el sistema conectado, su estado (activa, inactiva, sin credenciales, con errores…), las capacidades que ofrece (productos, inventario…), la última sincronización y un resumen de la última ejecución. Desde ahí puedes **probar** la conexión, **activar/desactivar**, **sincronizar ahora**, **configurar** o **eliminar**.
+**Listado.** Cada tarjeta muestra el sistema conectado, su estado (activa, inactiva, sin credenciales, con errores…), las capacidades que ofrece (productos, inventario, compras, ventas), la última sincronización y un resumen de la última ejecución. Desde ahí puedes **probar** la conexión, **activar/desactivar**, **sincronizar ahora**, **configurar** o **eliminar**.
 
 **Nueva integración.** Pulsa **Nueva integración**, elige el sistema (por ejemplo *ERP Demo*), ponle un nombre y guarda sus credenciales (si el sistema las pide).
 
 **Configurar (detalle).** Dentro de la integración puedes:
 
 1. **Credenciales** — se guardan cifradas; los campos ya guardados nunca se muestran completos.
-2. **Sincronización** — frecuencia en minutos y si sincroniza productos y/o inventario; botón **Sincronizar ahora** con alcance completo, parcial o importación inicial.
-3. **Importación inicial** — **Previsualizar** muestra cuántos registros externos hay, cuántos ya existen y cuántos se crearían/actualizarían (sin escribir nada); **Ejecutar importación** aplica los cambios.
-4. **Historial de ejecuciones** — cada sincronización con su estado y conteo de procesados, creados, actualizados, omitidos y errores.
+2. **Login federado** — si el sistema lo soporta: habilitar el acceso con las credenciales del sistema externo, elegir el rol con el que se crean los usuarios nuevos (vacío = cliente) y decidir si, cuando el sistema externo no responde, se permite el login local de respaldo (recomendado) o se responde "servicio no disponible". Con la federación activa, el formulario de acceso muestra el aviso *Acceso validado con tu sistema* y los intentos rechazados por el externo no pasan nunca al login local.
+3. **Sincronización** — frecuencia en minutos y qué sincroniza (productos, inventario, **compras de entrada** y **ventas de salida**, según capacidades del sistema); botón **Sincronizar ahora** con alcance completo, parcial (por ejemplo *Solo compras* o *Solo ventas*) o importación inicial.
+4. **Importación inicial** — **Previsualizar** muestra cuántos registros externos hay, cuántos ya existen y cuántos se crearían/actualizarían (sin escribir nada); **Ejecutar importación** aplica los cambios.
+5. **Compras (entrada)** — documentos de compra que trajo el ERP con su estado (**Aplicada** entró a stock; **Pendiente resolución** tiene SKUs que aún no existen en la tienda y se lista en *SKUs pendientes*).
+6. **Ventas (salida)** — pedidos enviados al ERP con su estado (**Pendiente**, **Enviado**, **Aceptado**, **Error**), el ID externo y el motivo del error; activa **Solo cola** para ver únicamente los pendientes de envío. El reintento se hace desde la ficha del pedido (**Reenviar a ERP**).
+7. **Historial de ejecuciones** — cada sincronización con su estado y conteo de procesados, creados, actualizados, omitidos y errores.
+
+> ℹ️ Logout, recuperación y cambio de contraseña siguen siendo locales aunque la federación esté activa.
 
 > También hay un acceso rápido en **Configuración → Integración de API**. La sincronización automática corre sola cada cierto tiempo; si falla varias veces la integración se pausa y puedes reactivarla desde la lista.
 

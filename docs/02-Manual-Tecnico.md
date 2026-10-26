@@ -740,18 +740,41 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])
 | Proveedor | Adaptador | Estado |
 |---|---|---|
 | `erp_demo` | `ErpDemoProvider` | ✅ Fixtures locales en `resources/fixtures/erp_demo/` (productos + inventario), sin credenciales externas |
-| `erp_prueba` | `ErpPruebaProvider` | ✅ **ERP externo real** (127.0.0.1:8001): `GET /api/productsERP` y `GET /api/inventarioERP` con header `X-API-KEY`. URL/rutas/API key **desde el backend** (`.env` → `ERP_PRUEBA_URL`, `ERP_PRUEBA_API_KEY`, `ERP_PRUEBA_RUTA_*` vía `config/integrations.php`); proveedor con `credenciales_desde_backend = true` (no pide nada en el panel, `sistemas` jamás expone la key) |
+| `erp_prueba` | `ErpPruebaProvider` | ✅ **ERP externo real** (127.0.0.1:8001): `GET /api/productsERP`, `GET /api/inventarioERP`, `GET /api/comprasERP` (entrada), `POST /api/ventasERP` (salida, `id_externo` determinístico) y `POST /api/loginERP` (login federado, F6) con header `X-API-KEY`. La **URL base y la API key se registran desde el panel** (`base_url` + `api_key` en `fields`) y se guardan cifradas en `integrations.credenciales` con `Crypt` (nunca en `.env` ni en respuestas API; `sistemas` solo expone la metadata del formulario). Rutas fijas del contrato en `config/integrations.php`; capabilities `['productos','inventario','compras','ventas']`, `supports_login: true` |
 | Odoo SaaS / Siigo / Alegra / HubSpot / Shopify / VTEX | — | 🔴 Reservados (HU de fases posteriores) |
 
 **Modelo:** 6 tablas (`integrations`, `integration_sync_runs`, `integration_events`, `integration_records`, `integration_external_docs`, `integration_field_maps`). Credenciales cifradas con `Crypt` (`IntegrationCredentialService`); la API solo expone `configurado`.
 
-**Flujo de sincronización:** `SyncService@vence` (frecuencia por integración, default 60 min) → `integrations:sync` (o endpoint manual) con `Cache::lock` → `run` con estados (`iniciando/en_curso/exitosa/parcial/fallida`) → apply idempotente por hash + `integration_records` → backoff exponencial y pausa tras N fallos. Inventario entra vía `InventoryService@ajustar` con referencia morph al run (RN-25).
+**Flujo de sincronización:** `SyncService@vence` (frecuencia por integración, default 60 min) → `integrations:sync` (o endpoint manual) con `Cache::lock` → `run` con estados (`iniciando/en_curso/exitosa/parcial/fallida`) → apply idempotente por hash + `integration_records` → backoff exponencial y pausa tras N fallos. Inventario entra vía `InventoryService@ajustar` con referencia morph al run (RN-25). Cada dimensión (`productos/inventario/compras/ventas`) se aísla: un fallo de lectura en compras/ventas incrementa `errores` + evento (`compras.error`/`ventas.error`) sin abortar las demás.
+
+**F3 · Compras (entrada, HU-044):** `SyncService@sincronizarCompras` → `obtenerCompras`/`normalizarCompra` del proveedor → `aplicarCompra` en `DB::transaction` con `lockForUpdate`: documento idempotente en `integration_external_docs` (tipo `compra`, único por `external_id`); si algún SKU no resuelve, el documento entero queda `pendiente_resolucion` (sin entradas parciales ni productos huérfanos) + evento `compra.pendiente_resolucion` (info). Aplicación vía `InventoryService@entrada(..., 'compra_externa', $doc)`; resumen del run con `compras_aplicadas`/`compras_pendientes`.
+
+**F3 · Ventas (salida, HU-045):** `VentaErpService` — `encolar()` al aprobarse el pago (marcador `orders.integration_erp_estado = pendiente_envio`); `cola()` = pendientes + errores transitorios sin reclamo ajeno; `enviar()` llama `crearVenta`, conserva `integration_erp_externo_id` y crea doc tipo `venta`; errores clasificados por `describirError` (5xx/429/408 → transitorio y vuelve a la cola; 401/403/4xx → permanente, solo reintento manual). Estados del pedido: `OrderErpEstadoEnum { pendiente_envio, enviado, aceptado, error }` (columnas `integration_erp_*` en `orders`).
 
 **Cron del servidor:** `* * * * * php artisan schedule:run` (el `Kernel` registra `integrations:sync` cada 15 min con `withoutOverlapping`).
 
-**Endpoints admin** (`permission:integraciones.*`): CRUD `/admin/integraciones*`, `POST …/probar|activar|desactivar|sincronizar|importacion-inicial|ejecuciones`.
+**Endpoints admin** (`permission:integraciones.*`): CRUD `/admin/integraciones*`, `POST …/probar|activar|desactivar|sincronizar|importacion-inicial`, `GET …/ejecuciones|compras|ventas` (`ventas` admite `?estado=` y `?queue=cola`). Reintento de venta: `POST /admin/pedidos/{id}/erp-reintentar` (`permission:pedidos.gestionar`; errores → 422 `ERP_REINTENTO_FALLIDO`). El tipo de sincronización valida capability → 422 `CAPABILIDAD_NO_SOPORTADA`.
 
-**Tests:** `IntegrationTest` (11) + `IntegrationSyncTest` (5).
+**Tests:** `IntegrationTest` (11) + `IntegrationSyncTest` (5) + `ErpPruebaProviderTest` (6) + `ComprasSyncTest` (3) + `VentasErpTest` (7) + `AuthFederationTest` (10) — suite **124/124**.
+
+### 9.5 Login federado (RF-055 / HU-052)
+
+`AuthFederationService` (`app/Services/`): si `integracionFederada()` encuentra una integración **activa con `soporta_login` y credenciales** (`estado ≠ sin_credenciales`), `POST /v1/login` valida primero contra el externo vía `IntegrationProvider@login` antes del flujo local:
+
+| Resultado externo | Comportamiento | Código |
+|---|---|---|
+| Acepta | usuario local por email (se crea con `rol_login_federado`, default `cliente`, si no existe) + sesión Sanctum + evento `login.federado` (info) + `federado: true` en la respuesta | 200 |
+| Rechaza (401/403 o `success:false`) | **nunca** cae al login local (evita bypass) + evento `login.federado_fallo` (error) | 401 `INVALID_CREDENTIALS` |
+| No responde / 5xx / config rota | contingencia `integrations.login_fallback_local` (default `true`): login local de respaldo + evento `login.federado_indisponible` (warning); si es `false` | 503 `AUTH_SERVICE_UNAVAILABLE` |
+
+- Columna nueva `integrations.login_fallback_local` (bool, default `true`); flags `soporta_login`/`rol_login_federado` (F0) se editan desde el detalle de la integración (sección *Login federado*, visible cuando el proveedor declara `supports_login`).
+- `ErpPruebaProvider@login` → `POST {base}/api/loginERP` `{nombre: email, contraseña}` con `X-API-KEY`; identifica por nombre o email (`usuariouno@erp.test` / `password123`, activo; `usuariodos@erp.test` / `password456`, inactivo → 403). Errores clasificados en `FederationAuthException` (`invalidas` vs `indisponible`).
+- Endpoint público `GET /v1/login/integracion` (`throttle:30,1`) → `{federado, sistema, fallback_local}` para pintar el aviso "Acceso validado con tu sistema" en `/auth/login` (HU-052 CA6).
+- **Regresión cero:** sin integración federada el flujo local es idéntico (`AuthTest` intacto); throttling `10/min`, token 16 h y respuesta `{access_token, user}` sin cambios (la key `federado` es aditiva).
+- **Bypass documentado (RN-15):** logout, recuperación y cambio de contraseña siguen siendo locales.
+- Auditoría: `Auditoria@registrar` en el éxito federado + `integration_events` (`login.federado`, `login.federado_fallo`, `login.federado_indisponible`).
+
+**Tests:** `AuthFederationTest` (10): regresión local, creación con rol default/configurado, 401 sin fallback con password local válido, fallback con externo caído, 503 sin fallback, endpoint info, reutilización de cuenta existente, usuario inactivo, integración sin credenciales no federal.
 
 ---
 
@@ -806,7 +829,7 @@ No hay rutina en el repositorio. **RPO/RTO indefinidos** (RNF-13 🔴). Recomend
 ### 11.1 Estado actual
 
 ```
-php artisan test  →  70 pasan · 8 fallan (78 en total)
+php artisan test  →  124/124
 ```
 
 | Suite | Resultado |

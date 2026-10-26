@@ -40,7 +40,7 @@ Todo lo documentado fue verificado contra el código fuente, no contra supuestos
 | **Código backend** | `template_back/` (Laravel 9, 23 migraciones, 117 rutas) | Fuente de verdad de API y BD |
 | **Código frontend** | `template_front/` (Nuxt 4, 191 componentes `.vue`, 19 stores) | Fuente de verdad de UI |
 | **Esquema real de BD** | `information_schema` de MariaDB (37 tablas) | Fuente de verdad de datos |
-| **Suite de pruebas** | `php artisan test` → **70 pasan / 8 fallan** | Estado de calidad |
+| **Suite de pruebas** | `php artisan test` → **124/124** | Estado de calidad |
 
 ---
 

@@ -243,7 +243,7 @@ Permitir que el cliente **conecte su sistema externo desde la configuración de 
 | | |
 |---|---|
 | **Como** administrador de tienda **quiero** que las compras registradas en mi ERP aumenten el inventario de la tienda **para** que lo que compro sea visible online de inmediato |
-| **Épica** | Integraciones · **Prioridad** Alta · **Estado** 🔴 |
+| **Épica** | Integraciones · **Prioridad** Alta · **Estado** 🟢 (F3) |
 | **Criterios de aceptación** | 1. Las órdenes de compra/entrada creadas o modificadas en el sistema externo desde la última sincronización se reflejan en la tienda como **entrada de inventario**. 2. Cada compra se identifica por su número/ID externo: **no se registra dos veces** aunque se consulte varias veces. 3. Se guarda el número de compra, fecha, proveedor y detalle (producto, cantidad, costo) para consulta. 4. Si el producto de la compra no existe en la tienda, queda en el historial como pendiente de resolver (no crea productos huérfanos). 5. Resumen por ejecución con entradas aplicadas y pendientes. |
 
 ---
@@ -253,7 +253,7 @@ Permitir que el cliente **conecte su sistema externo desde la configuración de 
 | | |
 |---|---|
 | **Como** administrador de tienda **quiero** que cada venta realizada en la tienda se envíe a mi sistema de facturación/ERP **para** facturarla y descontar el stock en un solo lugar |
-| **Épica** | Integraciones · **Prioridad** Alta · **Estado** 🔴 |
+| **Épica** | Integraciones · **Prioridad** Alta · **Estado** 🟢 (F3) |
 | **Criterios de aceptación** | 1. Un pedido pagado dispara el envío al sistema externo (inmediato o en la siguiente sincronización). 2. Se conserva el identificador devuelto por el sistema externo para poder consultarlo y reenviarlo. 3. **Sin duplicados**: reenviar un pedido ya aceptado no crea un registro doble en el ERP. 4. Estados visibles en el pedido de la tienda: pendiente de envío / enviado / aceptado / con error. 5. Los errores muestran el motivo del sistema externo y permiten **reintentar manualmente**. 6. Si el sistema externo está caído, el pedido queda en cola y se envía al recuperar (no se pierde). |
 
 ---
@@ -331,7 +331,7 @@ Permitir que el cliente **conecte su sistema externo desde la configuración de 
 | | |
 |---|---|
 | **Como** usuario de la tienda **quiero** usar el mismo usuario y contraseña de mi sistema de facturación o software propio para entrar **para** no manejar credenciales distintas ni duplicar usuarios |
-| **Épica** | Integraciones / Autenticación · **Prioridad** Alta · **Estado** 🔴 |
+| **Épica** | Integraciones / Autenticación · **Prioridad** Alta · **Estado** 🟢 F6 |
 | **Criterios de aceptación** | 1. Si existe una **integración activa con login habilitado**, el inicio de sesión valida primero contra el sistema externo y luego crea la sesión en la tienda con el usuario correspondiente. 2. Si el usuario **no existe** en la tienda, se crea automáticamente con el rol que defina la integración (por defecto: administrador). 3. Si el sistema externo responde **"credenciales inválidas"** → se rechaza el acceso (401) y se registra el intento. 4. Si el sistema externo **no responde** (caído) → aplica la regla de contingencia (RN-14): login local de respaldo si está habilitado; si no, mensaje "servicio no disponible temporalmente". 5. Si **no hay integración con login**, el comportamiento actual no cambia (regresión cero). 6. El usuario no percibe la diferencia salvo un aviso opcional "Acceso validado con tu sistema". 7. El token de sesión, expiración y roles siguen funcionando igual que hoy. 8. El logout, recuperación de contraseña y cambios de contraseña locales quedan documentados como bypass (RN-15). |
 
 ---
@@ -1017,6 +1017,9 @@ Cada proveedor = **una clase de adaptador** + **un normalizador** + **fixtures J
 | POST | `/admin/integraciones/{id}/importacion-inicial` | `integraciones.sincronizar` | Importación + preview (REQ-07) |
 | GET | `/admin/integraciones/{id}/importacion-inicial/estado` | `integraciones.ver` | Progreso/reanudación |
 | GET | `/admin/integraciones/{id}/ejecuciones` | `integraciones.historial` | Historial de ejecuciones |
+| GET | `/admin/integraciones/{id}/compras` | `integraciones.ver` | Documentos de compra (entrada) con filtros `estado` |
+| GET | `/admin/integraciones/{id}/ventas` | `integraciones.ver` | Salida de ventas; filtros `estado` y `queue=cola` |
+| POST | `/admin/pedidos/{order}/erp-reintentar` | `pedidos.gestionar` | Reintento manual de venta al ERP (HU-045 CA5) |
 | GET | `/admin/integraciones/{id}/eventos` | `integraciones.historial` | Errores y eventos con filtros (REQ-11) |
 | GET | `/admin/integraciones/eventos/{evento}` | `integraciones.historial` | Detalle |
 | POST | `/admin/integraciones/eventos/{evento}/reintentar` | `integraciones.sincronizar` | Reintento manual |
@@ -1089,6 +1092,8 @@ El flujo de login federado vive en el endpoint público existente `POST /v1/logi
 | | | **Total** | **40 d** | |
 
 **Orden recomendado por valor:** F0 → F1 → F2 → F3 → F4 → F6 → F5 → F7.
+
+**Estado de ejecución:** F0 ✅ · F1 ✅ · F2 ✅ · **F3 ✅** · F4 🔴 · F5 🔴 · **F6 ✅** · F7 🔴
 *Justificación:* el login federado (F6) es independiente y de alto valor percibido, pero no habilita ventas; se coloca tras la sincronización operativa para no competir por foco en el mismo módulo.
 
 ### 7.9 Estrategia de pruebas
@@ -1098,20 +1103,20 @@ El flujo de login federado vive en el endpoint público existente `POST /v1/logi
 | Unitario | Normalizadores (JSON fixture → modelo), clasificación de errores, backoff, upsert por claves externas | `tests/Unit/` (hoy vacío: se crea la estructura) |
 | Integración | Adaptador con HTTP fake, credenciales cifradas/descifradas, idempotencia de ejecuciones | `tests/Feature/` + cliente falso del proveedor |
 | API | Autorización 403 por rol, validaciones, respuestas uniformes `{success, message, data}` | Extendiendo suites existentes |
-| Regresión login | Login local intacto sin integración; federado con éxito/fallo/caída | Ampliar `AuthTest` (hoy ✅) |
+| Regresión login | Login local intacto sin integración; federado con éxito/fallo/caída | `AuthTest` intacto + `AuthFederationTest` (10 casos) ✅ |
 | E2E manual | Conexión → importación inicial → sync manual → ver estado → ver error → reintentar → desactivar | Caso QA en Plan Scrum |
 | Rendimiento | Importación de 1 000 productos, tiempo por lote, sin agotar memoria | Prueba de carga con catálogo sintético |
 
 ### 7.10 Criterios de terminado (Definition of Done)
 
-- [ ] Código en `template_front` y `template_back`.
-- [ ] `pnpm run lint` y `pnpm run typecheck` sin errores nuevos.
-- [ ] `php -l` limpio y `php artisan test` sin regresiones (objetivo 78/78, hoy 70/8).
-- [ ] Nuevas rutas con middleware de permiso y tests de autorización.
-- [ ] Credenciales cifradas; ninguna respuesta API expone valores.
-- [ ] Idempotencia verificada (ejecutar dos veces el mismo sync no duplica).
+- [x] Código en `template_front` y `template_back` (F0–F3, F6).
+- [x] `pnpm run lint` y `pnpm run typecheck` sin errores nuevos en los archivos tocados (71 errores typecheck preexistentes ajenos).
+- [x] `php -l` limpio y `php artisan test` sin regresiones — **hoy 124/124** (F3: +10, F6: +10).
+- [x] Nuevas rutas con middleware de permiso y tests de autorización.
+- [x] Credenciales cifradas; ninguna respuesta API expone valores.
+- [x] Idempotencia verificada (ejecutar dos veces el mismo sync no duplica).
 - [ ] Responsive ≥ 360 px y estados de carga/vacío/error cubiertos.
-- [x] Documentación actualizada: SRS (RF-054/RF-055), Plan Scrum (HU-038…054), Manual Técnico (§9.4), Manual de Usuario (§3.14).
+- [x] Documentación actualizada: SRS (RF-054/RF-055), Plan Scrum (HU-038…054), Manual Técnico (§9.4–9.5), Manual de Usuario (§3.5/§3.14).
 - [ ] Revisión de código aprobada.
 
 ### 7.11 Métricas de éxito
@@ -1192,8 +1197,8 @@ Supuesto: el proveedor devuelve un producto con su propia estructura y la plataf
 | 1 | ¿Cuál es el **primer proveedor real** a implementar? Define la plantilla de adaptador. | F0/F2 |
 | 2 | ¿Segundo proveedor para validar la abstracción (R-11)? | F7 |
 | 3 | ¿Frecuencia por defecto de la sincronización automática (15 min / 1 h)? | F4 |
-| 4 | ¿Rol por defecto para usuarios creados por login federado (`cliente` o `admin`)? | F6 |
-| 5 | ¿Fallback a login local cuando el sistema externo está caído (RN-14)? Recomendación: sí, con aviso. | F6 |
+| 4 | ✅ *Resuelta F6:* rol por defecto para usuarios creados por login federado → **`cliente`** (decisión PO; admin exige configurarlo en la integración). | F6 |
+| 5 | ✅ *Resuelta F6:* fallback a login local cuando el sistema externo está caído → **sí, con aviso** (`integrations.login_fallback_local`, default `true`, evento `login.federado_indisponible`); desactivable por integración → 503. | F6 |
 | 6 | ¿Dirección de verdad por defecto al conectar (externo manda / bidireccional)? Recomendación: externo manda en productos e inventario. | F2 |
 | 7 | ¿Retención mínima del historial de eventos (90 días sugeridos)? | F4 |
 | 8 | ¿Se contrata/define el límite de registros por ejecución según el contrato con el proveedor? | F4 |

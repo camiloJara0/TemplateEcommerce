@@ -8,6 +8,7 @@ export function useAdminPedidosService() {
     cambiarEstado: (id: number, payload: ChangeOrderStatusPayload) =>
       adminOrderStore.changeStatus(id, payload),
     reembolsar: (paymentId: number, payload: RefundPayload) =>
-      adminOrderStore.refund(paymentId, payload)
+      adminOrderStore.refund(paymentId, payload),
+    reintentarERP: (id: number) => adminOrderStore.reintentarERP(id)
   }
 }

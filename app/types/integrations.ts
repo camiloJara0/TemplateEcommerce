@@ -41,6 +41,8 @@ export interface IntegrationConfigSync {
   direccion?: string
   productos?: boolean
   inventario?: boolean
+  compras?: boolean
+  ventas?: boolean
 }
 
 export interface Integration {
@@ -60,6 +62,7 @@ export interface Integration {
   credenciales_configuradas: Record<string, boolean>
   soporta_login: boolean
   rol_login_federado: string | null
+  login_fallback_local: boolean
   config_sincronizacion: IntegrationConfigSync | null
   ultimo_sincronizado: string | null
   ultimo_estado: string | null
@@ -89,6 +92,7 @@ export interface IntegrationPayload {
   provider?: string
   soporta_login?: boolean
   rol_login_federado?: string | null
+  login_fallback_local?: boolean
   config_sincronizacion?: IntegrationConfigSync
   credenciales?: Record<string, string>
 }
@@ -97,4 +101,29 @@ export interface ImportacionInicialPreview {
   total_externos: number
   registros_existentes: number
   proyectados: number
+}
+
+export interface IntegrationCompraDoc {
+  id: number
+  external_id: string
+  estado: string
+  fecha: string | null
+  proveedor: string | null
+  skus_pendientes: string[]
+  lineas: number
+  created_at: string | null
+}
+
+export interface IntegrationVentaItem {
+  order_id: number
+  numero: string
+  estado: string
+  estado_label: string
+  error: string | null
+  error_transitorio: boolean
+  externo_id: string | null
+  enviado_en: string | null
+  total: number
+  currency: string
+  created_at: string | null
 }

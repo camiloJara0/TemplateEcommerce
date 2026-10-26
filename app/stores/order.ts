@@ -173,5 +173,20 @@ export const useAdminOrderStore = defineStore('admin-order', () => {
     })
   }
 
-  return { items, pagination, filters, loading, loadList, changeStatus, refund }
+  async function reintentarERP(id: number) {
+    const { request } = useApi()
+    return runMutation<{ success: boolean, estado: string, mensaje: string, order: Order }>({
+      request: () => request<{ success: boolean, estado: string, mensaje: string, order: Order }>(
+        `/admin/pedidos/${id}/erp-reintentar`,
+        { method: 'POST' }
+      ),
+      successMessage: 'Pedido reenviado al ERP',
+      onSuccess: (data) => {
+        const idx = items.value.findIndex(o => o.id === data.order.id)
+        if (idx >= 0) items.value[idx] = data.order
+      }
+    })
+  }
+
+  return { items, pagination, filters, loading, loadList, changeStatus, refund, reintentarERP }
 })
